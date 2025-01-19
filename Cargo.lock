@@ -12,4 +12,4 @@ dependencies = [
 [[package]]
 name = "vputilslib"
 version = "0.1.0"
-source = "git+https://github.com/VillePe/rust-vputilslib#311df67f112061bd6f55299f190a32b9e48cad3a"
+source = "git+https://github.com/VillePe/rust-vputilslib?branch=dev#87d54531b3799d4b174754386b69456981791f4a"

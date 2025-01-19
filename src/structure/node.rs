@@ -1,5 +1,5 @@
 ﻿#![allow(dead_code)]
-use vputilslib::vppoint::VpPoint;
+use vputilslib::geometry2d::VpPoint;
 
 #[derive(Debug)]
 pub struct Node {

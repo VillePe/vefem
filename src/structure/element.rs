@@ -1,6 +1,5 @@
 ﻿#![allow(dead_code)]
 
-use std::any::Any;
 use crate::material::Material;
 use crate::structure::node::Node;
 
