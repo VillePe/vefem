@@ -8,3 +8,4 @@ name="idfem"
 
 [dependencies]
 vputilslib = { git = "https://github.com/VillePe/rust-vputilslib", branch = "dev" }
+nalgebra = "0.33"
