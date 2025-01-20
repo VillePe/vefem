@@ -1,6 +1,3 @@
-﻿
-pub mod concrete;
-
-pub struct Material {
-    pub elastic_modulus: f64,
-}
+﻿pub mod concrete;
+pub mod steel;
+pub mod timber;

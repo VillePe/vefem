@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 use vputilslib::geometry2d::{Polygon, VpPoint};
 use vputilslib::geometry2d;
+use vputilslib::geometry2d::rectangle;
 
 pub struct Profile {
     pub profile_type: ProfileType,
@@ -11,7 +12,7 @@ pub struct Profile {
     /// The bottom left point of the bounding box needs to be placed at the origo (0,0). Note that
     /// this doesn't mean that any points need to be at origo, just the bounding box. Points need
     /// to be in counterclockwise order.
-    pub polygon: geometry2d::Polygon,
+    pub polygon: Polygon,
     pub area : f64,
     pub major_mom_of_inertia : f64,
     pub minor_mom_of_inertia : f64,
@@ -23,7 +24,7 @@ pub struct Profile {
 impl Profile {
     pub fn new(name: String, polygon: Polygon) -> Self {
         // the bounding box
-        let bb : geometry2d::Rectangle = geometry2d::rectangle::bounding_box(&polygon).unwrap();
+        let bb : geometry2d::Rectangle = rectangle::bounding_box(&polygon).unwrap();
         Self {
             profile_type: ProfileType::Polygon,
             name,

@@ -1,7 +1,12 @@
 ﻿#![allow(dead_code)]
-
-use crate::material::Material;
 use crate::structure::node::Node;
+use crate::material::*;
+
+pub enum Material {
+    Concrete(concrete::Concrete),
+    Steel(steel::Steel),
+    Timber(timber::Timber),
+}
 
 pub struct Element {
     pub node_start: Node,
