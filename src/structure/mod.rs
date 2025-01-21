@@ -1,3 +1,3 @@
 ﻿pub mod element;
 pub mod node;
-mod profile;
+pub mod profile;
