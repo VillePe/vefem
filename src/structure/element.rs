@@ -20,4 +20,7 @@ impl Element {
     pub fn new(node_start: Node, node_end: Node, profile: Profile, material: Material) -> Self {
         Self{node_start, node_end, profile, material}
     }
+    pub fn get_length(&self) -> f64 {
+        vputilslib::geometry2d::calc_length_between_points(&self.node_start.point, &self.node_end.point)
+    }
 }

@@ -69,7 +69,7 @@ impl Profile {
     /// For more info see https://en.wikipedia.org/wiki/Second_moment_of_area
     pub fn calculate_major_second_mom_of_area(&self) -> f64 {
         // Use the centroid to calculate the second moment of area about it
-        let centroid = vputilslib::geometry2d::centroid_from_polygon(&self.polygon);
+        let centroid = geometry2d::centroid_from_polygon(&self.polygon);
         let mut sum = 0.0;
         let mut next_x : f64;
         let mut next_y : f64;
