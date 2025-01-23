@@ -3,17 +3,18 @@ use vputilslib::geometry2d::VpPoint;
 
 #[derive(Debug)]
 pub struct Node {
+    pub number: i32,
     pub point: VpPoint,
     pub support: Support,
 }
 
 impl Node {
-    pub fn new(point: VpPoint, support: Support) -> Self {
-        Self { point, support }
+    pub fn new(number: i32, point: VpPoint, support: Support) -> Self {
+        Self { number, point, support }
     }
 
-    pub fn new_hinged(point: VpPoint) -> Self {
-        Self{point, support: Support::new_hinged()}
+    pub fn new_hinged(number: i32, point: VpPoint) -> Self {
+        Self{number, point, support: Support::new_hinged()}
     }
 }
 
@@ -48,7 +49,7 @@ mod tests {
 
     #[test]
     fn new() {
-        let n1 = Node::new(VpPoint::new(0.0, 0.0), Support::new());
+        let n1 = Node::new(1, VpPoint::new(0.0, 0.0), Support::new());
         assert_eq!(n1.point.x, 0.0);
         assert_eq!(n1.point.y, 0.0);
         assert_eq!(n1.support.tx, false);
@@ -58,7 +59,7 @@ mod tests {
         assert_eq!(n1.support.z_spring, 0.0);
         assert_eq!(n1.support.r_spring, 0.0);
 
-        let n2 = Node::new(VpPoint::new(0.0, 0.0), Support::new_hinged());
+        let n2 = Node::new(2, VpPoint::new(0.0, 0.0), Support::new_hinged());
         assert_eq!(n2.point.x, 0.0);
         assert_eq!(n2.point.y, 0.0);
         assert_eq!(n2.support.tx, true);
@@ -68,7 +69,7 @@ mod tests {
         assert_eq!(n2.support.z_spring, 0.0);
         assert_eq!(n2.support.r_spring, 0.0);
 
-        let n3 = Node::new_hinged(VpPoint::new(0.0, 0.0));
+        let n3 = Node::new_hinged(3, VpPoint::new(0.0, 0.0));
         assert_eq!(n3.point.x, 0.0);
         assert_eq!(n3.point.y, 0.0);
         assert_eq!(n3.support.tx, true);

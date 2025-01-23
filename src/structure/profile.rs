@@ -13,12 +13,12 @@ pub struct Profile {
     /// this doesn't mean that any points need to be at origo, just the bounding box. Points need
     /// to be in counterclockwise order.
     pub polygon: Polygon,
-    area : f64,
-    major_mom_of_inertia : f64,
-    minor_mom_of_inertia : f64,
-    pub weight_per_meter : f64,
-    pub torsional_constant : f64,
-    pub warping_constant : f64,
+    pub custom_area: f64,
+    pub custom_major_mom_of_inertia: f64,
+    pub custom_minor_mom_of_inertia: f64,
+    pub custom_weight_per_meter: f64,
+    pub custom_torsional_constant: f64,
+    pub custom_warping_constant: f64,
 }
 
 impl Profile {
@@ -41,7 +41,7 @@ impl Profile {
             name,
             height,
             width,
-            polygon: geometry2d::Polygon::new(vec![
+            polygon: Polygon::new(vec![
                 VpPoint::new(0.0, 0.0),
                 VpPoint::new(width, 0.0),
                 VpPoint::new(width, height),
@@ -53,7 +53,11 @@ impl Profile {
     }
     
     pub fn get_area(&self) -> f64 {
-        vputilslib::geometry2d::calculate_area(&self.polygon)
+        // Only the polygon type is calculated. Other types have constant values.
+        if self.profile_type == ProfileType::Polygon {
+            return geometry2d::calculate_area(&self.polygon);
+        }
+        self.custom_area
     }
     
     pub fn get_major_mom_of_inertia(&self) -> f64 {
@@ -61,7 +65,7 @@ impl Profile {
         if self.profile_type == ProfileType::Polygon {
             return self.calculate_major_second_mom_of_area()
         }
-        self.major_mom_of_inertia
+        self.custom_major_mom_of_inertia
     }
     
     /// Calculates the moment of inertia with the polygon of the profile.
@@ -104,17 +108,17 @@ pub enum ProfileType {
 impl Default for Profile {
     fn default() -> Self {
         Self {
-            profile_type: ProfileType::Polygon,
+            profile_type: ProfileType::Custom,
             name: "".to_string(),
             height: 0.0,
             width: 0.0,
             polygon: Polygon::new(vec![]),
-            area : 0.0,
-            major_mom_of_inertia : 0.0,
-            minor_mom_of_inertia : 0.0,
-            weight_per_meter : 0.0,
-            torsional_constant : 0.0,
-            warping_constant : 0.0,
+            custom_area: 0.0,
+            custom_major_mom_of_inertia: 0.0,
+            custom_minor_mom_of_inertia: 0.0,
+            custom_weight_per_meter: 0.0,
+            custom_torsional_constant: 0.0,
+            custom_warping_constant: 0.0,
         }
     }
 }

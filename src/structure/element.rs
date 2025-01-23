@@ -23,4 +23,7 @@ impl Element {
     pub fn get_length(&self) -> f64 {
         vputilslib::geometry2d::calc_length_between_points(&self.node_start.point, &self.node_end.point)
     }
+    pub fn get_rotation(&self) -> f64 {
+        vputilslib::geometry2d::get_angle_from_points(&self.node_start.point, &self.node_end.point)
+    }
 }

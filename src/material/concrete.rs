@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 pub struct Concrete {
     pub elastic_modulus: f64,
 }
