@@ -52,6 +52,7 @@ impl Profile {
         }
     }
     
+    /// Gets the area of the profile in square millimeters (mm²)
     pub fn get_area(&self) -> f64 {
         // Only the polygon type is calculated. Other types have constant values.
         if self.profile_type == ProfileType::Polygon {
@@ -59,8 +60,12 @@ impl Profile {
         }
         self.custom_area
     }
-    
-    pub fn get_major_mom_of_inertia(&self) -> f64 {
+
+    /// Calculates the second moment of area with the polygon of the profile. Value in millimeters 
+    /// (mm^4).
+    /// Returns the absolute value, so the order of points can be clockwise or counter clockwise.
+    /// For more info see https://en.wikipedia.org/wiki/Second_moment_of_area
+    pub fn get_major_second_mom_of_area(&self) -> f64 {
         // Only the polygon type is calculated. Other types have constant values.
         if self.profile_type == ProfileType::Polygon {
             return self.calculate_major_second_mom_of_area()
@@ -68,7 +73,8 @@ impl Profile {
         self.custom_major_mom_of_inertia
     }
     
-    /// Calculates the moment of inertia with the polygon of the profile.
+    /// Calculates the second moment of area with the polygon of the profile. Value in millimeters 
+    /// (mm^4).
     /// Returns the absolute value, so the order of points can be clockwise or counter clockwise.
     /// For more info see https://en.wikipedia.org/wiki/Second_moment_of_area
     pub fn calculate_major_second_mom_of_area(&self) -> f64 {
@@ -132,7 +138,7 @@ mod tests {
     #[test]
     fn major_mom_of_inertia() {
         let p1 = Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0);
-        let result = p1.get_major_mom_of_inertia();
+        let result = p1.get_major_second_mom_of_area();
         println!("P1 major_mom_of_inertia = {}", result);
         assert!((result-8333333.0) < 1.0);
 
@@ -144,7 +150,7 @@ mod tests {
             VpPoint::new(100.0, 0.0),
         ];
         let p2 = Profile::new("R100x100".to_string(), Polygon::new(polygon_points2));
-        let result = p2.get_major_mom_of_inertia();
+        let result = p2.get_major_second_mom_of_area();
         println!("P2 major_mom_of_inertia = {}", result);
         assert!((result-33333333.33) < 1.0);
 
@@ -156,7 +162,7 @@ mod tests {
             VpPoint::new(100.0, 0.0),
         ];
         let p2 = Profile::new("R100x100".to_string(), Polygon::new(polygon_points2_ccw));
-        let result = p2.get_major_mom_of_inertia();
+        let result = p2.get_major_second_mom_of_area();
         println!("P2 ccw major_mom_of_inertia = {}", result);
         assert!((result-33333333.33) < 1.0);
     }
