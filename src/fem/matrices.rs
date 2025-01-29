@@ -1,9 +1,21 @@
 ﻿use std::collections::HashMap;
 use nalgebra::DMatrix;
+use crate::fem::matrices;
 use crate::structure::element::{Element, Material};
 use crate::structure::node::Node;
 
-pub fn get_element_global_stiffness_matrix(element: &Element, nodes: &HashMap<i32, Node>) -> DMatrix<f64> {
+/// Gets the elements stiffness matrix in the global coordinate system.
+pub fn get_element_global_stiffness_matrix(e: &Element, nodes: &HashMap<i32, Node>) -> DMatrix<f64> {
+    let e_stiff_matrix = get_element_stiffness_matrix(&e, nodes);
+    let e_rotation_matrix = get_element_rotation_matrix(&e, nodes);
+    let e_rot_matrix_T = e_rotation_matrix.transpose();
+    let e_glob_stiff_matrix = e_rot_matrix_T * e_stiff_matrix * e_rotation_matrix;
+    e_glob_stiff_matrix
+}
+
+/// Gets the stiffness matrix of the element in elements local coordinate system.
+/// Do not use this directly in the calculations. Use get_element_global_stiffness_matrix
+pub fn get_element_stiffness_matrix(element: &Element, nodes: &HashMap<i32, Node>) -> DMatrix<f64> {
     let E = match &element.material {
         Material::Concrete(c) => {c.elastic_modulus}
         Material::Steel(s) => {s.elastic_modulus}
@@ -24,6 +36,7 @@ pub fn get_element_global_stiffness_matrix(element: &Element, nodes: &HashMap<i3
     ])
 }
 
+/// Gets the rotation matrix for the element. This matrix is in elements local coordinate system
 pub fn get_element_rotation_matrix(element: &Element, nodes: &HashMap<i32, Node>) -> DMatrix<f64> {
     let angle_radians = element.get_rotation(nodes).to_radians();
     let c = angle_radians.cos();

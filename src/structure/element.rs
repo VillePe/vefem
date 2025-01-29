@@ -58,7 +58,7 @@ mod tests {
             2,
             Profile {
                 name: "TEST".to_string(),
-                custom_major_mom_of_inertia: 200_000_000.0,
+                custom_major_sec_mom_of_area: 200_000_000.0,
                 custom_area: 6000.0,
                 ..Profile::default()
             },

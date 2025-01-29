@@ -15,7 +15,7 @@ fn create_joined_stiffness_matrix(elements: Vec<Element>, nodes: &HashMap<i32, N
     // println!("Row width: {}", row_width);
     let mut matrix_vector = DMatrix::from_row_slice(row_width, row_width, &vec![0.0; supp_count*supp_count*3*3]);
     for elem in elements {
-        let e_glob_stiff_matrix = get_global_stiffness_matrix(&elem, nodes);
+        let e_glob_stiff_matrix = matrices::get_element_global_stiffness_matrix(&elem, nodes);
         // The index of the start node
         let s = (elem.node_start-1) as usize;
         // The index of the end node
@@ -47,14 +47,6 @@ fn create_joined_stiffness_matrix(elements: Vec<Element>, nodes: &HashMap<i32, N
     matrix_vector
 }
 
-fn get_global_stiffness_matrix(e: &Element, nodes: &HashMap<i32, Node>) -> DMatrix<f64> {
-    let e_stiff_matrix = matrices::get_element_global_stiffness_matrix(&e, nodes);
-    let e_rotation_matrix = matrices::get_element_rotation_matrix(&e, nodes);
-    let e_rot_matrix_T = e_rotation_matrix.transpose();
-    let e_glob_stiff_matrix = e_rot_matrix_T * e_stiff_matrix * e_rotation_matrix;
-    e_glob_stiff_matrix
-}
-
 #[cfg(test)]
 mod tests {
     use std::thread::sleep;
@@ -84,13 +76,13 @@ mod tests {
             2,
             Profile {
                 name: "TEST".to_string(),
-                custom_major_mom_of_inertia: 200_000_000.0,
+                custom_major_sec_mom_of_area: 200_000_000.0,
                 custom_area: 6000.0,
                 ..Profile::default()
             },
             Material::Steel(Steel::new(200.0)),
         );
-        let e_glob_stiff_matrix = get_global_stiffness_matrix(&e, &nodes) / 200.0;
+        let e_glob_stiff_matrix = matrices::get_element_global_stiffness_matrix(&e, &nodes) / 200.0;
         println!("{}", e_glob_stiff_matrix);
         assert!(relative_eq!(e_glob_stiff_matrix[(0,0)], 0.6451, max_relative=0.001));
         assert!(relative_eq!(e_glob_stiff_matrix[(0,1)], 0.2590, max_relative=0.001));
@@ -135,7 +127,7 @@ mod tests {
             2,
             Profile {
                 name: "TEST".to_string(),
-                custom_major_mom_of_inertia: 200_000_000.0,
+                custom_major_sec_mom_of_area: 200_000_000.0,
                 custom_area: 6000.0,
                 ..Profile::default()
             },
@@ -146,7 +138,7 @@ mod tests {
             3,
             Profile {
                 name: "TEST".to_string(),
-                custom_major_mom_of_inertia: 200_000_000.0,
+                custom_major_sec_mom_of_area: 200_000_000.0,
                 custom_area: 6000.0,
                 ..Profile::default()
             },
@@ -191,7 +183,7 @@ mod tests {
             2,
             Profile {
                 name: "TEST".to_string(),
-                custom_major_mom_of_inertia: 7.763e07,
+                custom_major_sec_mom_of_area: 7.763e07,
                 custom_area: 7.680e03,
                 ..Profile::default()
             },
@@ -202,7 +194,7 @@ mod tests {
             4,
             Profile {
                 name: "TEST".to_string(),
-                custom_major_mom_of_inertia: 1.412e09,
+                custom_major_sec_mom_of_area: 1.412e09,
                 custom_area: 2.265e04,
                 ..Profile::default()
             },
@@ -213,7 +205,7 @@ mod tests {
             3,
             Profile {
                 name: "TEST".to_string(),
-                custom_major_mom_of_inertia: 7.763e07,
+                custom_major_sec_mom_of_area: 7.763e07,
                 custom_area: 7.680e03,
                 ..Profile::default()
             },

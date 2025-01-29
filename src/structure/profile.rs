@@ -14,14 +14,17 @@ pub struct Profile {
     /// to be in counterclockwise order.
     pub polygon: Polygon,
     pub custom_area: f64,
-    pub custom_major_mom_of_inertia: f64,
-    pub custom_minor_mom_of_inertia: f64,
+    pub custom_major_sec_mom_of_area: f64,
+    pub custom_minor_sec_mom_of_area: f64,
     pub custom_weight_per_meter: f64,
     pub custom_torsional_constant: f64,
     pub custom_warping_constant: f64,
 }
 
 impl Profile {
+    
+    /// Creates new profile with the given polygon. Calculates the height and width from
+    /// the bounding box of the polygon
     pub fn new(name: String, polygon: Polygon) -> Self {
         // the bounding box
         let bb : geometry2d::Rectangle = rectangle::bounding_box(&polygon).unwrap();
@@ -35,6 +38,7 @@ impl Profile {
         }
     }
     
+    /// Creates new rectangular profile
     pub fn new_rectangle(name: String, height: f64, width: f64) -> Self {
         Self {
             profile_type: ProfileType::Polygon,
@@ -70,7 +74,7 @@ impl Profile {
         if self.profile_type == ProfileType::Polygon {
             return self.calculate_major_second_mom_of_area()
         }
-        self.custom_major_mom_of_inertia
+        self.custom_major_sec_mom_of_area
     }
     
     /// Calculates the second moment of area with the polygon of the profile. Value in millimeters 
@@ -120,8 +124,8 @@ impl Default for Profile {
             width: 0.0,
             polygon: Polygon::new(vec![]),
             custom_area: 0.0,
-            custom_major_mom_of_inertia: 0.0,
-            custom_minor_mom_of_inertia: 0.0,
+            custom_major_sec_mom_of_area: 0.0,
+            custom_minor_sec_mom_of_area: 0.0,
             custom_weight_per_meter: 0.0,
             custom_torsional_constant: 0.0,
             custom_warping_constant: 0.0,
@@ -136,10 +140,10 @@ mod tests {
     use super::*;
 
     #[test]
-    fn major_mom_of_inertia() {
+    fn major_second_mom_of_area() {
         let p1 = Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0);
         let result = p1.get_major_second_mom_of_area();
-        println!("P1 major_mom_of_inertia = {}", result);
+        println!("P1 major_second_mom_of_area = {}", result);
         assert!((result-8333333.0) < 1.0);
 
         let polygon_points2 = vec![
@@ -151,7 +155,7 @@ mod tests {
         ];
         let p2 = Profile::new("R100x100".to_string(), Polygon::new(polygon_points2));
         let result = p2.get_major_second_mom_of_area();
-        println!("P2 major_mom_of_inertia = {}", result);
+        println!("P2 major_second_mom_of_area = {}", result);
         assert!((result-33333333.33) < 1.0);
 
         let polygon_points2_ccw = vec![
@@ -163,7 +167,7 @@ mod tests {
         ];
         let p2 = Profile::new("R100x100".to_string(), Polygon::new(polygon_points2_ccw));
         let result = p2.get_major_second_mom_of_area();
-        println!("P2 ccw major_mom_of_inertia = {}", result);
+        println!("P2 ccw major_second_mom_of_area = {}", result);
         assert!((result-33333333.33) < 1.0);
     }
 }

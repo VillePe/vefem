@@ -9,10 +9,13 @@ pub struct Node {
 }
 
 impl Node {
+
+    /// Creates new node
     pub fn new(number: i32, point: VpPoint, support: Support) -> Self {
         Self { number, point, support }
     }
 
+    /// Creates new node that has the hinged support lock values (translations locked, rotation not locked)
     pub fn new_hinged(number: i32, point: VpPoint) -> Self {
         Self{number, point, support: Support::new_hinged()}
     }
@@ -28,10 +31,13 @@ pub struct Support {
     pub r_spring: f64,
 }
 impl Support {
+
+    /// Creates new support that has no locks set (translations and rotation are not locked)
     pub fn new() -> Self {
         Self{..Default::default()}
     }
 
+    /// Creates new support that is hinged (translations locked, rotation not locked)
     pub fn new_hinged() -> Self {
         Self{tx:true, tz:true, ..Default::default()}
     }
