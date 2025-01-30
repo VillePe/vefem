@@ -1,4 +1,6 @@
-﻿use std::collections::HashMap;
+﻿#![allow(dead_code)]
+
+use std::collections::HashMap;
 use nalgebra::DMatrix;
 use crate::structure::element::{Element, Material};
 use crate::structure::node::Node;

@@ -1,8 +1,8 @@
 ﻿#![allow(non_snake_case)]
+#![allow(dead_code)]
 
 use std::collections::HashMap;
 use crate::structure::element::Element;
-use crate::structure::element::Material;
 use nalgebra::{DMatrix};
 use crate::structure::node::Node;
 
@@ -49,8 +49,6 @@ fn create_joined_stiffness_matrix(elements: Vec<Element>, nodes: &HashMap<i32, N
 
 #[cfg(test)]
 mod tests {
-    use std::thread::sleep;
-    use std::time::Duration;
     use super::*;
     use crate::material::steel::Steel;
     use crate::structure::node::Node;
@@ -58,6 +56,7 @@ mod tests {
     use approx::relative_eq;
     use vputilslib::geometry2d;
     use vputilslib::geometry2d::VpPoint;
+    use crate::structure::element::Material;
 
     #[test]
     fn rotated_stiffness_matrix() {

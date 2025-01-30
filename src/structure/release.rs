@@ -1,4 +1,6 @@
-﻿#[derive(Debug)]
+﻿#![allow(dead_code)]
+
+#[derive(Debug)]
 pub struct Release {
     pub tx: bool,
     pub tz: bool,
