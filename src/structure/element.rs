@@ -1,9 +1,11 @@
 ﻿#![allow(dead_code)]
 
-use std::collections::HashMap;
-use crate::structure::node::Node;
+use crate::material::steel::Steel;
 use crate::material::*;
+use crate::structure::node::Node;
 use crate::structure::profile::Profile;
+use std::collections::HashMap;
+use crate::structure::release::Release;
 
 pub enum Material {
     Concrete(concrete::Concrete),
@@ -16,11 +18,18 @@ pub struct Element {
     pub node_end: i32,
     pub material: Material,
     pub profile: Profile,
+    pub releases: Release,
 }
 
 impl Element {
     pub fn new(node_start: i32, node_end: i32, profile: Profile, material: Material) -> Self {
-        Self{node_start, node_end, profile, material}
+        Self {
+            node_start,
+            node_end,
+            profile,
+            material,
+            releases: Release::new(),
+        }
     }
 
     /// Gets the elements length in millimeters (mm)
@@ -38,14 +47,26 @@ impl Element {
     }
 }
 
+impl Default for Element {
+    fn default() -> Self {
+        Self {
+            node_start: 1,
+            node_end: 2,
+            profile: Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
+            material: Material::Steel(Steel::new(210000.0)),
+            releases: Release::new(),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use std::collections::HashMap;
-    use vputilslib::geometry2d::VpPoint;
     use crate::material::steel::Steel;
     use crate::structure::element::{Element, Material};
     use crate::structure::node::Node;
     use crate::structure::profile::Profile;
+    use std::collections::HashMap;
+    use vputilslib::geometry2d::VpPoint;
 
     #[test]
     fn element_length() {

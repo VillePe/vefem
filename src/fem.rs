@@ -3,7 +3,7 @@
 use std::collections::HashMap;
 use crate::structure::element::Element;
 use crate::structure::element::Material;
-use nalgebra::{DMatrix, Matrix};
+use nalgebra::{DMatrix};
 use crate::structure::node::Node;
 
 mod fem_handler;
