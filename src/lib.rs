@@ -1,8 +1,8 @@
-mod fem;
-mod loads;
-mod models;
-mod structure;
-mod material;
+pub mod fem;
+pub mod loads;
+pub mod models;
+pub mod structure;
+pub mod material;
 
 pub fn add(left: u64, right: u64) -> u64 {
     left + right
