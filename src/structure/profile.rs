@@ -99,7 +99,7 @@ impl Profile {
             }
             next_x = next_x - centroid.x;
             next_y = next_y - centroid.y;
-            sum += (cur_x*next_y - next_x*cur_y)*(cur_x.powi(2) + cur_x*next_x+next_x.powi(2));
+            sum += (cur_x*next_y - next_x*cur_y)*(cur_y.powi(2) + cur_y*next_y+next_y.powi(2));
         }
         sum.abs() / 12.0
     }
@@ -144,7 +144,7 @@ mod tests {
         let p1 = Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0);
         let result = p1.get_major_second_mom_of_area();
         println!("P1 major_second_mom_of_area = {}", result);
-        assert!((result-8333333.0) < 1.0);
+        assert!((result-8333333.0).abs() < 1.0);
 
         let polygon_points2 = vec![
             VpPoint::new(100.0, 0.0),
@@ -156,7 +156,7 @@ mod tests {
         let p2 = Profile::new("R100x100".to_string(), Polygon::new(polygon_points2));
         let result = p2.get_major_second_mom_of_area();
         println!("P2 major_second_mom_of_area = {}", result);
-        assert!((result-33333333.33) < 1.0);
+        assert!((result-33333333.33).abs() < 1.0);
 
         let polygon_points2_ccw = vec![
             VpPoint::new(100.0, 0.0),
@@ -168,6 +168,24 @@ mod tests {
         let p2 = Profile::new("R100x100".to_string(), Polygon::new(polygon_points2_ccw));
         let result = p2.get_major_second_mom_of_area();
         println!("P2 ccw major_second_mom_of_area = {}", result);
-        assert!((result-33333333.33) < 1.0);
+        assert!((result-33333333.33).abs() < 1.0);
+
+        let polygon_points3 = vec![
+            VpPoint::new(0.0, 0.0),
+            VpPoint::new(0.0, 200.0),
+            VpPoint::new(100.0, 200.0),
+            VpPoint::new(100.0, 0.0),
+            VpPoint::new(0.0, 0.0),
+        ];
+        let p3 = Profile::new("R200x100".to_string(), Polygon::new(polygon_points3));
+        let result = p3.get_major_second_mom_of_area();
+        println!("P3 ccw major_second_mom_of_area = {}", result);
+        assert!((result-66666666.666666666).abs() < 1.0);
+
+        
+        let p4 = Profile::new_rectangle("R200x100".to_string(), 200.0, 100.0);
+        let result = p4.get_major_second_mom_of_area();
+        println!("P4 major_second_mom_of_area = {}", result);
+        assert!((result-66666666.666666666).abs() < 1.0);
     }
 }
