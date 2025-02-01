@@ -40,7 +40,7 @@ pub fn get_element_stiffness_matrix(element: &Element, nodes: &HashMap<i32, Node
 }
 
 pub fn create_joined_stiffness_matrix(
-    elements: Vec<&Element>,
+    elements: &Vec<Element>,
     nodes: &HashMap<i32, Node>,
 ) -> DMatrix<f64> {
     let supp_count = nodes.len();
