@@ -1,3 +1,2 @@
-﻿pub mod lineload;
-pub mod point_load;
+﻿pub mod load;
 mod load_combination;

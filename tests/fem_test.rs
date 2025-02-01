@@ -1,10 +1,11 @@
 ﻿#[cfg(test)]
 mod tests {
     use std::collections::HashMap;
-    use idfem::material::steel::Steel;
-    use idfem::structure::element::{Element, Material};
-    use idfem::structure::node::Node;
-    use idfem::structure::profile::Profile;
+    use idfem::material::Steel;
+    use idfem::structure::{Element};
+    use idfem::structure::element::MaterialType;
+    use idfem::structure::Node;
+    use idfem::structure::Profile;
     use approx::relative_eq;
     use vputilslib::geometry2d;
     use vputilslib::geometry2d::VpPoint;
@@ -30,9 +31,9 @@ mod tests {
                 custom_area: 6000.0,
                 ..Profile::default()
             },
-            Material::Steel(Steel::new(200.0)),
+            MaterialType::Steel(Steel::new(200.0)),
         );
-        let e_glob_stiff_matrix = idfem::fem::matrices::get_element_global_stiffness_matrix(&e, &nodes) / 200.0;
+        let e_glob_stiff_matrix = idfem::fem::stiffness::get_element_global_stiffness_matrix(&e, &nodes) / 200.0;
         println!("{}", e_glob_stiff_matrix);
         assert!(relative_eq!(
             e_glob_stiff_matrix[(0, 0)],
@@ -140,7 +141,7 @@ mod tests {
     }
 
     #[test]
-    fn joined_stiffness_matrix_FES() {
+    fn joined_stiffness_matrix_fes() {
         let end_point: VpPoint = geometry2d::rotate_point(
             VpPoint::new(0.0, 0.0),
             VpPoint::new(8000.0, 0.0),
@@ -164,7 +165,7 @@ mod tests {
                 custom_area: 6000.0,
                 ..Profile::default()
             },
-            Material::Steel(Steel::new(200.0)),
+            MaterialType::Steel(Steel::new(200.0)),
         );
         let e2: Element = Element::new(
             2,
@@ -176,9 +177,9 @@ mod tests {
                 ..Profile::default()
             },
             // Note the elastic modulus of 200. Comes from the source material
-            Material::Steel(Steel::new(200.0)),
+            MaterialType::Steel(Steel::new(200.0)),
         );
-        let joined = idfem::fem::create_joined_stiffness_matrix(vec![&e1, &e2], &nodes);
+        let joined = idfem::fem::stiffness::create_joined_stiffness_matrix(&vec![e1, e2], &nodes);
         for i in 0..9 {
             for j in 0..9 {
                 // Note the multiplication of 200. Comes from the source material
@@ -237,7 +238,7 @@ mod tests {
     }
 
     #[test]
-    fn joined_stiffness_matrix_Harj() {
+    fn joined_stiffness_matrix_fem_matriisit() {
         // See theory folders xls file (text is in finnish)
 
         let mut nodes: HashMap<i32, Node> = HashMap::new();
@@ -255,77 +256,127 @@ mod tests {
         let e1: Element = Element::new(
             1,
             2,
-            Profile {
-                name: "TEST".to_string(),
-                custom_major_sec_mom_of_area: 7.763e07,
-                custom_area: 7.680e03,
-                ..Profile::default()
-            },
-            Material::Steel(Steel::new(210e3)),
+            Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
+            MaterialType::Steel(Steel::new(210e3)),
         );
         let e2: Element = Element::new(
             2,
             4,
-            Profile {
-                name: "TEST".to_string(),
-                custom_major_sec_mom_of_area: 1.412e09,
-                custom_area: 2.265e04,
-                ..Profile::default()
-            },
-            Material::Steel(Steel::new(210e3)),
+            Profile::new_rectangle("R200x100".to_string(), 200.0, 100.0),
+            MaterialType::Steel(Steel::new(210e3)),
         );
         let e3: Element = Element::new(
             4,
             3,
-            Profile {
-                name: "TEST".to_string(),
-                custom_major_sec_mom_of_area: 7.763e07,
-                custom_area: 7.680e03,
-                ..Profile::default()
-            },
-            Material::Steel(Steel::new(210e3)),
+            Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
+            MaterialType::Steel(Steel::new(210e3)),
         );
 
-        let joined = idfem::fem::create_joined_stiffness_matrix(vec![&e1, &e2, &e3], &nodes);
-        // for i in 0..12 {
-        //     for j in 0..12 {
-        //         let val = joined[(i,j)];
-        //         if val.abs() < 0.001 {
-        //             print!("{:>9.0}, ",  joined[(i,j)]);
-        //         } else {
-        //             print!("{:>9.02e}, ", joined[(i,j)]);
-        //         }
-        //     }
-        //     println!();
-        // }
+        let joined = idfem::fem::stiffness::create_joined_stiffness_matrix(&vec![e1, e2, e3], &nodes);
+        for i in 0..12 {
+            for j in 0..12 {
+                let val = joined[(i,j)];
+                if val.abs() < 0.001 {
+                    print!("{:>9.0}, ",  joined[(i,j)]);
+                } else {
+                    print!("{:>9.02e}, ", joined[(i,j)]);
+                }
+            }
+            println!();
+        }
 
         // Test the matrix cells that overlap (the same node for both elements)
-        assert!(relative_eq!(joined[(3, 3)], 7.96e05, max_relative = 0.01));
-        assert!((joined[(4, 3)].round() == 0.0));
-        assert!(relative_eq!(joined[(5, 3)], 6.11e06, max_relative = 0.01));
-        assert!((joined[(3, 4)].round() == 0.0));
-        assert!(relative_eq!(joined[(4, 4)], 4.20e05, max_relative = 0.01));
-        assert!(relative_eq!(joined[(5, 4)], 4.94e07, max_relative = 0.01));
-        assert!(relative_eq!(joined[(3, 5)], 6.11e06, max_relative = 0.01));
-        assert!(relative_eq!(joined[(4, 5)], 4.94e07, max_relative = 0.01));
-        assert!(relative_eq!(joined[(5, 5)], 2.14e11, max_relative = 0.01));
+        assert!(relative_eq!(joined[(3, 3)], 7.00e05, max_relative = 0.01));
+        assert!((            joined[(4, 3)].round() == 0.0));
+        assert!(relative_eq!(joined[(5, 3)], 6.56e05, max_relative = 0.01));
+        assert!((            joined[(3, 4)].round() == 0.0));
+        assert!(relative_eq!(joined[(4, 4)], 5.26e05, max_relative = 0.01));
+        assert!(relative_eq!(joined[(5, 4)], 2.33e06, max_relative = 0.01));
+        assert!(relative_eq!(joined[(3, 5)], 6.56e05, max_relative = 0.01));
+        assert!(relative_eq!(joined[(4, 5)], 2.33e06, max_relative = 0.01));
+        assert!(relative_eq!(joined[(5, 5)], 1.11e10, max_relative = 0.01));
 
-        assert!(relative_eq!(joined[(9, 9)], 7.96e05, max_relative = 0.01));
-        assert!((joined[(10, 9)].round() == 0.0));
-        assert!(relative_eq!(joined[(11, 9)], 6.11e06, max_relative = 0.01));
-        assert!((joined[(9, 10)].round() == 0.0));
-        assert!(relative_eq!(joined[(10, 10)], 4.20e05, max_relative = 0.01));
-        assert!(relative_eq!(
-            joined[(11, 10)],
-            -4.94e07,
-            max_relative = 0.01
-        ));
-        assert!(relative_eq!(joined[(9, 11)], 6.11e06, max_relative = 0.01));
-        assert!(relative_eq!(
-            joined[(10, 11)],
-            -4.94e07,
-            max_relative = 0.01
-        ));
-        assert!(relative_eq!(joined[(11, 11)], 2.14e11, max_relative = 0.01));
+        assert!(relative_eq!(joined[(9, 9)], 7.00e05, max_relative = 0.01));
+        assert!((            joined[(10, 9)].round() == 0.0));
+        assert!(relative_eq!(joined[(11, 9)], 6.56e05, max_relative = 0.01));
+        assert!((            joined[(9, 10)].round() == 0.0));
+        assert!(relative_eq!(joined[(10, 10)], 5.26e05, max_relative = 0.01));
+        assert!(relative_eq!(joined[(11, 10)], -2.33e06, max_relative = 0.01));
+        assert!(relative_eq!(joined[(9, 11)], 6.56e05, max_relative = 0.01));
+        assert!(relative_eq!(joined[(10, 11)], -2.33e06, max_relative = 0.01));
+        assert!(relative_eq!(joined[(11, 11)], 1.11e10, max_relative = 0.01));
+    }
+
+    #[test]
+    fn joined_stiffness_matrix_fem_matriisit_releases() {
+        // See theory folders xls file (text is in finnish)
+
+        let mut nodes: HashMap<i32, Node> = HashMap::new();
+        nodes.insert(1, Node::new_hinged(1, VpPoint::new(0.0, 0.0)));
+        nodes.insert(2, Node::new_hinged(2, VpPoint::new(0.0, 4000.0)));
+        nodes.insert(3, Node::new_hinged(3, VpPoint::new(nodes[&2].point.x + 6000.0, 0.0)));
+        nodes.insert(4, Node::new_hinged(4, VpPoint::new(nodes[&3].point.x, nodes[&2].point.y)));
+
+        let mut e1: Element = Element::new(
+            1,
+            2,
+            Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
+            MaterialType::Steel(Steel::new(210e3)),
+        );
+        let e2: Element = Element::new(
+            2,
+            4,
+            Profile::new_rectangle("R200x100".to_string(), 200.0, 100.0),
+            MaterialType::Steel(Steel::new(210e3)),
+        );
+        let mut e3: Element = Element::new(
+            3,
+            4,
+            Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
+            MaterialType::Steel(Steel::new(210e3)),
+        );
+
+        e1.releases.e_ry = true;
+        e3.releases.e_ry = true;
+        
+        let elements = vec![e1, e2, e3];
+
+        let joined = idfem::fem::stiffness::create_joined_stiffness_matrix(&elements, &nodes);
+        
+        for i in 0..14 {
+            for j in 0..14 {
+                let val = joined[(i,j)];
+                if val.abs() < 0.001 {
+                    print!("{:>9.0}, ",  joined[(i,j)]);
+                } else {
+                    print!("{:>9.02e}, ", joined[(i,j)]);
+                }
+            }
+            println!();
+        }
+
+        // Test the matrix cells that overlap (the same node for both elements)
+        // and the cells that are moved because of the release
+        assert!(relative_eq!(joined[(3, 3)], 7.00e05, max_relative = 0.01));
+        assert!(relative_eq!(joined[(4, 4)], 5.26e05, max_relative = 0.01));
+        assert!((            joined[(3, 4)].round() == 0.0));
+
+        assert!(relative_eq!(joined[(9, 9)], 7.00e05, max_relative = 0.01));
+        assert!(relative_eq!(joined[(10, 10)], 5.26e05, max_relative = 0.01));
+        assert!((            joined[(9, 10)].round() == 0.0));
+
+        assert!(relative_eq!(joined[(0, 12)], -6.56e05, max_relative = 0.01));
+        assert!(relative_eq!(joined[(2, 12)], 8.75e08, max_relative = 0.01));
+        assert!(relative_eq!(joined[(3, 12)], 6.56e05, max_relative = 0.01));
+        assert!(relative_eq!(joined[(12, 12)], 1.75e09, max_relative = 0.01));
+
+        assert!(relative_eq!(joined[(12, 0)], -6.56e05, max_relative = 0.01));
+        assert!(relative_eq!(joined[(12, 2)], 8.75e08, max_relative = 0.01));
+        assert!(relative_eq!(joined[(12, 3)], 6.56e05, max_relative = 0.01));
+
+        assert!(relative_eq!(joined[(6, 13)], -6.56e05, max_relative = 0.01));
+        assert!(relative_eq!(joined[(8, 13)], 8.75e08, max_relative = 0.01));
+        assert!(relative_eq!(joined[(9, 13)], 6.56e05, max_relative = 0.01));
+        assert!(relative_eq!(joined[(13, 13)], 1.75e09, max_relative = 0.01));
     }
 }

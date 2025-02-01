@@ -1,6 +1,5 @@
 pub mod fem;
 pub mod loads;
-pub mod models;
 pub mod structure;
 pub mod material;
 

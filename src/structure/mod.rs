@@ -1,5 +1,10 @@
 ﻿pub mod element;
-pub mod node;
-pub mod profile;
-pub mod release;
+mod node;
+mod profile;
+mod release;
 pub mod utils;
+
+pub use element::Element;
+pub use node::Node;
+pub use profile::Profile;
+pub use release::Release;

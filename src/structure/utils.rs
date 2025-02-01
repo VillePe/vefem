@@ -1,6 +1,6 @@
 ﻿use crate::structure::element::Element;
 
-pub fn get_element_release_count(elements: &Vec<&Element>) -> usize {
+pub fn get_element_release_count(elements: &Vec<Element>) -> usize {
     let mut count = 0;
     for e in elements {
         if e.releases.s_tx { count += 1; }

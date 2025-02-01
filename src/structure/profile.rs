@@ -4,20 +4,43 @@ use vputilslib::geometry2d;
 use vputilslib::geometry2d::rectangle;
 
 pub struct Profile {
+    /// The profile type
     pub profile_type: ProfileType,
+    /// Name for the profile. If profile type is set to StandardProfile, the values are read from profile
+    /// database with the name
     pub name: String,
+    /// The height of the bounding box of the profile
     pub height: f64,
+    /// The width of the bounding box of the profile
     pub width: f64,
     /// Closed polygon for the profile (start and end points are at the same location).
     /// The bottom left point of the bounding box needs to be placed at the origo (0,0). Note that
     /// this doesn't mean that any points need to be at origo, just the bounding box. Points need
     /// to be in counterclockwise order.
+    ///
+    /// For example
+    /// ```
+    /// use vputilslib::geometry2d::{Polygon, VpPoint};
+    ///  Polygon::new(vec![
+    ///     VpPoint::new(0.0, 0.0),
+    ///     VpPoint::new(100.0, 0.0),
+    ///     VpPoint::new(100.0, 200.0),
+    ///     VpPoint::new(0.0, 200.0),
+    ///     VpPoint::new(0.0, 0.0),
+    ///  ])
+    /// ```
     pub polygon: Polygon,
+    /// Custom area for StandardProfile or Custom profile types
     pub custom_area: f64,
+    /// Custom major second moment of area for StandardProfile or Custom profile types
     pub custom_major_sec_mom_of_area: f64,
+    /// Custom minor second moment of area for StandardProfile or Custom profile types
     pub custom_minor_sec_mom_of_area: f64,
+    /// Custom weight for StandardProfile or Custom profile types
     pub custom_weight_per_meter: f64,
+    /// Custom torsional constant for StandardProfile or Custom profile types
     pub custom_torsional_constant: f64,
+    /// Custom warping constant for StandardProfile or Custom profile types
     pub custom_warping_constant: f64,
 }
 
@@ -68,7 +91,7 @@ impl Profile {
     /// Calculates the second moment of area with the polygon of the profile. Value in millimeters 
     /// (mm^4).
     /// Returns the absolute value, so the order of points can be clockwise or counter clockwise.
-    /// For more info see https://en.wikipedia.org/wiki/Second_moment_of_area
+    /// For more info see <https://en.wikipedia.org/wiki/Second_moment_of_area>
     pub fn get_major_second_mom_of_area(&self) -> f64 {
         // Only the polygon type is calculated. Other types have constant values.
         if self.profile_type == ProfileType::Polygon {
@@ -80,7 +103,7 @@ impl Profile {
     /// Calculates the second moment of area with the polygon of the profile. Value in millimeters 
     /// (mm^4).
     /// Returns the absolute value, so the order of points can be clockwise or counter clockwise.
-    /// For more info see https://en.wikipedia.org/wiki/Second_moment_of_area
+    /// For more info see <https://en.wikipedia.org/wiki/Second_moment_of_area>
     pub fn calculate_major_second_mom_of_area(&self) -> f64 {
         // Use the centroid to calculate the second moment of area about it
         let centroid = geometry2d::centroid_from_polygon(&self.polygon);

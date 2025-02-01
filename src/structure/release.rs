@@ -27,11 +27,11 @@ impl Release {
     pub fn get_release_value(&self, i: usize) -> Option<bool> {
         match i {
             0 => Some(self.s_tx),
-            1 => Some(self.s_tx),
-            2 => Some(self.s_tx),
-            3 => Some(self.s_tx),
-            4 => Some(self.s_tx),
-            5 => Some(self.s_tx),
+            1 => Some(self.s_tz),
+            2 => Some(self.s_ry),
+            3 => Some(self.e_tx),
+            4 => Some(self.e_tz),
+            5 => Some(self.e_ry),
             _ => None,
         }
     }
@@ -40,21 +40,19 @@ impl Release {
         self.s_tx || self.s_tz || self.s_ry
     }
 
-    pub fn end_release_any(&self) -> bool {
-        self.s_tx || self.s_tz || self.s_ry
-    }
+    pub fn end_release_any(&self) -> bool { self.e_tx || self.e_tz || self.e_ry }
 
     pub fn start_release_count(&self) -> usize {
         let tx = if self.s_tx { 1 } else { 0 };
-        let tz = if self.s_tx { 1 } else { 0 };
-        let ry = if self.s_tx { 1 } else { 0 };
+        let tz = if self.s_tz { 1 } else { 0 };
+        let ry = if self.s_ry { 1 } else { 0 };
         tx + tz + ry
     }
 
     pub fn end_release_count(&self) -> usize {
         let tx = if self.e_tx { 1 } else { 0 };
-        let tz = if self.e_tx { 1 } else { 0 };
-        let ry = if self.e_tx { 1 } else { 0 };
+        let tz = if self.e_tz { 1 } else { 0 };
+        let ry = if self.e_ry { 1 } else { 0 };
         tx + tz + ry
     }
 }

@@ -50,7 +50,6 @@ impl Default for Support {
 
 #[cfg(test)]
 mod tests {
-    use crate::structure::node;
     use super::*;
 
     #[test]

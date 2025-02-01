@@ -1,28 +1,27 @@
 ﻿#![allow(dead_code)]
 
-use crate::material::steel::Steel;
 use crate::material::*;
 use crate::structure::node::Node;
 use crate::structure::profile::Profile;
 use std::collections::HashMap;
 use crate::structure::release::Release;
 
-pub enum Material {
-    Concrete(concrete::Concrete),
-    Steel(steel::Steel),
-    Timber(timber::Timber),
+pub enum MaterialType {
+    Concrete(Concrete),
+    Steel(Steel),
+    Timber(Timber),
 }
 
 pub struct Element {
     pub node_start: i32,
     pub node_end: i32,
-    pub material: Material,
+    pub material: MaterialType,
     pub profile: Profile,
     pub releases: Release,
 }
 
 impl Element {
-    pub fn new(node_start: i32, node_end: i32, profile: Profile, material: Material) -> Self {
+    pub fn new(node_start: i32, node_end: i32, profile: Profile, material: MaterialType) -> Self {
         Self {
             node_start,
             node_end,
@@ -53,7 +52,7 @@ impl Default for Element {
             node_start: 1,
             node_end: 2,
             profile: Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
-            material: Material::Steel(Steel::new(210000.0)),
+            material: MaterialType::Steel(Steel::new(210000.0)),
             releases: Release::new(),
         }
     }
@@ -61,8 +60,8 @@ impl Default for Element {
 
 #[cfg(test)]
 mod tests {
-    use crate::material::steel::Steel;
-    use crate::structure::element::{Element, Material};
+    use crate::material::*;
+    use crate::structure::element::{Element, MaterialType};
     use crate::structure::node::Node;
     use crate::structure::profile::Profile;
     use std::collections::HashMap;
@@ -83,7 +82,7 @@ mod tests {
                 custom_area: 6000.0,
                 ..Profile::default()
             },
-            Material::Steel(Steel::new(200.0)),
+            MaterialType::Steel(Steel::new(200.0)),
         );
         assert_eq!(e1.get_length(&nodes), 4000.0);
     }
