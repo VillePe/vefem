@@ -195,7 +195,7 @@ checksum = "a210d160f08b701c8721ba1c726c11662f877ea6b7094007e1ca9a1041945034"
 [[package]]
 name = "vputilslib"
 version = "0.1.0"
-source = "git+https://github.com/VillePe/rust-vputilslib?branch=dev#df8126a332d86c5d639f80f9912976ad2b586c2b"
+source = "git+https://github.com/VillePe/rust-vputilslib?branch=dev#7282d3692f3aa8c0e1d5fea68d22d6ac4f9aad71"
 
 [[package]]
 name = "wide"
