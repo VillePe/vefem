@@ -4,8 +4,10 @@ pub struct Load {
     /// Name for the load. Does not need to be unique. Load combinations are created by using the load names.
     pub name : String,
     /// The numbers for which this load is applied to. Different elements are separated by , (comma)
-    /// Can be used with <S..E> (double dots with numbers before and after it) to imply that elements 
+    /// can be used with <S..E> (double dots with numbers before and after it) to imply that elements 
     /// from 'S' to 'E' are included (the element with number 'E' is also included) 
+    /// 
+    /// If all load should be linked to all elements, -1 can be used (e.g. for self weight load) 
     pub element_numbers: String,
     /// The load type for the load. Controls how the load needs to be handled.
     pub load_type : LoadType,

@@ -13,6 +13,7 @@ pub enum MaterialType {
 }
 
 pub struct Element {
+    pub number: i32,
     pub node_start: i32,
     pub node_end: i32,
     pub material: MaterialType,
@@ -21,8 +22,9 @@ pub struct Element {
 }
 
 impl Element {
-    pub fn new(node_start: i32, node_end: i32, profile: Profile, material: MaterialType) -> Self {
+    pub fn new(number : i32, node_start: i32, node_end: i32, profile: Profile, material: MaterialType) -> Self {
         Self {
+            number,
             node_start,
             node_end,
             profile,
@@ -49,6 +51,7 @@ impl Element {
 impl Default for Element {
     fn default() -> Self {
         Self {
+            number: -1,
             node_start: 1,
             node_end: 2,
             profile: Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
@@ -74,6 +77,7 @@ mod tests {
         nodes.insert(2, Node::new_hinged(2, VpPoint::new(0.0, 4000.0)));
 
         let e1: Element = Element::new(
+            1,
             1,
             2,
             Profile {

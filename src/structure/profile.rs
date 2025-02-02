@@ -21,13 +21,13 @@ pub struct Profile {
     /// For example
     /// ```
     /// use vputilslib::geometry2d::{Polygon, VpPoint};
-    ///  Polygon::new(vec![
+    ///  let polygon = Polygon::new(vec![
     ///     VpPoint::new(0.0, 0.0),
     ///     VpPoint::new(100.0, 0.0),
     ///     VpPoint::new(100.0, 200.0),
     ///     VpPoint::new(0.0, 200.0),
     ///     VpPoint::new(0.0, 0.0),
-    ///  ])
+    ///  ]);
     /// ```
     pub polygon: Polygon,
     /// Custom area for StandardProfile or Custom profile types

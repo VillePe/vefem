@@ -51,11 +51,7 @@ pub fn create_joined_stiffness_matrix(
     let dof = 3;
     let row_width = supp_count * dof + release_count;
 
-    let mut matrix_vector = DMatrix::from_row_slice(
-        row_width,
-        row_width,
-        &vec![0.0; row_width * row_width],
-    );
+    let mut matrix_vector = vec![0.0; row_width * row_width];
 
     // The starting row and column locations for locating the cells for releases
     let mut rel_row = supp_count * dof;
@@ -106,7 +102,7 @@ pub fn create_joined_stiffness_matrix(
                     if i == j {
                         // If current row and column have releace, place the value in the intersection of the current
                         // release row and column
-                        matrix_vector[(rel_row, rel_col)] += e_glob_stiff_matrix[(i, j)];
+                        matrix_vector[rel_row * row_width + rel_col] += e_glob_stiff_matrix[(i, j)];
                         rel_col += 1;
                         rel_increment_count += 1;
                     } else if elem.releases.get_release_value(i).unwrap() {
@@ -125,7 +121,7 @@ pub fn create_joined_stiffness_matrix(
                     // supp_index2 * dof                     offset the columns by the support number
                     // j_normalized                          offset the columns by j
                     // i_normalized * row_width              offset the rows by i
-                    matrix_vector[((supp_index1 * dof)+i_normalized,  supp_index2 * dof + j_normalized)]
+                    matrix_vector[(supp_index1 * dof)*row_width+i_normalized*row_width+ supp_index2 * dof + j_normalized]
                         += e_glob_stiff_matrix[(i, j)];
                 }
             }
@@ -137,5 +133,5 @@ pub fn create_joined_stiffness_matrix(
         }
     }
 
-    matrix_vector
+    DMatrix::from_row_slice(row_width, row_width, &matrix_vector)
 }

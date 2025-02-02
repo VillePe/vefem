@@ -13,8 +13,8 @@ mod tests {
     #[test]
     fn rotated_stiffness_matrix() {
         let end_point: VpPoint = geometry2d::rotate_point(
-            VpPoint::new(0.0, 0.0),
-            VpPoint::new(8000.0, 0.0),
+            &VpPoint::new(0.0, 0.0),
+            &VpPoint::new(8000.0, 0.0),
             22.0243128370,
         );
 
@@ -23,6 +23,7 @@ mod tests {
         nodes.insert(2, Node::new_hinged(1, end_point));
 
         let e: Element = Element::new(
+            1,
             1,
             2,
             Profile {
@@ -143,8 +144,8 @@ mod tests {
     #[test]
     fn joined_stiffness_matrix_fes() {
         let end_point: VpPoint = geometry2d::rotate_point(
-            VpPoint::new(0.0, 0.0),
-            VpPoint::new(8000.0, 0.0),
+            &VpPoint::new(0.0, 0.0),
+            &VpPoint::new(8000.0, 0.0),
             22.0243128370,
         );
 
@@ -158,6 +159,7 @@ mod tests {
 
         let e1: Element = Element::new(
             1,
+            1,
             2,
             Profile {
                 name: "TEST".to_string(),
@@ -168,6 +170,7 @@ mod tests {
             MaterialType::Steel(Steel::new(200.0)),
         );
         let e2: Element = Element::new(
+            2,
             2,
             3,
             Profile {
@@ -255,17 +258,20 @@ mod tests {
 
         let e1: Element = Element::new(
             1,
+            1,
             2,
             Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
             MaterialType::Steel(Steel::new(210e3)),
         );
         let e2: Element = Element::new(
             2,
+            2,
             4,
             Profile::new_rectangle("R200x100".to_string(), 200.0, 100.0),
             MaterialType::Steel(Steel::new(210e3)),
         );
         let e3: Element = Element::new(
+            3,
             4,
             3,
             Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
@@ -319,17 +325,20 @@ mod tests {
 
         let mut e1: Element = Element::new(
             1,
+            1,
             2,
             Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
             MaterialType::Steel(Steel::new(210e3)),
         );
         let e2: Element = Element::new(
             2,
+            2,
             4,
             Profile::new_rectangle("R200x100".to_string(), 200.0, 100.0),
             MaterialType::Steel(Steel::new(210e3)),
         );
         let mut e3: Element = Element::new(
+            3,
             3,
             4,
             Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
