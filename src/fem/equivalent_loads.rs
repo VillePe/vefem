@@ -1,5 +1,5 @@
 ﻿use std::collections::HashMap;
-use crate::loads::load::Load;
+use crate::loads::load::{Load, LoadType};
 use crate::structure::{Element, Node};
 use nalgebra::{DMatrix, Point};
 use vputilslib::equation_handler::EquationHandler;
@@ -16,7 +16,7 @@ pub fn get_joined_equivalent_loads(
     let matrix_vector : Vec<f64> = vec![0.0; nodes.len() * dof];
     
     for element in elements {
-        let rot_matrix = matrices::get_element_rotation_matrix(&element, nodes);
+        
     }
     
     DMatrix::from_row_slice(0, 0, &vec![0.0])
@@ -24,10 +24,13 @@ pub fn get_joined_equivalent_loads(
 
 /// Creates the equivalent load matrix in global coordinates for given element
 pub fn get_element_global_equivalent_loads(
-    element: Element,
+    element: &Element,
     loads: &Vec<&Load>,
-    equation_handler: EquationHandler,
+    nodes: &HashMap<i32, Node>,
+    equation_handler: &mut EquationHandler,
 ) -> DMatrix<f64> {
+    let dof = 3;
+    let mut result_vector = DMatrix::<f64>::zeros(dof*2, 1);
     let mut linked_loads: Vec<&Load> = Vec::new();
     // Gather the loads that are linked to the given element
     for l in loads {
@@ -35,12 +38,25 @@ pub fn get_element_global_equivalent_loads(
             linked_loads.push(l);
         }
     }
+    let rot_matrix = matrices::get_element_rotation_matrix(&element, nodes);
     // Iterate through the linked loads and add them to the equivalent load matrix
     for l in linked_loads {
-        
+        match l.load_type {
+            LoadType::Point => {
+                let element_eql_matrix_lc = handle_point_load(element, l, nodes, equation_handler);
+                let element_eql_matrix_gl = &rot_matrix * element_eql_matrix_lc;
+                result_vector += element_eql_matrix_gl;
+            }
+            LoadType::Line => {}
+            LoadType::Triangular => {}
+            LoadType::Moment => {}
+            LoadType::Trapezoid => {}
+            LoadType::Strain => {}
+            LoadType::Temperature => {}
+        }
     }
 
-    DMatrix::from_row_slice(6, 6, &vec![0.0])
+    result_vector
 }
 
 /// Handles the conversion of the load to the equivalent loads by elements coordinate system.
