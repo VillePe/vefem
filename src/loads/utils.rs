@@ -44,7 +44,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn t_get_element_List() {
+    fn t_get_element_list() {
         let load1 = Load{element_numbers: "1,2,3".to_string(), ..Load::default()};
         let result1 = get_linked_element_numbers(&load1);
         assert_eq!(vec![1,2,3], result1);

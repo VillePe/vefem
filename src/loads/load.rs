@@ -1,5 +1,7 @@
-use crate::loads::load::LoadType::{Line, Moment, Point, Strain, Temperature, Trapezoid, Triangular};
+use vputilslib::equation_handler::EquationHandler;
+use crate::loads::load::LoadType::{Line, Rotational, Point, Strain, Temperature, Trapezoid, Triangular};
 
+#[derive(Debug)]
 pub struct Load {
     /// Name for the load. Does not need to be unique. Load combinations are created by using the load names.
     pub name : String,
@@ -47,8 +49,8 @@ impl Load {
         Self{name, element_numbers, offset_start, offset_end, strength, rotation, load_type: Line, ..Self::default()}
     }
 
-    pub fn new_moment_load(name: String, element_numbers: String, offset_start: String, strength: String, rotation: f64) -> Self {
-        Self{name, element_numbers, offset_start, strength, rotation, load_type: Moment, ..Self::default()}
+    pub fn new_rotational_load(name: String, element_numbers: String, offset_start: String, strength: String) -> Self {
+        Self{name, element_numbers, offset_start, strength, load_type: Rotational, ..Self::default()}
     }
 
     pub fn new_triangular_load(name: String, element_numbers: String, offset_start: String, offset_end: String, strength: String, rotation: f64) -> Self {
@@ -65,6 +67,12 @@ impl Load {
 
     pub fn new_temperature_load(name: String, element_numbers: String, strength: String, rotation: f64) -> Self {
         Self{name, element_numbers, strength, rotation, load_type: Temperature, ..Self::default()}
+    }
+    
+    pub fn get_length(&self, equation_handler: &mut EquationHandler) -> f64 {
+        let off_end = equation_handler.calculate_formula(&self.offset_end).unwrap_or(0.0);
+        let off_start = equation_handler.calculate_formula(&self.offset_start).unwrap_or(0.0);
+        off_end - off_start
     }
 }
 
@@ -85,11 +93,12 @@ impl Default for Load {
     }
 }
 
+#[derive(Debug)]
 pub enum LoadType {
     Point,
     Line,
     Triangular,
-    Moment,
+    Rotational,
     Trapezoid,
     Strain,
     Temperature,
