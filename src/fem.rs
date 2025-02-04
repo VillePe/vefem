@@ -4,4 +4,4 @@
 pub mod fem_handler;
 pub mod matrices;
 pub mod stiffness;
-mod equivalent_loads;
+pub mod equivalent_loads;

@@ -72,7 +72,7 @@ impl Load {
     pub fn get_length(&self, equation_handler: &mut EquationHandler) -> f64 {
         let off_end = equation_handler.calculate_formula(&self.offset_end).unwrap_or(0.0);
         let off_start = equation_handler.calculate_formula(&self.offset_start).unwrap_or(0.0);
-        off_end - off_start
+        (off_end - off_start).abs()
     }
 }
 
