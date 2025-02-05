@@ -2,7 +2,7 @@
 use crate::loads;
 use crate::loads::load::{Load, LoadType};
 use crate::structure::{Element, Node};
-use nalgebra::{DMatrix};
+use nalgebra::DMatrix;
 use std::collections::HashMap;
 use vputilslib::equation_handler::EquationHandler;
 
@@ -23,7 +23,7 @@ pub fn get_joined_equivalent_loads(
 /// Creates the equivalent load matrix in global coordinates for given element
 pub fn get_element_global_equivalent_loads(
     element: &Element,
-    loads: &Vec<&Load>,
+    loads: &Vec<Load>,
     nodes: &HashMap<i32, Node>,
     equation_handler: &mut EquationHandler,
 ) -> DMatrix<f64> {
@@ -36,7 +36,7 @@ pub fn get_element_global_equivalent_loads(
             linked_loads.push(l);
         }
     }
-    let rot_matrix = matrices::get_element_rotation_matrix(&element, nodes);
+    let rot_matrix = matrices::get_element_rotation_matrix(&element, nodes).transpose();
     let el_length = element.get_length(nodes);
     let el_rotation = element.get_rotation(nodes);
     equation_handler.add_variable("L", el_length);
@@ -61,8 +61,31 @@ pub fn get_element_global_equivalent_loads(
                 let element_eql_matrix_gl = &rot_matrix * element_eql_matrix_lc;
                 result_vector += element_eql_matrix_gl;
             }
-            LoadType::Rotational => {}
-            LoadType::Trapezoid => {}
+            LoadType::Rotational => {
+                let element_eql_matrix_lc =
+                    handle_rotational_load(el_length, load, equation_handler);
+                let element_eql_matrix_gl = &rot_matrix * element_eql_matrix_lc;
+                result_vector += element_eql_matrix_gl;
+            }
+            LoadType::Trapezoid => {
+                let split: Vec<&str> = load.strength.split(';').collect();
+                if split.len() == 2 || split.len() == 1 {
+                    let start_strength =
+                        equation_handler.calculate_formula(split[0]).unwrap_or(0.0);
+                    let end_strength = equation_handler.calculate_formula(split[0]).unwrap_or(0.0);
+                    let (line_load, tri_load) = loads::utils::split_trapezoid_load(load, start_strength, end_strength, equation_handler);
+                    let element_eql_matrix_lc =
+                        handle_line_load(el_length, el_rotation, &line_load, equation_handler);
+                    let element_eql_matrix_gl = &rot_matrix * element_eql_matrix_lc;
+                    result_vector += element_eql_matrix_gl;
+                    let element_eql_matrix_lc =
+                        handle_line_load(el_length, el_rotation, &tri_load, equation_handler);
+                    let element_eql_matrix_gl = &rot_matrix * element_eql_matrix_lc;
+                    result_vector += element_eql_matrix_gl;
+                } else {
+                    println!("Error while parsing strength of the trapezoid load. Use semicolon ';' to separate the start and end strengths")
+                }
+            }
             LoadType::Strain => {}
             LoadType::Temperature => {}
         }
@@ -120,7 +143,7 @@ fn handle_point_load(
     DMatrix::from_row_slice(6, 1, &vector)
 }
 
-fn handle_moment_load(
+fn handle_rotational_load(
     el_length: f64,
     load: &Load,
     equation_handler: &mut EquationHandler,
@@ -189,8 +212,17 @@ fn handle_line_load(
     }
 
     get_eq_loads_with_partial_eq_loads(
-        load, el_length, el_rotation, pl_sh_strength, pl_eh_strength, pl_sv_strength,
-        pl_ev_strength, rl_start_strength, rl_end_strength, equation_handler, false
+        load,
+        el_length,
+        el_rotation,
+        pl_sh_strength,
+        pl_eh_strength,
+        pl_sv_strength,
+        pl_ev_strength,
+        rl_start_strength,
+        rl_end_strength,
+        equation_handler,
+        false,
     )
 }
 
@@ -223,28 +255,20 @@ fn handle_triangular_load(
     let rl_start_strength;
     let rl_end_strength;
     if l_offset_start < l_offset_end {
-        pl_sh_strength = -load_length * 2.0 / (2.0*3.0) * local_x_dir * load_strength;
-        pl_eh_strength = -load_length * 1.0 / (2.0*3.0) * local_x_dir * load_strength;
+        pl_sh_strength = -load_length * 2.0 / (2.0 * 3.0) * local_x_dir * load_strength;
+        pl_eh_strength = -load_length * 1.0 / (2.0 * 3.0) * local_x_dir * load_strength;
         pl_sv_strength = -7.0 * load_length / 20.0 * local_z_dir * load_strength;
         pl_ev_strength = -3.0 * load_length / 20.0 * local_z_dir * load_strength;
         rl_start_strength = -load_length.powi(2) / 20.0 * local_z_dir * load_strength;
         rl_end_strength = load_length.powi(2) / 30.0 * local_z_dir * load_strength;
     } else {
-        pl_sh_strength = -load_length * 1.0 / (2.0*3.0) * local_x_dir * load_strength;
-        pl_eh_strength = -load_length * 2.0 / (2.0*3.0) * local_x_dir * load_strength;
+        pl_sh_strength = -load_length * 1.0 / (2.0 * 3.0) * local_x_dir * load_strength;
+        pl_eh_strength = -load_length * 2.0 / (2.0 * 3.0) * local_x_dir * load_strength;
         pl_sv_strength = -3.0 * load_length / 20.0 * local_z_dir * load_strength;
         pl_ev_strength = -7.0 * load_length / 20.0 * local_z_dir * load_strength;
         rl_start_strength = -load_length.powi(2) / 30.0 * local_z_dir * load_strength;
         rl_end_strength = load_length.powi(2) / 20.0 * local_z_dir * load_strength;
     }
-    println!("-------------------------------");
-    println!("{pl_sh_strength}");
-    println!("{pl_eh_strength}");
-    println!("{pl_sv_strength}");
-    println!("{pl_ev_strength}");
-    println!("{rl_start_strength}");
-    println!("{rl_end_strength}");
-    println!("*******************************");
 
     // If the load is the same length as the element and start offset is zero, just return the equivalent loads
     if (load_length - el_length) < 0.1 && load.offset_start.eq("0") {
@@ -263,8 +287,17 @@ fn handle_triangular_load(
     }
 
     get_eq_loads_with_partial_eq_loads(
-        load, el_length, el_rotation, pl_sh_strength, pl_eh_strength, pl_sv_strength,
-        pl_ev_strength, rl_start_strength, rl_end_strength, equation_handler, l_offset_start > l_offset_end
+        load,
+        el_length,
+        el_rotation,
+        pl_sh_strength,
+        pl_eh_strength,
+        pl_sv_strength,
+        pl_ev_strength,
+        rl_start_strength,
+        rl_end_strength,
+        equation_handler,
+        l_offset_start > l_offset_end,
     )
 }
 
@@ -287,15 +320,24 @@ fn get_eq_loads_with_partial_eq_loads(
     let dof = 3;
     // Otherwise convert the line load to equivalent point and rotational loads
     let mut vector = DMatrix::<f64>::zeros(dof * 2, 1);
-    let offset_start = if swap_offsets {&load.offset_end} else {&load.offset_start};
-    let offset_end = if swap_offsets {load.offset_start.clone()} else {load.offset_end.clone()};
+    let offset_start = if swap_offsets {
+        &load.offset_end
+    } else {
+        &load.offset_start
+    };
+    let offset_end = if swap_offsets {
+        load.offset_start.clone()
+    } else {
+        load.offset_end.clone()
+    };
     // The strengths of the equivalent loads that are calculated earlier are all pointing at the opposite directions
     // (because they are support reactions rather than external loads) so they need to be inverted to emulate external
     // loads
     let pl_start_hor: Load = get_temp_pl(-pl_sh_strength, offset_start.clone(), el_rotation);
     let pl_end_hor: Load = get_temp_pl(-pl_eh_strength, offset_end.clone(), el_rotation);
 
-    let pl_start_vert: Load = get_temp_pl( -pl_sv_strength, offset_start.clone(), el_rotation + 90.0, );
+    let pl_start_vert: Load =
+        get_temp_pl(-pl_sv_strength, offset_start.clone(), el_rotation + 90.0);
     let pl_end_vert: Load = get_temp_pl(-pl_ev_strength, offset_end.clone(), el_rotation + 90.0);
 
     let rl_start: Load = get_temp_rotational_load(offset_start.clone(), -rl_start_strength);
@@ -303,10 +345,10 @@ fn get_eq_loads_with_partial_eq_loads(
 
     vector += handle_point_load(el_length, el_rotation, &pl_start_hor, equation_handler);
     vector += handle_point_load(el_length, el_rotation, &pl_start_vert, equation_handler);
-    vector += handle_moment_load(el_length, &rl_start, equation_handler);
+    vector += handle_rotational_load(el_length, &rl_start, equation_handler);
     vector += handle_point_load(el_length, el_rotation, &pl_end_hor, equation_handler);
     vector += handle_point_load(el_length, el_rotation, &pl_end_vert, equation_handler);
-    vector += handle_moment_load(el_length, &rl_end, equation_handler);
+    vector += handle_rotational_load(el_length, &rl_end, equation_handler);
 
     vector
 }
@@ -334,12 +376,14 @@ fn get_temp_rotational_load(end: String, equivalent_strength: f64) -> Load {
 
 #[cfg(test)]
 mod tests {
-    use crate::fem::equivalent_loads::{handle_line_load, handle_moment_load, handle_point_load, handle_triangular_load};
+    use crate::fem::equivalent_loads::{
+        handle_line_load, handle_point_load, handle_rotational_load, handle_triangular_load,
+    };
     use crate::loads::Load;
     use crate::structure::{Element, Node};
     use std::collections::HashMap;
     use vputilslib::equation_handler::EquationHandler;
-    use vputilslib::geometry2d::{VpPoint};
+    use vputilslib::geometry2d::VpPoint;
 
     #[test]
     fn t_handle_point_load() {
@@ -452,7 +496,7 @@ mod tests {
         let mut equation_handler = EquationHandler::new();
         let el_length = el.get_length(&nodes);
         let el_rotation = el.get_rotation(&nodes);
-        let result = handle_moment_load(el_length, &load, &mut equation_handler);
+        let result = handle_rotational_load(el_length, &load, &mut equation_handler);
         assert!((result[0] - (0.0)).abs() < 0.1);
         assert!((result[1] - (3.75)).abs() < 0.1);
         assert!((result[2] - (2500.0)).abs() < 0.1);
@@ -461,7 +505,7 @@ mod tests {
         assert!((result[5] - (2500.0)).abs() < 0.1);
 
         nodes.get_mut(&2).unwrap().point = VpPoint::new(2828.5714, 2828.5714);
-        let result = handle_moment_load(el_length, &load, &mut equation_handler);
+        let result = handle_rotational_load(el_length, &load, &mut equation_handler);
         assert!((result[0] - (0.0)).abs() < 1e1);
         assert!((result[1] - (3.75)).abs() < 1e1);
         assert!((result[2] - (2500.0)).abs() < 1e3);

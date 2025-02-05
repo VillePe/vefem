@@ -99,6 +99,7 @@ pub enum LoadType {
     Line,
     Triangular,
     Rotational,
+    /// Note. The start and end values are separated with ; (semicolon)
     Trapezoid,
     Strain,
     Temperature,

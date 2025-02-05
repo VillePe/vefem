@@ -8,6 +8,7 @@ use crate::structure::Node;
 /// Gets the rotation matrix for the element. This matrix is in elements local coordinate system
 pub fn get_element_rotation_matrix(element: &Element, nodes: &HashMap<i32, Node>) -> DMatrix<f64> {
     let angle_radians = element.get_rotation(nodes).to_radians();
+    println!("angle: {:?}", element.get_rotation(nodes));
     let c = angle_radians.cos();
     let s = angle_radians.sin();
     DMatrix::from_row_slice(6,6, &[

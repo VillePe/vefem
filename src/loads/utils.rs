@@ -1,4 +1,5 @@
 ﻿use std::str::Split;
+use vputilslib::equation_handler::EquationHandler;
 use crate::loads;
 use crate::loads::load::Load;
 use crate::structure::Element;
@@ -37,6 +38,44 @@ pub fn get_linked_element_numbers(load: &Load) -> Vec<i32> {
 pub fn load_is_linked(elem: &Element, load: &Load) -> bool {
     let linked_elements = get_linked_element_numbers(&load);
     linked_elements.contains(&-1) || linked_elements.contains(&elem.number)
+}
+
+pub fn split_trapezoid_load(load: &Load, start_strength: f64, end_strength: f64, equation_handler: &mut EquationHandler) -> (Load, Load) {
+    if start_strength < 0.0 || end_strength < 0.0 {
+        println!("Trapezoid load can't have negative values!");
+    }
+    let mut t_load_offset_start;
+    let mut t_load_offset_end;
+    let tl_strength;
+    // Handle the direction of the triangular load
+    let ll_strength = if start_strength > end_strength {
+        t_load_offset_start = load.offset_start.clone();
+        t_load_offset_end = load.offset_end.clone();
+        tl_strength = start_strength - end_strength;
+        start_strength - tl_strength
+    } else {
+        t_load_offset_start = load.offset_end.clone();
+        t_load_offset_end = load.offset_start.clone();
+        tl_strength = end_strength - start_strength;
+        end_strength - tl_strength
+    };
+    let line_load = Load::new_line_load(
+        load.name.clone(),
+        load.element_numbers.clone(),
+        load.offset_start.clone(),
+        load.offset_end.clone(),
+        ll_strength.to_string(),
+        load.rotation
+    );
+    let tri_load = Load::new_triangular_load(
+        load.name.clone(),
+        load.element_numbers.clone(),
+        t_load_offset_start.clone(),
+        t_load_offset_end.clone(),
+        tl_strength.to_string(),
+        load.rotation
+    );
+    (line_load, tri_load)
 }
 
 #[cfg(test)]
