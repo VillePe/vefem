@@ -1,5 +1,5 @@
 ﻿use crate::fem::matrices;
-use crate::loads;
+use crate::{loads, material};
 use crate::loads::load::{Load, LoadType};
 use crate::structure::{Element, Node};
 use nalgebra::DMatrix;
@@ -39,7 +39,7 @@ pub fn get_element_global_equivalent_loads(
     let rot_matrix = matrices::get_element_rotation_matrix(&element, nodes).transpose();
     let el_length = element.get_length(nodes);
     let el_rotation = element.get_rotation(nodes);
-    equation_handler.add_variable("L", el_length);
+    equation_handler.set_variable("L", el_length);
     // Iterate through the linked loads and add them to the equivalent load matrix
     for load in linked_loads {
         match load.load_type {
@@ -74,6 +74,7 @@ pub fn get_element_global_equivalent_loads(
                         equation_handler.calculate_formula(split[0]).unwrap_or(0.0);
                     let end_strength = equation_handler.calculate_formula(split[0]).unwrap_or(0.0);
                     let (line_load, tri_load) = loads::utils::split_trapezoid_load(load, start_strength, end_strength, equation_handler);
+
                     let element_eql_matrix_lc =
                         handle_line_load(el_length, el_rotation, &line_load, equation_handler);
                     let element_eql_matrix_gl = &rot_matrix * element_eql_matrix_lc;
@@ -86,8 +87,23 @@ pub fn get_element_global_equivalent_loads(
                     println!("Error while parsing strength of the trapezoid load. Use semicolon ';' to separate the start and end strengths")
                 }
             }
-            LoadType::Strain => {}
-            LoadType::Temperature => {}
+            LoadType::Strain => {
+                let displacement = equation_handler.calculate_formula(&load.strength).unwrap_or(0.0);
+                let val = element.get_elastic_modulus() * element.profile.get_area() / el_length * displacement;
+                result_vector += &rot_matrix * DMatrix::from_row_slice(6, 1, &[
+                    -val, 0.0, 0.0,
+                    val,  0.0, 0.0]);
+            }
+            LoadType::Thermal => {
+                let temperature_difference = equation_handler.calculate_formula(&load.strength).unwrap_or(0.0);
+                let thermal_coefficient = material::get_thermal_expansion_coefficient(&element.material);
+                let displacement = temperature_difference * thermal_coefficient * el_length;
+                let val = element.get_elastic_modulus() * element.profile.get_area() / el_length * displacement;
+                println!("{} * {} / {} * {}", element.get_elastic_modulus(), element.profile.get_area(), el_length, displacement);
+                result_vector += &rot_matrix * DMatrix::from_row_slice(6, 1, &[
+                    -val, 0.0, 0.0,
+                    val,  0.0, 0.0]);
+            }
         }
     }
 
@@ -376,14 +392,14 @@ fn get_temp_rotational_load(end: String, equivalent_strength: f64) -> Load {
 
 #[cfg(test)]
 mod tests {
-    use crate::fem::equivalent_loads::{
-        handle_line_load, handle_point_load, handle_rotational_load, handle_triangular_load,
-    };
+    use crate::fem::equivalent_loads::{get_element_global_equivalent_loads, handle_line_load, handle_point_load, handle_rotational_load, handle_triangular_load};
     use crate::loads::Load;
-    use crate::structure::{Element, Node};
+    use crate::structure::{Element, Node, Profile};
     use std::collections::HashMap;
     use vputilslib::equation_handler::EquationHandler;
     use vputilslib::geometry2d::VpPoint;
+    use crate::material::Steel;
+    use crate::structure::element::MaterialType;
 
     #[test]
     fn t_handle_point_load() {

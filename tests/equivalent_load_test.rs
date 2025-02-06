@@ -13,6 +13,7 @@ mod tests {
     use vputilslib::equation_handler::EquationHandler;
     use vputilslib::geometry2d;
     use vputilslib::geometry2d::VpPoint;
+    use idfem::fem::equivalent_loads::get_element_global_equivalent_loads;
 
     #[test]
     fn line_load() {
@@ -333,5 +334,67 @@ mod tests {
         assert!((result[3] - (-8.8582e3)).abs() < 1e1);
         assert!((result[4] - (-0.3007e3)).abs() < 1e1);
         assert!((result[5] - (-5.5536e6)).abs() < 1e3);
+    }
+
+    #[test]
+    fn t_strain_load() {
+        let el: Element = Element {
+            number: 1,
+            node_start: 1,
+            node_end: 2,
+            profile: Profile::new_rectangle("100x100".to_string(), 100., 100.),
+            material: MaterialType::Steel(Steel::new(210000.)),
+            ..Element::default()
+        };
+        let mut nodes: HashMap<i32, Node> = HashMap::new();
+        nodes.insert(1, Node::new_hinged(1, VpPoint::new(0.0, 0.0)));
+        nodes.insert(2, Node::new_hinged(1, VpPoint::new(0.0, 4000.0)));
+        let load = Load::new_strain_load(
+            "".to_string(),
+            "1".to_string(),
+            "10".to_string(),
+        );
+        let mut equation_handler = EquationHandler::new();
+        let result = get_element_global_equivalent_loads(
+            &el, &vec![load], &nodes, &mut equation_handler,
+        );
+        println!("{:?}", result);
+        assert!((result[0] - (0e1)).abs() < 0.1);
+        assert!((result[1] - (-5250e3)).abs() < 0.1);
+        assert!((result[2] - (0e6)).abs() < 1.0);
+        assert!((result[3] - (0e3)).abs() < 0.1);
+        assert!((result[4] - (5250e3)).abs() < 0.1);
+        assert!((result[5] - (0e6)).abs() < 1.0);
+    }
+
+    #[test]
+    fn t_thermal_load() {
+        let el: Element = Element {
+            number: 1,
+            node_start: 1,
+            node_end: 2,
+            profile: Profile::new_rectangle("100x100".to_string(), 100., 100.),
+            material: MaterialType::Steel(Steel::new(210000.)),
+            ..Element::default()
+        };
+        let mut nodes: HashMap<i32, Node> = HashMap::new();
+        nodes.insert(1, Node::new_hinged(1, VpPoint::new(0.0, 0.0)));
+        nodes.insert(2, Node::new_hinged(1, VpPoint::new(0.0, 4000.0)));
+        let load = Load::new_thermal_load(
+            "".to_string(),
+            "1".to_string(),
+            "10".to_string(),
+        );
+        let mut equation_handler = EquationHandler::new();
+        let result = get_element_global_equivalent_loads(
+            &el, &vec![load], &nodes, &mut equation_handler,
+        );
+        println!("{:?}", result);
+        assert!((result[0] - (0e1)).abs() < 0.1);
+        assert!((result[1] - (-262.5e3)).abs() < 0.1);
+        assert!((result[2] - (0e6)).abs() < 1.0);
+        assert!((result[3] - (0e3)).abs() < 0.1);
+        assert!((result[4] - (262.5e3)).abs() < 0.1);
+        assert!((result[5] - (0e6)).abs() < 1.0);
     }
 }

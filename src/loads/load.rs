@@ -1,5 +1,5 @@
 use vputilslib::equation_handler::EquationHandler;
-use crate::loads::load::LoadType::{Line, Rotational, Point, Strain, Temperature, Trapezoid, Triangular};
+use crate::loads::load::LoadType::{Line, Rotational, Point, Strain, Thermal, Trapezoid, Triangular};
 
 #[derive(Debug)]
 pub struct Load {
@@ -61,12 +61,12 @@ impl Load {
         Self{name, element_numbers, offset_start, offset_end, strength, rotation, load_type: Trapezoid, ..Self::default()}
     }
 
-    pub fn new_strain_load(name: String, element_numbers: String, strength: String, rotation: f64) -> Self {
-        Self{name, element_numbers, strength, rotation, load_type: Strain, ..Self::default()}
+    pub fn new_strain_load(name: String, element_numbers: String, strength: String) -> Self {
+        Self{name, element_numbers, strength, load_type: Strain, ..Self::default()}
     }
 
-    pub fn new_temperature_load(name: String, element_numbers: String, strength: String, rotation: f64) -> Self {
-        Self{name, element_numbers, strength, rotation, load_type: Temperature, ..Self::default()}
+    pub fn new_thermal_load(name: String, element_numbers: String, strength: String) -> Self {
+        Self{name, element_numbers, strength, load_type: Thermal, ..Self::default()}
     }
     
     pub fn get_length(&self, equation_handler: &mut EquationHandler) -> f64 {
@@ -102,5 +102,5 @@ pub enum LoadType {
     /// Note. The start and end values are separated with ; (semicolon)
     Trapezoid,
     Strain,
-    Temperature,
+    Thermal,
 }

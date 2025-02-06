@@ -4,6 +4,7 @@ use crate::material::*;
 use crate::structure::node::Node;
 use crate::structure::profile::Profile;
 use std::collections::HashMap;
+use crate::material;
 use crate::structure::release::Release;
 
 pub enum MaterialType {
@@ -45,6 +46,10 @@ impl Element {
         let node_start = &nodes[&(self.node_start)];
         let node_end = &nodes[&(self.node_end)];
         vputilslib::geometry2d::get_angle_from_points(&node_start.point, &node_end.point)
+    }
+    
+    pub fn get_elastic_modulus(&self) -> f64 {
+        material::get_elastic_modulus(&self.material)
     }
 }
 
