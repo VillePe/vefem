@@ -1,7 +1,4 @@
-﻿use std::str::Split;
-use vputilslib::equation_handler::EquationHandler;
-use crate::loads;
-use crate::loads::load::Load;
+﻿use crate::loads::load::Load;
 use crate::structure::Element;
 
 /// Gets the element numbers that are linked to given load. Different elements are separated with , (comma).
@@ -40,12 +37,12 @@ pub fn load_is_linked(elem: &Element, load: &Load) -> bool {
     linked_elements.contains(&-1) || linked_elements.contains(&elem.number)
 }
 
-pub fn split_trapezoid_load(load: &Load, start_strength: f64, end_strength: f64, equation_handler: &mut EquationHandler) -> (Load, Load) {
+pub fn split_trapezoid_load(load: &Load, start_strength: f64, end_strength: f64) -> (Load, Load) {
     if start_strength < 0.0 || end_strength < 0.0 {
         println!("Trapezoid load can't have negative values!");
     }
-    let mut t_load_offset_start;
-    let mut t_load_offset_end;
+    let t_load_offset_start;
+    let t_load_offset_end;
     let tl_strength;
     // Handle the direction of the triangular load
     let ll_strength = if start_strength > end_strength {

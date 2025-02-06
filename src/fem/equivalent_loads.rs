@@ -73,7 +73,7 @@ pub fn get_element_global_equivalent_loads(
                     let start_strength =
                         equation_handler.calculate_formula(split[0]).unwrap_or(0.0);
                     let end_strength = equation_handler.calculate_formula(split[0]).unwrap_or(0.0);
-                    let (line_load, tri_load) = loads::utils::split_trapezoid_load(load, start_strength, end_strength, equation_handler);
+                    let (line_load, tri_load) = loads::utils::split_trapezoid_load(load, start_strength, end_strength);
 
                     let element_eql_matrix_lc =
                         handle_line_load(el_length, el_rotation, &line_load, equation_handler);
@@ -198,8 +198,7 @@ fn handle_line_load(
         .unwrap_or(0.0);
     let load_length = load.get_length(equation_handler);
     let load_rotation = load.rotation;
-
-    let dof = 3;
+    
     // The factors to split load into two components
     let local_x_dir = (load_rotation - el_rotation).to_radians().cos();
     let local_z_dir = (load_rotation - el_rotation).to_radians().sin();
@@ -392,14 +391,12 @@ fn get_temp_rotational_load(end: String, equivalent_strength: f64) -> Load {
 
 #[cfg(test)]
 mod tests {
-    use crate::fem::equivalent_loads::{get_element_global_equivalent_loads, handle_line_load, handle_point_load, handle_rotational_load, handle_triangular_load};
+    use crate::fem::equivalent_loads::{handle_line_load, handle_point_load, handle_rotational_load, handle_triangular_load};
     use crate::loads::Load;
-    use crate::structure::{Element, Node, Profile};
+    use crate::structure::{Element, Node};
     use std::collections::HashMap;
     use vputilslib::equation_handler::EquationHandler;
     use vputilslib::geometry2d::VpPoint;
-    use crate::material::Steel;
-    use crate::structure::element::MaterialType;
 
     #[test]
     fn t_handle_point_load() {

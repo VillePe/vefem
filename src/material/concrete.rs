@@ -1,7 +1,5 @@
 #![allow(dead_code)]
 
-use crate::material::Steel;
-
 pub struct Concrete {
     pub elastic_modulus: f64,
     pub thermal_expansion_coefficient: f64,
