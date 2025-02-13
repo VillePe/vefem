@@ -100,7 +100,7 @@ pub fn create_joined_stiffness_matrix(
                 // If there is a release at either i or j, it needs to be handled
                 if elem.releases.get_release_value(i).unwrap() || elem.releases.get_release_value(j).unwrap() {
                     if i == j {
-                        // If current row and column have releace, place the value in the intersection of the current
+                        // If current row and column have release, place the value in the intersection of the current
                         // release row and column
                         matrix_vector[rel_row * row_width + rel_col] += e_glob_stiff_matrix[(i, j)];
                         rel_col += 1;

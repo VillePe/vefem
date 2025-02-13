@@ -1,26 +1,65 @@
 ﻿use crate::fem::matrices;
-use crate::{loads, material};
 use crate::loads::load::{Load, LoadType};
 use crate::structure::{Element, Node};
+use crate::{loads, material};
 use nalgebra::DMatrix;
 use std::collections::HashMap;
 use vputilslib::equation_handler::EquationHandler;
 
-pub fn get_joined_equivalent_loads(
+pub fn create_joined_equivalent_loads(
     elements: &Vec<Element>,
     nodes: &HashMap<i32, Node>,
-    loads: &Vec<&Load>,
-    equation_handler: EquationHandler,
+    loads: &Vec<Load>,
+    equation_handler: &mut EquationHandler,
 ) -> DMatrix<f64> {
+    let supp_count = nodes.len();
+    // Increase the joined stiffness matrix size by release count. Releases are set into their
+    // own rows and columns at the end of the joined matrix
+    let release_count = crate::structure::utils::get_element_release_count(&elements);
+    // The degrees of freedom count of single node (tx, tz, ry)
     let dof = 3;
-    let matrix_vector: Vec<f64> = vec![0.0; nodes.len() * dof];
+    let col_height = supp_count * dof + release_count;
 
-    for element in elements {}
+    let mut matrix_vector = vec![0.0; col_height];
 
-    DMatrix::from_row_slice(0, 0, &vec![0.0])
+    // The starting column locations for locating the cells for releases
+    let mut rel_col = supp_count * dof;
+    let mut supp_index: usize;
+    let mut i_normalized: usize;
+
+    for elem in elements {
+        let el_global_eq_loads =
+            get_element_global_equivalent_loads(&elem, loads, nodes, equation_handler);
+        // The index of the start node
+        let s = (elem.node_start - 1) as usize;
+        // The index of the end node
+        let e = (elem.node_end - 1) as usize;
+        for i in 0..dof * 2 {
+            if i < dof {
+                supp_index = s;
+                i_normalized = i;
+            } else {
+                supp_index = e;
+                i_normalized = i - dof;
+            }
+            // If there is a release at i, it needs to be handled
+            if elem.releases.get_release_value(i).unwrap() {
+                // If the current row has a release set the current value in the release rows (at the end of the matrix)
+                matrix_vector[rel_col] += el_global_eq_loads[(i, 0)];
+                rel_col += 1;
+            } else {
+                // supp_index2 * dof     offset the columns by the support number
+                // i_normalized          offset the columns by i
+                matrix_vector[supp_index * dof + i_normalized] += el_global_eq_loads[(i, 0)];
+            }
+        }
+    }
+
+    DMatrix::from_row_slice(col_height, 1, &matrix_vector)
 }
 
 /// Creates the equivalent load matrix in global coordinates for given element
+/// The returned matrix is in the size of \[6 rows, 1 columns] (a column vector)
 pub fn get_element_global_equivalent_loads(
     element: &Element,
     loads: &Vec<Load>,
@@ -44,9 +83,10 @@ pub fn get_element_global_equivalent_loads(
     for load in linked_loads {
         match load.load_type {
             LoadType::Point => {
-                let element_eql_matrix_lc =
-                    handle_point_load(el_length, el_rotation, load, equation_handler);
+                let element_eql_matrix_lc = handle_point_load(el_length, el_rotation, load, equation_handler);
+                println!("PL#1");
                 let element_eql_matrix_gl = &rot_matrix * element_eql_matrix_lc;
+                println!("PL#2");
                 result_vector += element_eql_matrix_gl;
             }
             LoadType::Line => {
@@ -70,17 +110,13 @@ pub fn get_element_global_equivalent_loads(
             LoadType::Trapezoid => {
                 let split: Vec<&str> = load.strength.split(';').collect();
                 if split.len() == 2 || split.len() == 1 {
-                    let start_strength =
-                        equation_handler.calculate_formula(split[0]).unwrap_or(0.0);
+                    let start_strength = equation_handler.calculate_formula(split[0]).unwrap_or(0.0);
                     let end_strength = equation_handler.calculate_formula(split[0]).unwrap_or(0.0);
                     let (line_load, tri_load) = loads::utils::split_trapezoid_load(load, start_strength, end_strength);
-
-                    let element_eql_matrix_lc =
-                        handle_line_load(el_length, el_rotation, &line_load, equation_handler);
+                    let element_eql_matrix_lc = handle_line_load(el_length, el_rotation, &line_load, equation_handler);
                     let element_eql_matrix_gl = &rot_matrix * element_eql_matrix_lc;
                     result_vector += element_eql_matrix_gl;
-                    let element_eql_matrix_lc =
-                        handle_line_load(el_length, el_rotation, &tri_load, equation_handler);
+                    let element_eql_matrix_lc = handle_line_load(el_length, el_rotation, &tri_load, equation_handler);
                     let element_eql_matrix_gl = &rot_matrix * element_eql_matrix_lc;
                     result_vector += element_eql_matrix_gl;
                 } else {
@@ -88,21 +124,32 @@ pub fn get_element_global_equivalent_loads(
                 }
             }
             LoadType::Strain => {
-                let displacement = equation_handler.calculate_formula(&load.strength).unwrap_or(0.0);
-                let val = element.get_elastic_modulus() * element.profile.get_area() / el_length * displacement;
-                result_vector += &rot_matrix * DMatrix::from_row_slice(6, 1, &[
-                    -val, 0.0, 0.0,
-                    val,  0.0, 0.0]);
+                let displacement = equation_handler
+                    .calculate_formula(&load.strength)
+                    .unwrap_or(0.0);
+                let val = element.get_elastic_modulus() * element.profile.get_area() / el_length
+                    * displacement;
+                result_vector +=
+                    &rot_matrix * DMatrix::from_row_slice(6, 1, &[-val, 0.0, 0.0, val, 0.0, 0.0]);
             }
             LoadType::Thermal => {
-                let temperature_difference = equation_handler.calculate_formula(&load.strength).unwrap_or(0.0);
-                let thermal_coefficient = material::get_thermal_expansion_coefficient(&element.material);
+                let temperature_difference = equation_handler
+                    .calculate_formula(&load.strength)
+                    .unwrap_or(0.0);
+                let thermal_coefficient =
+                    material::get_thermal_expansion_coefficient(&element.material);
                 let displacement = temperature_difference * thermal_coefficient * el_length;
-                let val = element.get_elastic_modulus() * element.profile.get_area() / el_length * displacement;
-                println!("{} * {} / {} * {}", element.get_elastic_modulus(), element.profile.get_area(), el_length, displacement);
-                result_vector += &rot_matrix * DMatrix::from_row_slice(6, 1, &[
-                    -val, 0.0, 0.0,
-                    val,  0.0, 0.0]);
+                let val = element.get_elastic_modulus() * element.profile.get_area() / el_length
+                    * displacement;
+                println!(
+                    "{} * {} / {} * {}",
+                    element.get_elastic_modulus(),
+                    element.profile.get_area(),
+                    el_length,
+                    displacement
+                );
+                result_vector +=
+                    &rot_matrix * DMatrix::from_row_slice(6, 1, &[-val, 0.0, 0.0, val, 0.0, 0.0]);
             }
         }
     }
@@ -198,7 +245,7 @@ fn handle_line_load(
         .unwrap_or(0.0);
     let load_length = load.get_length(equation_handler);
     let load_rotation = load.rotation;
-    
+
     // The factors to split load into two components
     let local_x_dir = (load_rotation - el_rotation).to_radians().cos();
     let local_z_dir = (load_rotation - el_rotation).to_radians().sin();
@@ -349,14 +396,13 @@ fn get_eq_loads_with_partial_eq_loads(
     // (because they are support reactions rather than external loads) so they need to be inverted to emulate external
     // loads
     let pl_start_hor: Load = get_temp_pl(-pl_sh_strength, offset_start.clone(), el_rotation);
-    let pl_end_hor: Load = get_temp_pl(-pl_eh_strength, offset_end.clone(), el_rotation);
+    let pl_end_hor: Load =   get_temp_pl(-pl_eh_strength, offset_end.clone(),   el_rotation);
 
-    let pl_start_vert: Load =
-        get_temp_pl(-pl_sv_strength, offset_start.clone(), el_rotation + 90.0);
-    let pl_end_vert: Load = get_temp_pl(-pl_ev_strength, offset_end.clone(), el_rotation + 90.0);
+    let pl_start_vert: Load = get_temp_pl(-pl_sv_strength, offset_start.clone(), el_rotation + 90.0);
+    let pl_end_vert: Load =   get_temp_pl(-pl_ev_strength, offset_end.clone(),   el_rotation + 90.0);
 
     let rl_start: Load = get_temp_rotational_load(offset_start.clone(), -rl_start_strength);
-    let rl_end: Load = get_temp_rotational_load(offset_end.clone(), -rl_end_strength);
+    let rl_end: Load =   get_temp_rotational_load(offset_end.clone(),   -rl_end_strength);
 
     vector += handle_point_load(el_length, el_rotation, &pl_start_hor, equation_handler);
     vector += handle_point_load(el_length, el_rotation, &pl_start_vert, equation_handler);
@@ -391,7 +437,9 @@ fn get_temp_rotational_load(end: String, equivalent_strength: f64) -> Load {
 
 #[cfg(test)]
 mod tests {
-    use crate::fem::equivalent_loads::{handle_line_load, handle_point_load, handle_rotational_load, handle_triangular_load};
+    use crate::fem::equivalent_loads::{
+        handle_line_load, handle_point_load, handle_rotational_load, handle_triangular_load,
+    };
     use crate::loads::Load;
     use crate::structure::{Element, Node};
     use std::collections::HashMap;
@@ -508,7 +556,6 @@ mod tests {
         );
         let mut equation_handler = EquationHandler::new();
         let el_length = el.get_length(&nodes);
-        let el_rotation = el.get_rotation(&nodes);
         let result = handle_rotational_load(el_length, &load, &mut equation_handler);
         assert!((result[0] - (0.0)).abs() < 0.1);
         assert!((result[1] - (3.75)).abs() < 0.1);
@@ -553,7 +600,7 @@ mod tests {
             &load,
             &mut equation_handler,
         );
-        println!("{:?}", result);
+        println!("#1 {:?}", result);
         assert!((result[0] - (0.0)).abs() < 0.1);
         assert!((result[1] - (20000.0)).abs() < 0.1);
         assert!((result[2] - (13333333.0)).abs() < 1.0);
@@ -568,7 +615,7 @@ mod tests {
             &load,
             &mut equation_handler,
         );
-        println!("{:?}", result);
+        println!("#2 {:?}", result);
         assert!((result[0] - (-20000.0)).abs() < 0.1);
         assert!((result[1] - (0.0)).abs() < 0.1);
         assert!((result[2] - (0.0)).abs() < 0.1);
@@ -583,7 +630,7 @@ mod tests {
             &load,
             &mut equation_handler,
         );
-        println!("{:?}", result);
+        println!("#3 {:?}", result);
         assert!((result[0] - (-14.142e3)).abs() < 1e1);
         assert!((result[1] - (14.142e3)).abs() < 1e1);
         assert!((result[2] - (9.4281e6)).abs() < 1e3);
@@ -599,7 +646,7 @@ mod tests {
             &load,
             &mut equation_handler,
         );
-        println!("{:?}", result);
+        println!("#4 {:?}", result);
         assert!((result[0] - (1.0e4)).abs() < 1e1);
         assert!((result[1] - (1.7321e4)).abs() < 1e1);
         assert!((result[2] - (11.547e6)).abs() < 1e3);
@@ -622,7 +669,7 @@ mod tests {
             &load,
             &mut equation_handler,
         );
-        println!("{:?}", result);
+        println!("#5 {:?}", result);
         assert!((result[0] - (0.0)).abs() < 0.1);
         assert!((result[1] - (10.4736e3)).abs() < 0.1);
         assert!((result[2] - (9.7493e6)).abs() < 1.0e2);
@@ -637,7 +684,7 @@ mod tests {
             &load,
             &mut equation_handler,
         );
-        println!("{:?}", result);
+        println!("#6 {:?}", result);
         assert!((result[0] - (-10.9375e3)).abs() < 0.1);
         assert!((result[1] - (0.0)).abs() < 0.1);
         assert!((result[2] - (0.0)).abs() < 0.1);
