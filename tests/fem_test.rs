@@ -16,6 +16,80 @@ mod tests {
     use crate::common;
 
     #[test]
+    fn displacement_1() {
+        let (elements, nodes) = common::get_structure_fem_matriisit();
+        let loads = common::get_fem_matriisi_loads();
+        let mut equation_handler = vputilslib::equation_handler::EquationHandler::new();
+        let gl_stiff_m = idfem::fem::stiffness::create_joined_stiffness_matrix(&elements, &nodes);
+        let gl_eq_loads_m = idfem::fem::equivalent_loads::create_joined_equivalent_loads(&elements, &nodes, &loads, &mut equation_handler);
+        let displacement = idfem::fem::fem_handler::calculate_displacements(&nodes, idfem::fem::utils::col_height(&nodes, &elements), &gl_stiff_m, &gl_eq_loads_m);
+        println!("{}", displacement);
+        assert!(relative_eq!(displacement[(0, 0)],   0.0000, max_relative = 0.01));
+        assert!(relative_eq!(displacement[(1, 0)],   0.0000, max_relative = 0.01));
+        assert!(relative_eq!(displacement[(2, 0)],  -0.0364, max_relative = 0.01));
+        assert!(relative_eq!(displacement[(3, 0)],  81.9357, max_relative = 0.01));
+        assert!(relative_eq!(displacement[(4, 0)],  -0.0444, max_relative = 0.01));
+        assert!(relative_eq!(displacement[(5, 0)],  -0.00394, max_relative = 0.01));
+        assert!(relative_eq!(displacement[(6, 0)],   0.0000, max_relative = 0.01));
+        assert!(relative_eq!(displacement[(7, 0)],   0.0000, max_relative = 0.01));
+        assert!(relative_eq!(displacement[(8, 0)],  -0.0274, max_relative = 0.01));
+        assert!(relative_eq!(displacement[(9, 0)],  81.9077, max_relative = 0.01));
+        assert!(relative_eq!(displacement[(10, 0)], -0.0698, max_relative = 0.01));
+        assert!(relative_eq!(displacement[(11, 0)], 00.001077, max_relative = 0.01));
+    }
+
+    #[test]
+    fn displacement_2() {
+        let (elements, nodes) = common::get_structure_fem_matriisit_releases();
+        let loads = common::get_fem_matriisi_loads();
+        let mut equation_handler = vputilslib::equation_handler::EquationHandler::new();
+        let gl_stiff_m = idfem::fem::stiffness::create_joined_stiffness_matrix(&elements, &nodes);
+        let gl_eq_loads_m = idfem::fem::equivalent_loads::create_joined_equivalent_loads(&elements, &nodes, &loads, &mut equation_handler);
+        let displacement = idfem::fem::fem_handler::calculate_displacements(&nodes, idfem::fem::utils::col_height(&nodes, &elements), &gl_stiff_m, &gl_eq_loads_m);
+        println!("{}", displacement);
+        assert!(relative_eq!(displacement[(0, 0)],   0.0000, max_relative = 0.01));
+        assert!(relative_eq!(displacement[(1, 0)],   0.0000, max_relative = 0.01));
+        assert!(relative_eq!(displacement[(2, 0)],   0.0000, max_relative = 0.01));
+        assert!(relative_eq!(displacement[(3, 0)],  45.7223, max_relative = 0.01));
+        assert!(relative_eq!(displacement[(4, 0)],  -0.0571, max_relative = 0.01));
+        assert!(relative_eq!(displacement[(5, 0)],  -0.00643, max_relative = 0.01));
+        assert!(relative_eq!(displacement[(6, 0)],   0.0000, max_relative = 0.01));
+        assert!(relative_eq!(displacement[(7, 0)],   0.0000, max_relative = 0.01));
+        assert!(relative_eq!(displacement[(8, 0)],   0.0000, max_relative = 0.01));
+        assert!(relative_eq!(displacement[(9, 0)],  45.7063, max_relative = 0.01));
+        assert!(relative_eq!(displacement[(10, 0)], -0.0571, max_relative = 0.01));
+        assert!(relative_eq!(displacement[(11, 0)],  0.00643, max_relative = 0.01));
+        assert!(relative_eq!(displacement[(12, 0)], -0.00953, max_relative = 0.01));
+        assert!(relative_eq!(displacement[(13, 0)], -0.02095, max_relative = 0.01));
+    }
+
+    #[test]
+    fn reactions_1() {
+        let (elements, nodes) = common::get_structure_fem_matriisit_releases();
+        let loads = common::get_fem_matriisi_loads();
+        let mut equation_handler = vputilslib::equation_handler::EquationHandler::new();
+        let gl_stiff_m = idfem::fem::stiffness::create_joined_stiffness_matrix(&elements, &nodes);
+        let gl_eq_loads_m = idfem::fem::equivalent_loads::create_joined_equivalent_loads(&elements, &nodes, &loads, &mut equation_handler);
+        let displacement = idfem::fem::fem_handler::calculate_displacements(&nodes, idfem::fem::utils::col_height(&nodes, &elements), &gl_stiff_m, &gl_eq_loads_m);
+        let reactions = idfem::fem::fem_handler::calculate_reactions(&gl_stiff_m, &displacement, &gl_eq_loads_m);
+        println!("{}", reactions);
+        // assert!(relative_eq!(reactions[(0, 0)],   0.0000, max_relative = 0.01));
+        // assert!(relative_eq!(reactions[(1, 0)],   0.0000, max_relative = 0.01));
+        // assert!(relative_eq!(reactions[(2, 0)],   0.0000, max_relative = 0.01));
+        // assert!(relative_eq!(reactions[(3, 0)],  -0.0107, max_relative = 0.01));
+        // assert!(relative_eq!(reactions[(4, 0)],   0.0571, max_relative = 0.01));
+        // assert!(relative_eq!(reactions[(5, 0)],   0.0064, max_relative = 0.01));
+        // assert!(relative_eq!(reactions[(6, 0)],   0.0000, max_relative = 0.01));
+        // assert!(relative_eq!(reactions[(7, 0)],   0.0000, max_relative = 0.01));
+        // assert!(relative_eq!(reactions[(8, 0)],   0.0000, max_relative = 0.01));
+        // assert!(relative_eq!(reactions[(9, 0)],   0.0107, max_relative = 0.01));
+        // assert!(relative_eq!(reactions[(10, 0)],  0.0571, max_relative = 0.01));
+        // assert!(relative_eq!(reactions[(11, 0)], -0.0064, max_relative = 0.01));
+        // assert!(relative_eq!(reactions[(12, 0)], -0.0076, max_relative = 0.01));
+        // assert!(relative_eq!(reactions[(13, 0)],  0.0076, max_relative = 0.01));
+    }
+
+    #[test]
     fn rotated_stiffness_matrix() {
         let end_point: VpPoint = geometry2d::rotate_point(
             &VpPoint::new(0.0, 0.0),
@@ -249,41 +323,10 @@ mod tests {
     fn joined_stiffness_matrix_fem_matriisit() {
         // See theory folders xls file (text is in finnish)
 
-        let mut nodes: HashMap<i32, Node> = HashMap::new();
-        nodes.insert(1, Node::new_hinged(1, VpPoint::new(0.0, 0.0)));
-        nodes.insert(2, Node::new_hinged(2, VpPoint::new(0.0, 4000.0)));
-        nodes.insert(
-            3,
-            Node::new_hinged(3, VpPoint::new(nodes[&2].point.x + 6000.0, 0.0)),
-        );
-        nodes.insert(
-            4,
-            Node::new_hinged(4, VpPoint::new(nodes[&3].point.x, nodes[&2].point.y)),
-        );
+        let (elements, nodes) = common::get_structure_fem_matriisit();
 
-        let e1: Element = Element::new(
-            1,
-            1,
-            2,
-            Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
-            MaterialType::Steel(Steel::new(210e3)),
-        );
-        let e2: Element = Element::new(
-            2,
-            2,
-            4,
-            Profile::new_rectangle("R200x100".to_string(), 200.0, 100.0),
-            MaterialType::Steel(Steel::new(210e3)),
-        );
-        let e3: Element = Element::new(
-            3,
-            4,
-            3,
-            Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
-            MaterialType::Steel(Steel::new(210e3)),
-        );
 
-        let joined = idfem::fem::stiffness::create_joined_stiffness_matrix(&vec![e1, e2, e3], &nodes);
+        let joined = idfem::fem::stiffness::create_joined_stiffness_matrix(&elements, &nodes);
         for i in 0..12 {
             for j in 0..12 {
                 let val = joined[(i,j)];
@@ -322,7 +365,7 @@ mod tests {
     fn joined_stiffness_matrix_fem_matriisit_releases() {
         // See theory folders xls file (text is in finnish)
 
-        let (elements, nodes) = common::get_fem_matriisit_releases_structure();
+        let (elements, nodes) = common::get_structure_fem_matriisit_releases();
 
         let joined = idfem::fem::stiffness::create_joined_stiffness_matrix(&elements, &nodes);
         
@@ -366,7 +409,7 @@ mod tests {
     #[test]
     fn t_get_unknown_translation_rows() {
         
-        let (elements, nodes) = common::get_fem_matriisit_releases_structure();
+        let (elements, nodes) = common::get_structure_fem_matriisit_releases();
 
         let global_stiff_matrix = idfem::fem::stiffness::create_joined_stiffness_matrix(&elements, &nodes);
         
