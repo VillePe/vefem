@@ -2,17 +2,17 @@
 
 #[derive(Debug)]
 pub struct Release {
-    /// Start release in elements local X-axis
+    /// Start release in elements local X-axis. If set to true, the translation in X-axis is released
     pub s_tx: bool,
-    /// Start release in elements local Z-axis
+    /// Start release in elements local Z-axis. If set to true, the translation in Z-axis is released
     pub s_tz: bool,
-    /// Start rotation release about elements local Y-axis
+    /// Start rotation release about elements local Y-axis. If set to true, the rotation about Y-axis is released
     pub s_ry: bool,
-    /// End release in elements local X-axis
+    /// End release in elements local X-axis. If set to true, the translation in X-axis is released
     pub e_tx: bool,
-    /// End release in elements local Z-axis
+    /// End release in elements local Z-axis. If set to true, the translation in Z-axis is released
     pub e_tz: bool,
-    /// End rotation release about elements local Y-axis
+    /// End rotation release about elements local Y-axis. If set to true, the rotation about Y-axis is released
     pub e_ry: bool,
 }
 impl Release {

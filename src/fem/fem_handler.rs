@@ -8,6 +8,8 @@ use crate::fem::stiffness::create_joined_stiffness_matrix;
 use crate::loads::Load;
 use crate::structure::{Element, Node};
 
+use super::matrices::{get_unknown_translation_eq_loads_rows, get_unknown_translation_rows, get_unknown_translation_stiffness_rows};
+
 pub fn calculate_displacements(
     elements: &Vec<Element>,
     nodes: &HashMap<i32, Node>,
@@ -26,6 +28,10 @@ pub fn calculate_displacements(
     
     let global_stiff_matrix = create_joined_stiffness_matrix(elements, nodes);
     let global_equivalent_loads_matrix = create_joined_equivalent_loads(elements, nodes, loads, equation_handler);
+
+    let unknown_translation_rows = get_unknown_translation_rows(nodes, &global_stiff_matrix);
+    let unknown_translation_stiffness_rows = get_unknown_translation_stiffness_rows(&unknown_translation_rows, &global_stiff_matrix);
+    let unknown_eq_loads_rows = get_unknown_translation_eq_loads_rows(&unknown_translation_rows, &global_equivalent_loads_matrix);
     
 
     DMatrix::from_row_slice(col_height, 1, &matrix_vector)

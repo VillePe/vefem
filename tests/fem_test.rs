@@ -1,14 +1,19 @@
-﻿#[cfg(test)]
+﻿mod common;
+
+#[cfg(test)]
 mod tests {
     use std::collections::HashMap;
+    use idfem::fem::matrices::{get_unknown_translation_eq_loads_rows, get_unknown_translation_rows, get_unknown_translation_stiffness_rows};
     use idfem::material::Steel;
-    use idfem::structure::{Element};
+    use idfem::structure::{element, Element};
     use idfem::structure::element::MaterialType;
     use idfem::structure::Node;
     use idfem::structure::Profile;
     use approx::relative_eq;
     use vputilslib::geometry2d;
     use vputilslib::geometry2d::VpPoint;
+
+    use crate::common;
 
     #[test]
     fn rotated_stiffness_matrix() {
@@ -317,38 +322,7 @@ mod tests {
     fn joined_stiffness_matrix_fem_matriisit_releases() {
         // See theory folders xls file (text is in finnish)
 
-        let mut nodes: HashMap<i32, Node> = HashMap::new();
-        nodes.insert(1, Node::new_hinged(1, VpPoint::new(0.0, 0.0)));
-        nodes.insert(2, Node::new_hinged(2, VpPoint::new(0.0, 4000.0)));
-        nodes.insert(3, Node::new_hinged(3, VpPoint::new(nodes[&2].point.x + 6000.0, 0.0)));
-        nodes.insert(4, Node::new_hinged(4, VpPoint::new(nodes[&3].point.x, nodes[&2].point.y)));
-
-        let mut e1: Element = Element::new(
-            1,
-            1,
-            2,
-            Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
-            MaterialType::Steel(Steel::new(210e3)),
-        );
-        let e2: Element = Element::new(
-            2,
-            2,
-            4,
-            Profile::new_rectangle("R200x100".to_string(), 200.0, 100.0),
-            MaterialType::Steel(Steel::new(210e3)),
-        );
-        let mut e3: Element = Element::new(
-            3,
-            3,
-            4,
-            Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
-            MaterialType::Steel(Steel::new(210e3)),
-        );
-
-        e1.releases.e_ry = true;
-        e3.releases.e_ry = true;
-        
-        let elements = vec![e1, e2, e3];
+        let (elements, nodes) = common::get_fem_matriisit_releases_structure();
 
         let joined = idfem::fem::stiffness::create_joined_stiffness_matrix(&elements, &nodes);
         
@@ -387,5 +361,29 @@ mod tests {
         assert!(relative_eq!(joined[(8, 13)], 8.75e08, max_relative = 0.01));
         assert!(relative_eq!(joined[(9, 13)], 6.56e05, max_relative = 0.01));
         assert!(relative_eq!(joined[(13, 13)], 1.75e09, max_relative = 0.01));
+    }    
+
+    #[test]
+    fn t_get_unknown_translation_rows() {
+        
+        let (elements, nodes) = common::get_fem_matriisit_releases_structure();
+
+        let global_stiff_matrix = idfem::fem::stiffness::create_joined_stiffness_matrix(&elements, &nodes);
+        
+        let unknown_translation_rows = get_unknown_translation_rows(&nodes, &global_stiff_matrix);        
+        let stiff_results = get_unknown_translation_stiffness_rows(&unknown_translation_rows, &global_stiff_matrix);
+
+        println!("Stiffness matrix:");
+        for i in 0..stiff_results.nrows() {
+            for j in 0..stiff_results.ncols() {
+                let val = stiff_results[(i,j)];
+                if val.abs() < 0.001 {
+                    print!("{:>9.0}, ",  stiff_results[(i,j)]);
+                } else {
+                    print!("{:>9.02e}, ", stiff_results[(i,j)]);
+                }
+            }
+            println!();
+        }
     }
 }

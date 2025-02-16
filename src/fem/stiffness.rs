@@ -25,8 +25,7 @@ pub fn get_element_stiffness_matrix(element: &Element, nodes: &HashMap<i32, Node
     };
     let L = element.get_length(nodes);
     let A = element.profile.get_area();
-    let I = element.profile.get_major_second_mom_of_area();
-    println!("{I}");
+    let I = element.profile.get_major_second_mom_of_area();    
     let EA = E*A;
     let EI = E*I;
     DMatrix::from_row_slice(6,6, &[

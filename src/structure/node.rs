@@ -10,24 +10,40 @@ pub struct Node {
 
 impl Node {
 
-    /// Creates new node
+    /// Creates new node (support lock values are all free)
     pub fn new(number: i32, point: VpPoint, support: Support) -> Self {
         Self { number, point, support }
+    }
+
+    /// Creates new node that has the free support lock values (translations not locked, rotation not locked)
+    pub fn new_free(number: i32, point: VpPoint) -> Self {
+        Self{number, point, support: Support::new()}
     }
 
     /// Creates new node that has the hinged support lock values (translations locked, rotation not locked)
     pub fn new_hinged(number: i32, point: VpPoint) -> Self {
         Self{number, point, support: Support::new_hinged()}
     }
+
+    /// Creates new node that has the fixed support lock values (translations locked, rotation locked)
+    pub fn new_fixed(number: i32, point: VpPoint) -> Self {
+        Self{number, point, support: Support::new_fixed()}
+    }
 }
 
 #[derive(Debug)]
 pub struct Support {
+    /// If set to true, the translation in the global X-axis is locked at current node
     pub tx: bool,
+    /// If set to true, the translation in the global Z-axis is locked at current node
     pub tz: bool,
+    /// If set to true, the translation about the global Y-axis is locked at current node
     pub ry: bool,
+    /// The spring constant in global X-axis
     pub x_spring: f64,
+    /// The spring constant in global Y-axis
     pub z_spring: f64,
+    /// The spring constant about global Y-axis
     pub r_spring: f64,
 }
 impl Support {
@@ -40,6 +56,21 @@ impl Support {
     /// Creates new support that is hinged (translations locked, rotation not locked)
     pub fn new_hinged() -> Self {
         Self{tx:true, tz:true, ..Default::default()}
+    }
+
+    /// Creates new support that is hinged (translations locked, rotation not locked)
+    pub fn new_fixed() -> Self {
+        Self{tx:true, tz:true, ry:true, ..Default::default()}
+    }
+    
+    /// Returns true if the support translation is free at given index (0=tx, 1=tz, 2=ry)
+    pub fn get_support_lock(&self, index: usize) -> bool {
+        match index { 
+            0 => self.tx,
+            1 => self.tz,
+            2 => self.ry, 
+            _ => panic!("Tried to get degree of freedom from support outside of degrees of freedom count!")
+        }
     }
 }
 impl Default for Support {
