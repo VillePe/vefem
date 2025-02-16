@@ -73,20 +73,20 @@ mod tests {
         let displacement = idfem::fem::fem_handler::calculate_displacements(&nodes, idfem::fem::utils::col_height(&nodes, &elements), &gl_stiff_m, &gl_eq_loads_m);
         let reactions = idfem::fem::fem_handler::calculate_reactions(&gl_stiff_m, &displacement, &gl_eq_loads_m);
         println!("{}", reactions);
-        // assert!(relative_eq!(reactions[(0, 0)],   0.0000, max_relative = 0.01));
-        // assert!(relative_eq!(reactions[(1, 0)],   0.0000, max_relative = 0.01));
-        // assert!(relative_eq!(reactions[(2, 0)],   0.0000, max_relative = 0.01));
-        // assert!(relative_eq!(reactions[(3, 0)],  -0.0107, max_relative = 0.01));
-        // assert!(relative_eq!(reactions[(4, 0)],   0.0571, max_relative = 0.01));
-        // assert!(relative_eq!(reactions[(5, 0)],   0.0064, max_relative = 0.01));
-        // assert!(relative_eq!(reactions[(6, 0)],   0.0000, max_relative = 0.01));
-        // assert!(relative_eq!(reactions[(7, 0)],   0.0000, max_relative = 0.01));
-        // assert!(relative_eq!(reactions[(8, 0)],   0.0000, max_relative = 0.01));
-        // assert!(relative_eq!(reactions[(9, 0)],   0.0107, max_relative = 0.01));
-        // assert!(relative_eq!(reactions[(10, 0)],  0.0571, max_relative = 0.01));
-        // assert!(relative_eq!(reactions[(11, 0)], -0.0064, max_relative = 0.01));
-        // assert!(relative_eq!(reactions[(12, 0)], -0.0076, max_relative = 0.01));
-        // assert!(relative_eq!(reactions[(13, 0)],  0.0076, max_relative = 0.01));
+        assert!(relative_eq!(reactions[(0, 0)],  -2.875e4, max_relative = 0.01));
+        assert!(relative_eq!(reactions[(1, 0)],   3.000e4, max_relative = 0.01));
+        assert!(relative_eq!(reactions[(2, 0)],   3.50e7,  max_relative = 0.01));
+        assert!((            reactions[(3, 0)].round() == 0.0));
+        assert!((            reactions[(4, 0)].round() == 0.0));
+        assert!((            reactions[(5, 0)].round() == 0.0));
+        assert!(relative_eq!(reactions[(6, 0)],   8.75e3,  max_relative = 0.01));
+        assert!(relative_eq!(reactions[(7, 0)],   3.00e4,  max_relative = 0.01));
+        assert!(relative_eq!(reactions[(8, 0)],   4.99e6,  max_relative = 0.01));
+        assert!((            reactions[(9, 0)].round() == 0.0));
+        assert!((            reactions[(10, 0)].round() == 0.0));
+        assert!((            reactions[(11, 0)].round() == 0.0));
+        assert!((            reactions[(12, 0)].round() == 0.0));
+        assert!((            reactions[(13, 0)].round() == 0.0));
     }
 
     #[test]
