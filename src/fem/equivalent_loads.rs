@@ -84,9 +84,7 @@ pub fn get_element_global_equivalent_loads(
         match load.load_type {
             LoadType::Point => {
                 let element_eql_matrix_lc = handle_point_load(el_length, el_rotation, load, equation_handler);
-                println!("PL#1");
                 let element_eql_matrix_gl = &rot_matrix * element_eql_matrix_lc;
-                println!("PL#2");
                 result_vector += element_eql_matrix_gl;
             }
             LoadType::Line => {
@@ -112,11 +110,14 @@ pub fn get_element_global_equivalent_loads(
                 if split.len() == 2 || split.len() == 1 {
                     let start_strength = equation_handler.calculate_formula(split[0]).unwrap_or(0.0);
                     let end_strength = equation_handler.calculate_formula(split[0]).unwrap_or(0.0);
-                    let (line_load, tri_load) = loads::utils::split_trapezoid_load(load, start_strength, end_strength);
-                    let element_eql_matrix_lc = handle_line_load(el_length, el_rotation, &line_load, equation_handler);
+                    let (line_load, tri_load) = loads::utils::split_trapezoid_load_with_strengths(
+                        load, start_strength, end_strength);
+                    let element_eql_matrix_lc = handle_line_load(el_length, el_rotation, &line_load, 
+                        equation_handler);
                     let element_eql_matrix_gl = &rot_matrix * element_eql_matrix_lc;
                     result_vector += element_eql_matrix_gl;
-                    let element_eql_matrix_lc = handle_line_load(el_length, el_rotation, &tri_load, equation_handler);
+                    let element_eql_matrix_lc = handle_line_load(el_length, el_rotation, &tri_load, 
+                        equation_handler);
                     let element_eql_matrix_gl = &rot_matrix * element_eql_matrix_lc;
                     result_vector += element_eql_matrix_gl;
                 } else {
@@ -172,7 +173,7 @@ fn handle_point_load(
     el_length: f64,
     el_rotation: f64,
     load: &Load,
-    equation_handler: &mut EquationHandler,
+    equation_handler: &EquationHandler,
 ) -> DMatrix<f64> {
     let load_strength: f64 = equation_handler
         .calculate_formula(load.strength.as_str())
@@ -209,7 +210,7 @@ fn handle_point_load(
 fn handle_rotational_load(
     el_length: f64,
     load: &Load,
-    equation_handler: &mut EquationHandler,
+    equation_handler: &EquationHandler,
 ) -> DMatrix<f64> {
     let load_strength: f64 = equation_handler
         .calculate_formula(load.strength.as_str())
@@ -238,7 +239,7 @@ fn handle_line_load(
     el_length: f64,
     el_rotation: f64,
     load: &Load,
-    equation_handler: &mut EquationHandler,
+    equation_handler: &EquationHandler,
 ) -> DMatrix<f64> {
     let load_strength: f64 = equation_handler
         .calculate_formula(load.strength.as_str())
@@ -292,7 +293,7 @@ fn handle_triangular_load(
     el_length: f64,
     el_rotation: f64,
     load: &Load,
-    equation_handler: &mut EquationHandler,
+    equation_handler: &EquationHandler,
 ) -> DMatrix<f64> {
     let load_strength: f64 = equation_handler
         .calculate_formula(load.strength.as_str())
@@ -376,7 +377,7 @@ fn get_eq_loads_with_partial_eq_loads(
     pl_ev_strength: f64,
     rl_start_strength: f64,
     rl_end_strength: f64,
-    equation_handler: &mut EquationHandler,
+    equation_handler: &EquationHandler,
     swap_offsets: bool,
 ) -> DMatrix<f64> {
     let dof = 3;

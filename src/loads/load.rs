@@ -69,7 +69,7 @@ impl Load {
         Self{name, element_numbers, strength, load_type: Thermal, ..Self::default()}
     }
     
-    pub fn get_length(&self, equation_handler: &mut EquationHandler) -> f64 {
+    pub fn get_length(&self, equation_handler: &EquationHandler) -> f64 {
         let off_end = equation_handler.calculate_formula(&self.offset_end).unwrap_or(0.0);
         let off_start = equation_handler.calculate_formula(&self.offset_start).unwrap_or(0.0);
         (off_end - off_start).abs()
@@ -103,4 +103,22 @@ pub enum LoadType {
     Trapezoid,
     Strain,
     Thermal,
+}
+
+#[derive(Debug)]
+pub enum CalculationLoadType {
+    Point,
+    Line,
+    Triangular,
+    Rotational,
+    Strain,
+}
+
+pub struct CalculationLoad {
+    pub load_type: CalculationLoadType,
+    pub offset_start: f64,
+    pub offset_end: f64,
+    pub strength: f64,
+    pub rotation: f64,
+    pub element_number: i32,
 }

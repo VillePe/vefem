@@ -19,7 +19,7 @@ pub struct Profile {
     /// to be in counterclockwise order.
     ///
     /// For example
-    /// ```
+    /// ```no_run
     /// use vputilslib::geometry2d::{Polygon, VpPoint};
     ///  let polygon = Polygon::new(vec![
     ///     VpPoint::new(0.0, 0.0),

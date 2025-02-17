@@ -34,14 +34,12 @@ pub fn get_unknown_translation_rows(nodes: &HashMap<i32, Node>, matrix: &DMatrix
         for i in 0..dof {
             // If the support translation is not locked -> row translation is unkown and add it to vector
             if !n.1.support.get_support_lock(i) {
-                println!("Node: {}, dir: {}", n.1.number, i);
                 result.push((n.1.number - 1) * dof as i32 + i as i32);
             }
         }
     }
     // Gather the rows of element releases
     for i in (node_count * dof)..matrix.nrows() {
-        println!("Release: {}", i);
         result.push(i as i32);
     }
 
