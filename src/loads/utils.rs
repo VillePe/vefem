@@ -1,9 +1,9 @@
 ﻿use std::collections::HashMap;
 
-use vputilslib::equation_handler::{EquationHandler};
+use vputilslib::equation_handler::EquationHandler;
 
 use crate::loads::load::Load;
-use crate::structure::{element, Element, Node};
+use crate::structure::{Element, Node};
 
 use super::load::CalculationLoad;
 

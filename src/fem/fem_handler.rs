@@ -6,7 +6,6 @@ use crate::loads::{utils, Load};
 use crate::structure::{Element, Node};
 use nalgebra::DMatrix;
 use std::collections::HashMap;
-use std::time::SystemTime;
 use vputilslib::equation_handler::EquationHandler;
 
 use crate::fem::matrices::{
@@ -144,7 +143,7 @@ mod tests {
 
     use crate::{loads::Load, material::Steel, structure::{element::MaterialType, Element, Node, Profile}};
 
-    use super::{calculate, invert_stiff_matrix};
+    use super::calculate;
 
 
     #[test]

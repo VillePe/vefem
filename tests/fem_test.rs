@@ -4,14 +4,14 @@
 mod tests {
     use approx::relative_eq;
     use idfem::fem::matrices::{
-        get_unknown_translation_eq_loads_rows, get_unknown_translation_rows,
+        get_unknown_translation_rows,
         get_unknown_translation_stiffness_rows,
     };
     use idfem::material::Steel;
     use idfem::structure::element::MaterialType;
     use idfem::structure::Node;
     use idfem::structure::Profile;
-    use idfem::structure::{element, Element};
+    use idfem::structure::Element;
     use std::collections::HashMap;
     use vputilslib::geometry2d;
     use vputilslib::geometry2d::VpPoint;

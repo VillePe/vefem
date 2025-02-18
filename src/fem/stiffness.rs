@@ -1,6 +1,5 @@
-﻿use core::time;
+﻿#![allow(non_snake_case)]
 use std::collections::HashMap;
-use std::time::SystemTime;
 use nalgebra::DMatrix;
 use crate::fem::matrices::get_element_rotation_matrix;
 use crate::structure::element::{Element, MaterialType};
@@ -10,8 +9,8 @@ use crate::structure::Node;
 pub fn get_element_global_stiffness_matrix(e: &Element, nodes: &HashMap<i32, Node>) -> DMatrix<f64> {
     let e_stiff_matrix = get_element_stiffness_matrix(&e, nodes);
     let e_rotation_matrix = get_element_rotation_matrix(&e, nodes);
-    let e_rot_matrix_T = e_rotation_matrix.transpose();
-    let e_glob_stiff_matrix = e_rot_matrix_T * e_stiff_matrix * e_rotation_matrix;
+    let e_rot_matrix_t = e_rotation_matrix.transpose();
+    let e_glob_stiff_matrix = e_rot_matrix_t * e_stiff_matrix * e_rotation_matrix;
     e_glob_stiff_matrix
 }
 

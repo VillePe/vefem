@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use nalgebra::{zero, DMatrix};
+use nalgebra::DMatrix;
 use vputilslib::equation_handler::EquationHandler;
 
 use crate::structure::{Element, Node};
