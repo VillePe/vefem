@@ -1,4 +1,6 @@
-﻿use std::collections::HashMap;
+﻿use core::time;
+use std::collections::HashMap;
+use std::time::SystemTime;
 use nalgebra::DMatrix;
 use crate::fem::matrices::get_element_rotation_matrix;
 use crate::structure::element::{Element, MaterialType};
@@ -132,5 +134,6 @@ pub fn create_joined_stiffness_matrix(
         }
     }
 
-    DMatrix::from_row_slice(row_width, row_width, &matrix_vector)
+    DMatrix::from_vec(row_width, row_width, matrix_vector)
+    // DMatrix::from_row_slice(row_width, row_width, &matrix_vector)
 }

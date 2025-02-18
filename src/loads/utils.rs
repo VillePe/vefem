@@ -3,7 +3,7 @@
 use vputilslib::equation_handler::{EquationHandler};
 
 use crate::loads::load::Load;
-use crate::structure::{Element, Node};
+use crate::structure::{element, Element, Node};
 
 use super::load::CalculationLoad;
 
@@ -128,18 +128,15 @@ mod tests {
 /// * `eq_handler` - Equation handler with pre initialized variables. Variable 'L' is preserved for element length.
 pub fn extract_calculation_loads(elements: &Vec<Element>, nodes: &HashMap<i32, Node>, loads: &Vec<Load>, eq_handler: &EquationHandler
 ) -> Vec<CalculationLoad> {
-    let mut bare_loads : Vec<CalculationLoad> = Vec::new();
+    let mut calc_loads : Vec<CalculationLoad> = Vec::new();
     let mut temp_eq_handler = eq_handler.clone();
     for load in loads {
         let rotation = load.rotation;
-        let element_numbers = get_linked_element_numbers(&load);
-        for element_number in element_numbers {
-            let element = elements.iter().find(|e| e.number == element_number);
-            if element.is_none() {
-                println!("Element with number {} not found!", element_number);
+        for element in elements {
+            if !load_is_linked(&element, load) {
                 continue;
             }
-            let element = element.unwrap();
+            let element_number = element.number;
             let el_length = element.get_length(nodes);
             temp_eq_handler.set_variable("L", el_length);
             let offset_start = temp_eq_handler.calculate_formula(&load.offset_start).unwrap_or(0.0);
@@ -147,17 +144,17 @@ pub fn extract_calculation_loads(elements: &Vec<Element>, nodes: &HashMap<i32, N
             let strength = temp_eq_handler.calculate_formula(&load.strength).unwrap_or(0.0);
             match load.load_type {
                 crate::loads::load::LoadType::Point => {
-                    let bare_load = CalculationLoad {
+                    let calc_load = CalculationLoad {
                         offset_start, 
                         strength, 
                         rotation, 
                         element_number, 
                         load_type: super::load::CalculationLoadType::Point, 
                         offset_end: 0.0 };
-                    bare_loads.push(bare_load);  
+                    calc_loads.push(calc_load);  
                 }
                 super::load::LoadType::Line => {
-                    let bare_load = CalculationLoad {
+                    let calc_load = CalculationLoad {
                         offset_start, 
                         offset_end,
                         strength,  
@@ -165,10 +162,10 @@ pub fn extract_calculation_loads(elements: &Vec<Element>, nodes: &HashMap<i32, N
                         element_number, 
                         load_type: super::load::CalculationLoadType::Line,
                         };
-                    bare_loads.push(bare_load);
+                    calc_loads.push(calc_load);
                 },
                 super::load::LoadType::Triangular => {
-                    let bare_load = CalculationLoad {
+                    let calc_load = CalculationLoad {
                         offset_start, 
                         offset_end,
                         strength,
@@ -176,10 +173,10 @@ pub fn extract_calculation_loads(elements: &Vec<Element>, nodes: &HashMap<i32, N
                         element_number, 
                         load_type: super::load::CalculationLoadType::Triangular,
                         };
-                    bare_loads.push(bare_load);
+                    calc_loads.push(calc_load);
                 },
                 super::load::LoadType::Rotational => {
-                    let bare_load = CalculationLoad {
+                    let calc_load = CalculationLoad {
                         offset_start, 
                         offset_end,
                         strength,
@@ -187,12 +184,12 @@ pub fn extract_calculation_loads(elements: &Vec<Element>, nodes: &HashMap<i32, N
                         element_number, 
                         load_type: super::load::CalculationLoadType::Line,
                         };
-                    bare_loads.push(bare_load);
+                    calc_loads.push(calc_load);
                 },
                 super::load::LoadType::Trapezoid => {
                     let (ll, tl) = crate::loads::utils::split_trapezoid_load(load, &temp_eq_handler);
                     let strength = temp_eq_handler.calculate_formula(&ll.strength).unwrap_or(0.0);
-                    let bare_ll_load = CalculationLoad {
+                    let calc_ll_load = CalculationLoad {
                         offset_start, 
                         offset_end,
                         strength,
@@ -200,11 +197,11 @@ pub fn extract_calculation_loads(elements: &Vec<Element>, nodes: &HashMap<i32, N
                         element_number, 
                         load_type: super::load::CalculationLoadType::Line,
                         };
-                    bare_loads.push(bare_ll_load);
+                    calc_loads.push(calc_ll_load);
                     let offset_start = temp_eq_handler.calculate_formula(&tl.offset_start).unwrap_or(0.0);
                     let offset_end = temp_eq_handler.calculate_formula(&tl.offset_end).unwrap_or(0.0);
                     let strength = temp_eq_handler.calculate_formula(&tl.strength).unwrap_or(0.0);
-                    let bare_tl_load = CalculationLoad {
+                    let calc_tl_load = CalculationLoad {
                         offset_start, 
                         offset_end,
                         strength,
@@ -212,10 +209,10 @@ pub fn extract_calculation_loads(elements: &Vec<Element>, nodes: &HashMap<i32, N
                         element_number, 
                         load_type: super::load::CalculationLoadType::Triangular,
                         };
-                    bare_loads.push(bare_tl_load);
+                    calc_loads.push(calc_tl_load);
                 },
                 super::load::LoadType::Strain => {
-                    let bare_load = CalculationLoad {
+                    let calc_load = CalculationLoad {
                         offset_start, 
                         offset_end,
                         strength,
@@ -223,14 +220,14 @@ pub fn extract_calculation_loads(elements: &Vec<Element>, nodes: &HashMap<i32, N
                         element_number, 
                         load_type: super::load::CalculationLoadType::Strain,
                         };
-                    bare_loads.push(bare_load);
+                    calc_loads.push(calc_load);
                 },
                 super::load::LoadType::Thermal => {                    
                     // Convert the thermal coefficient to strain load
                     let thermal_coefficient =
                         crate::material::get_thermal_expansion_coefficient(&element.material);
                     let displacement = strength * thermal_coefficient * el_length;
-                    let bare_load = CalculationLoad {
+                    let calc_load = CalculationLoad {
                         offset_start, 
                         offset_end,
                         strength: displacement,
@@ -238,11 +235,11 @@ pub fn extract_calculation_loads(elements: &Vec<Element>, nodes: &HashMap<i32, N
                         element_number, 
                         load_type: super::load::CalculationLoadType::Strain,
                         };
-                    bare_loads.push(bare_load);
+                    calc_loads.push(calc_load);
                 },
             }
         }
     }
 
-    bare_loads
+    calc_loads
 }

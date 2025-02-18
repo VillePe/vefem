@@ -55,7 +55,7 @@ pub fn create_joined_equivalent_loads(
         }
     }
 
-    DMatrix::from_row_slice(col_height, 1, &matrix_vector)
+    DMatrix::from_vec(col_height, 1, matrix_vector)
 }
 
 /// Creates the equivalent load matrix in global coordinates for given element

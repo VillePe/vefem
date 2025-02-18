@@ -6,6 +6,7 @@ use crate::loads::{utils, Load};
 use crate::structure::{Element, Node};
 use nalgebra::DMatrix;
 use std::collections::HashMap;
+use std::time::SystemTime;
 use vputilslib::equation_handler::EquationHandler;
 
 use crate::fem::matrices::{
@@ -72,14 +73,22 @@ pub fn calculate_displacements(
     let unknown_eq_loads_rows = get_unknown_translation_eq_loads_rows(
         &unknown_translation_rows,
         &global_equivalent_loads_matrix,
-    );
-
-    let stiffness_matrix_inverted = unknown_translation_stiffness_rows.try_inverse();
-    let displacement = if let Some(inverted) = stiffness_matrix_inverted {
-        inverted * unknown_eq_loads_rows
+    );    
+    let displacement : DMatrix<f64>;
+    // If there are big number of rows with unknown translations, use cholesky decomposition for
+    // solving the system of equations. Otherwise use regular inversion (might not be necessary, 
+    // maybe could always solve with cholesky. Could be benchmarked).
+    if unknown_translation_stiffness_rows.nrows() > 100 {
+        displacement = displacements_cholesky(unknown_translation_stiffness_rows, &unknown_eq_loads_rows).unwrap_or(DMatrix::zeros(col_height, 1));
     } else {
-        DMatrix::zeros(col_height, 1)
-    };
+        let stiffness_matrix_inverted = invert_stiff_matrix(unknown_translation_stiffness_rows);
+
+        displacement = if let Some(inverted) = stiffness_matrix_inverted {
+            inverted * unknown_eq_loads_rows
+        } else {
+            DMatrix::zeros(col_height, 1)
+        };
+    }    
     // Create the full displacement matrix by adding the calculated displacements to the unknown
     // displacements (other rows are zero)
     let mut full_displacement_matrix: DMatrix<f64> = DMatrix::zeros(col_height, 1);
@@ -88,6 +97,26 @@ pub fn calculate_displacements(
     }
 
     full_displacement_matrix
+}
+
+/// Calculates the displacements using cholesky decomposition for given rows that have unknown translations
+/// * 'unknown_translation_stiffness_rows' - stiffness matrix rows that have unknown translations
+/// * 'unknown_eq_loads' - equivalent loads at the same rows as the stiffness matrix
+fn displacements_cholesky(unknown_translation_stiffness_rows: DMatrix<f64>, unknown_eq_loads: &DMatrix<f64>) -> Option<DMatrix<f64>> {
+    match unknown_translation_stiffness_rows.cholesky() {
+        Some(cholesky) => {   
+            Some(cholesky.solve(&unknown_eq_loads))
+        },
+        None => None,
+    }
+}
+
+/// Creates the inverted stiffness matrix for given matrix. If the matrix is larger than 100x100,
+/// cholesky decomposition is used for inversion. Otherwise regular inversion is used.
+/// * 'matrix' - matrix to invert (should be the stiffness matrix with uknonwn translations)
+fn invert_stiff_matrix(matrix: DMatrix<f64>) -> Option<DMatrix<f64>> {
+    println!("Using regular inversion...");
+    return matrix.try_inverse()
 }
 
 /// Calculates the support reaction matrix for given elements, nodes and loads. The reaction matrix
@@ -109,7 +138,40 @@ pub fn calculate_reactions(
 
 #[cfg(test)]
 mod tests {
+    use std::{collections::HashMap, time::SystemTime};
+
+    use vputilslib::{equation_handler::EquationHandler, geometry2d::VpPoint};
+
+    use crate::{loads::Load, material::Steel, structure::{element::MaterialType, Element, Node, Profile}};
+
+    use super::{calculate, invert_stiff_matrix};
+
 
     #[test]
     fn it_works() {}
+
+    #[test]
+    fn t_simple_benchmark_calculation() {
+        let mut elements : Vec<Element>  = vec![];
+        let mut nodes: HashMap<i32, Node> = HashMap::new();
+        nodes.insert(1, Node::new_hinged(1, VpPoint::new(0.0, 0.0)));
+        // Create multiple 4 meter long elements to test the speed of calculations
+        for i in 0..100 {
+            nodes.insert(i+2, Node::new_hinged(i+2, VpPoint::new(((i+1) as f64)*4000.0f64, 0.0)));
+            elements.push(Element::new(i+1, i+1, i+2, 
+                Profile::new_rectangle("100x100".to_string(), 100.0, 100.0), 
+                MaterialType::Steel(Steel::new(210e3))));
+        }
+        let timer = SystemTime::now();
+        let load = Load::new_line_load("Lineload".to_string(), "-1".to_string(), "0".to_string(), "L".to_string(), "10".to_string(), -90.0);
+
+        let results = calculate(&elements, &nodes, &vec![load], &mut EquationHandler::new());
+        println!("Calculation time: {:?}", timer.elapsed().unwrap());
+        println!("Element count: {}", elements.len());
+        println!("Node count: {}", nodes.len());
+        println!("Result displacement row count: {:?}", results.displacements.nrows());
+        println!("Support reaction (0,1): {} kN", results.get_support_reaction(1, 1)/1000.0);
+    }
+    
+
 }
