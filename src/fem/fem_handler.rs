@@ -29,7 +29,7 @@ pub fn calculate(
 ) -> NodeResults {
     let col_height = crate::fem::utils::col_height(nodes, elements);
 
-    let calculation_loads = utils::extract_calculation_loads(elements, nodes, loads, equation_handler);
+    let _calculation_loads = utils::extract_calculation_loads(elements, nodes, loads, equation_handler);
 
     let global_stiff_matrix = create_joined_stiffness_matrix(elements, nodes);
     let global_equivalent_loads_matrix =
@@ -145,17 +145,13 @@ mod tests {
 
     use super::calculate;
 
-
-    #[test]
-    fn it_works() {}
-
     #[test]
     fn t_simple_benchmark_calculation() {
         let mut elements : Vec<Element>  = vec![];
         let mut nodes: HashMap<i32, Node> = HashMap::new();
         nodes.insert(1, Node::new_hinged(1, VpPoint::new(0.0, 0.0)));
         // Create multiple 4 meter long elements to test the speed of calculations
-        for i in 0..100 {
+        for i in 0..1000 {
             nodes.insert(i+2, Node::new_hinged(i+2, VpPoint::new(((i+1) as f64)*4000.0f64, 0.0)));
             elements.push(Element::new(i+1, i+1, i+2, 
                 Profile::new_rectangle("100x100".to_string(), 100.0, 100.0), 

@@ -182,7 +182,7 @@ pub fn extract_calculation_loads(elements: &Vec<Element>, nodes: &HashMap<i32, N
                         strength,
                         rotation, 
                         element_number, 
-                        load_type: super::load::CalculationLoadType::Line,
+                        load_type: super::load::CalculationLoadType::Rotational,
                         };
                     calc_loads.push(calc_load);
                 },
