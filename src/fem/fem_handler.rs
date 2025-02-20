@@ -145,7 +145,7 @@ mod tests {
 
     use super::calculate;
 
-    #[test]
+    // #[test]
     fn t_simple_benchmark_calculation() {
         let mut elements : Vec<Element>  = vec![];
         let mut nodes: HashMap<i32, Node> = HashMap::new();

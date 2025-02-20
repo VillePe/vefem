@@ -324,36 +324,33 @@ mod tests {
         let results = idfem::fem::fem_handler::calculate(&elements, &nodes, &loads, &mut EquationHandler::new());
         let shear = calculate_shear_at(1000.0, &elements[0], &nodes, &cacl_loads, &results);
         
-        // TODO
-        assert!(false);
-
         println!("Shear(1000): {} kN", shear/1e3);
-        assert_eq!(relative_eq!(shear, (20000.0*1000.0-(10.0*1000.0*1000.0/2.0)), epsilon = 1.0), true);
+        assert_eq!(relative_eq!(shear, (10.0*4.0/2.0-10.0*1.0)*1e3, epsilon = 1.0), true);
         let shear = calculate_shear_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
         println!("Shear(2000): {} kN", shear/1e3);
-        assert_eq!(relative_eq!(shear, 10.0*4000f64.powi(2)/8.0, epsilon = 1.0), true);
+        assert_eq!(relative_eq!(shear, 0.0, epsilon = 1.0), true);
         let shear = calculate_shear_at(3000.0, &elements[0], &nodes, &cacl_loads, &results);
         println!("Shear(3000): {} kN", shear/1e3);
-        assert_eq!(relative_eq!(shear, (20000.0*1000.0-(10.0*1000.0*1000.0/2.0)), epsilon = 1.0), true);
+        assert_eq!(relative_eq!(shear, (10.0*4.0/2.0-10.0*3.0)*1e3, epsilon = 1.0), true);
 
         loads[0].rotation = -45.0;
         let cacl_loads = loads::utils::extract_calculation_loads(&elements, &nodes, &loads, &EquationHandler::new());
         let results = idfem::fem::fem_handler::calculate(&elements, &nodes, &loads, &mut EquationHandler::new());
-        let shear = calculate_shear_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);  
-        println!("Shear(2000<-45): {} kN", shear/1e3);
-        assert_eq!(relative_eq!(shear, 10.0*4000f64.powi(2)/8.0/2f64.sqrt(), epsilon = 1.0), true); 
+        let shear = calculate_shear_at(1000.0, &elements[0], &nodes, &cacl_loads, &results);  
+        println!("Shear(1000<-45): {} kN", shear/1e3);
+        assert_eq!(relative_eq!(shear, (10.0*4.0/2.0-10.0*1.0)*1e3/2f64.sqrt(), epsilon = 1.0), true); 
 
         loads[0].rotation = 45.0;
         let cacl_loads = loads::utils::extract_calculation_loads(&elements, &nodes, &loads, &EquationHandler::new());
         let results = idfem::fem::fem_handler::calculate(&elements, &nodes, &loads, &mut EquationHandler::new());
-        let shear = calculate_shear_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);  
-        println!("Shear(2000<45): {} kN", shear/1e3);
-        assert_eq!(relative_eq!(shear, -10.0*4000f64.powi(2)/8.0/2f64.sqrt(), epsilon = 1.0), true);  
+        let shear = calculate_shear_at(1000.0, &elements[0], &nodes, &cacl_loads, &results);  
+        println!("Shear(1000<45): {} kN", shear/1e3);
+        assert_eq!(relative_eq!(shear, -(10.0*4.0/2.0-10.0*1.0)*1e3/2f64.sqrt(), epsilon = 1.0), true);  
 
         loads[0].rotation = 0.0;
         let cacl_loads = loads::utils::extract_calculation_loads(&elements, &nodes, &loads, &EquationHandler::new());
         let results = idfem::fem::fem_handler::calculate(&elements, &nodes, &loads, &mut EquationHandler::new());
-        let shear = calculate_shear_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);  
+        let shear = calculate_shear_at(1000.0, &elements[0], &nodes, &cacl_loads, &results);  
         println!("Shear(horizontal): {} kN", shear/1e3);
         assert_eq!(relative_eq!(shear, 0.0, epsilon = 1.0), true);      
     }
@@ -374,40 +371,37 @@ mod tests {
         let mut loads = vec![l_load];
         let cacl_loads = loads::utils::extract_calculation_loads(&elements, &nodes, &loads, &EquationHandler::new());
         let results = idfem::fem::fem_handler::calculate(&elements, &nodes, &loads, &mut EquationHandler::new());
-        let mom = calculate_shear_at(1000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let shear = calculate_shear_at(1000.0, &elements[0], &nodes, &cacl_loads, &results);
 
-        // TODO
-        assert!(false);
-
-        println!("Shear(1000): {} kNm", mom/1e6);
-        assert_eq!(relative_eq!(mom, 8.75e6, epsilon = 1.0), true);
-        let mom = calculate_shear_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
-        println!("Shear(2000): {} kNm", mom/1e6);
-        assert_eq!(relative_eq!(mom, 10.00e6, epsilon = 1.0), true);
-        let mom = calculate_shear_at(3000.0, &elements[0], &nodes, &cacl_loads, &results);
-        println!("Shear(3000): {} kNm", mom/1e6);
-        assert_eq!(relative_eq!(mom, 6.25e6, epsilon = 1.0), true);
+        println!("Shear(1000): {} kN", shear/1e3);
+        assert_eq!(relative_eq!(shear, (10.0*4.0/2.0*2.0/3.0 - 10.0*(4.0-1.0)/4.0*1.0 - (10.0-10.0*(4.0-1.0)/4.0)*1.0/2.0)*1e3, epsilon = 1.0), true);
+        let shear = calculate_shear_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
+        println!("Shear(2000): {} kN", shear/1e3);
+        assert_eq!(relative_eq!(shear, (10.0*4.0/2.0*2.0/3.0 - 10.0*(4.0-2.0)/4.0*2.0 - (10.0-10.0*(4.0-2.0)/4.0)*2.0/2.0)*1e3, epsilon = 1.0), true);
+        let shear = calculate_shear_at(3000.0, &elements[0], &nodes, &cacl_loads, &results);
+        println!("Shear(3000): {} kN", shear/1e3);
+        assert_eq!(relative_eq!(shear, (10.0*4.0/2.0*2.0/3.0 - 10.0*(4.0-3.0)/4.0*3.0 - (10.0-10.0*(4.0-3.0)/4.0)*3.0/2.0)*1e3, epsilon = 1.0), true);
 
         loads[0].rotation = -45.0;
         let cacl_loads = loads::utils::extract_calculation_loads(&elements, &nodes, &loads, &EquationHandler::new());
         let results = idfem::fem::fem_handler::calculate(&elements, &nodes, &loads, &mut EquationHandler::new());
-        let mom = calculate_shear_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);  
-        println!("Shear(2000<-45): {} kNm", mom/1e6);
-        assert_eq!(relative_eq!(mom, 10.00e6/2f64.sqrt(), epsilon = 1.0), true); 
+        let shear = calculate_shear_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);  
+        println!("Shear(2000<-45): {} kN", shear/1e3);
+        assert_eq!(relative_eq!(shear, (10.0*4.0/2.0*2.0/3.0 - 10.0*(4.0-2.0)/4.0*2.0 - (10.0-10.0*(4.0-2.0)/4.0)*2.0/2.0)*1e3/2f64.sqrt(), epsilon = 1.0), true); 
 
         loads[0].rotation = 45.0;
         let cacl_loads = loads::utils::extract_calculation_loads(&elements, &nodes, &loads, &EquationHandler::new());
         let results = idfem::fem::fem_handler::calculate(&elements, &nodes, &loads, &mut EquationHandler::new());
-        let mom = calculate_shear_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);  
-        println!("Shear(2000<45): {} kNm", mom/1e6);
-        assert_eq!(relative_eq!(mom, -10.00e6/2f64.sqrt(), epsilon = 1.0), true);  
+        let shear = calculate_shear_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);  
+        println!("Shear(2000<45): {} kN", shear/1e3);
+        assert_eq!(relative_eq!(shear, -(10.0*4.0/2.0*2.0/3.0 - 10.0*(4.0-2.0)/4.0*2.0 - (10.0-10.0*(4.0-2.0)/4.0)*2.0/2.0)*1e3/2f64.sqrt(), epsilon = 1.0), true);  
 
         loads[0].rotation = 0.0;
         let cacl_loads = loads::utils::extract_calculation_loads(&elements, &nodes, &loads, &EquationHandler::new());
         let results = idfem::fem::fem_handler::calculate(&elements, &nodes, &loads, &mut EquationHandler::new());
-        let mom = calculate_shear_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);  
-        println!("Shear(horizontal)): {} kNm", mom/1e6);
-        assert_eq!(relative_eq!(mom, 0.0, epsilon = 1.0), true);      
+        let shear = calculate_shear_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);  
+        println!("Shear(horizontal)): {} kN", shear/1e3);
+        assert_eq!(relative_eq!(shear, 0.0, epsilon = 1.0), true);      
     }
 
     #[test]
@@ -427,32 +421,29 @@ mod tests {
         let cacl_loads = loads::utils::extract_calculation_loads(&elements, &nodes, &loads, &EquationHandler::new());
         let results = idfem::fem::fem_handler::calculate(&elements, &nodes, &loads, &mut EquationHandler::new());
 
-        // TODO
-        assert!(false);
-
         let shear = calculate_shear_at(1000.0, &elements[0], &nodes, &cacl_loads, &results);
         println!("Shear(1000): {} kN", shear/1e3);
-        assert_eq!(relative_eq!(shear, 6.25e6, epsilon = 1.0), true);
+        assert_eq!(relative_eq!(shear, (10.0*4.0/2.0*1.0/3.0 - 10.0*(1.0)/4.0*1.0/2.0)*1e3, epsilon = 1.0), true);
         let shear = calculate_shear_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
         println!("Shear(2000): {} kN", shear/1e3);
-        assert_eq!(relative_eq!(shear, 10.00e6, epsilon = 1.0), true);
+        assert_eq!(relative_eq!(shear, (10.0*4.0/2.0*1.0/3.0 - 10.0*(2.0)/4.0*2.0/2.0)*1e3, epsilon = 1.0), true);
         let shear = calculate_shear_at(3000.0, &elements[0], &nodes, &cacl_loads, &results);
         println!("Shear(3000): {} kN", shear/1e3);
-        assert_eq!(relative_eq!(shear, 8.75e6, epsilon = 1.0), true);
+        assert_eq!(relative_eq!(shear, (10.0*4.0/2.0*1.0/3.0 - 10.0*(3.0)/4.0*3.0/2.0)*1e3, epsilon = 1.0), true);
 
         loads[0].rotation = -45.0;
         let cacl_loads = loads::utils::extract_calculation_loads(&elements, &nodes, &loads, &EquationHandler::new());
         let results = idfem::fem::fem_handler::calculate(&elements, &nodes, &loads, &mut EquationHandler::new());
         let shear = calculate_shear_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);  
         println!("Shear(2000<-45): {} kN", shear/1e3);
-        assert_eq!(relative_eq!(shear, 10.00e6/2f64.sqrt(), epsilon = 1.0), true); 
+        assert_eq!(relative_eq!(shear, (10.0*4.0/2.0*1.0/3.0 - 10.0*(2.0)/4.0*2.0/2.0)*1e3/2f64.sqrt(), epsilon = 1.0), true); 
 
         loads[0].rotation = 45.0;
         let cacl_loads = loads::utils::extract_calculation_loads(&elements, &nodes, &loads, &EquationHandler::new());
         let results = idfem::fem::fem_handler::calculate(&elements, &nodes, &loads, &mut EquationHandler::new());
         let shear = calculate_shear_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);  
         println!("Shear(2000<45): {} kN", shear/1e3);
-        assert_eq!(relative_eq!(shear, -10.00e6/2f64.sqrt(), epsilon = 1.0), true);  
+        assert_eq!(relative_eq!(shear, -(10.0*4.0/2.0*1.0/3.0 - 10.0*(2.0)/4.0*2.0/2.0)*1e3/2f64.sqrt(), epsilon = 1.0), true);  
 
         loads[0].rotation = 0.0;
         let cacl_loads = loads::utils::extract_calculation_loads(&elements, &nodes, &loads, &EquationHandler::new());
