@@ -4,14 +4,13 @@
 mod tests {
     use approx::relative_eq;
     use idfem::fem::matrices::{
-        get_unknown_translation_rows,
-        get_unknown_translation_stiffness_rows,
+        get_unknown_translation_rows, get_unknown_translation_stiffness_rows,
     };
     use idfem::material::Steel;
     use idfem::structure::element::MaterialType;
+    use idfem::structure::Element;
     use idfem::structure::Node;
     use idfem::structure::Profile;
-    use idfem::structure::Element;
     use std::collections::HashMap;
     use vputilslib::geometry2d;
     use vputilslib::geometry2d::VpPoint;
@@ -23,7 +22,8 @@ mod tests {
         let (elements, nodes) = common::get_structure_fem_matriisit();
         let loads = common::get_fem_matriisi_loads();
         let mut equation_handler = vputilslib::equation_handler::EquationHandler::new();
-        let gl_stiff_m = idfem::fem::stiffness::create_joined_stiffness_matrix(&elements, &nodes);
+        let mut gl_stiff_m =
+            idfem::fem::stiffness::create_joined_stiffness_matrix(&elements, &nodes);
         let gl_eq_loads_m = idfem::fem::equivalent_loads::create_joined_equivalent_loads(
             &elements,
             &nodes,
@@ -33,7 +33,7 @@ mod tests {
         let displacement = idfem::fem::fem_handler::calculate_displacements(
             &nodes,
             idfem::fem::utils::col_height(&nodes, &elements),
-            &gl_stiff_m,
+            &mut gl_stiff_m,
             &gl_eq_loads_m,
         );
         println!("{}", displacement);
@@ -104,7 +104,8 @@ mod tests {
         let (elements, nodes) = common::get_structure_fem_matriisit_releases();
         let loads = common::get_fem_matriisi_loads();
         let mut equation_handler = vputilslib::equation_handler::EquationHandler::new();
-        let gl_stiff_m = idfem::fem::stiffness::create_joined_stiffness_matrix(&elements, &nodes);
+        let mut gl_stiff_m =
+            idfem::fem::stiffness::create_joined_stiffness_matrix(&elements, &nodes);
         let gl_eq_loads_m = idfem::fem::equivalent_loads::create_joined_equivalent_loads(
             &elements,
             &nodes,
@@ -114,7 +115,7 @@ mod tests {
         let displacement = idfem::fem::fem_handler::calculate_displacements(
             &nodes,
             idfem::fem::utils::col_height(&nodes, &elements),
-            &gl_stiff_m,
+            &mut gl_stiff_m,
             &gl_eq_loads_m,
         );
         println!("{}", displacement);
@@ -191,11 +192,16 @@ mod tests {
     }
 
     #[test]
-    fn reactions_1() {
-        let (elements, nodes) = common::get_structure_fem_matriisit_releases();
+    fn displacement_3() {
+        let (elements, mut nodes) = common::get_structure_fem_matriisit_releases();
+        nodes.get_mut(&1).unwrap().support.r_spring = 1e9;
+        nodes.get_mut(&1).unwrap().support.ry = false;
+        nodes.get_mut(&3).unwrap().support.r_spring = 1e9;
+        nodes.get_mut(&3).unwrap().support.ry = false;
         let loads = common::get_fem_matriisi_loads();
         let mut equation_handler = vputilslib::equation_handler::EquationHandler::new();
-        let gl_stiff_m = idfem::fem::stiffness::create_joined_stiffness_matrix(&elements, &nodes);
+        let mut gl_stiff_m =
+            idfem::fem::stiffness::create_joined_stiffness_matrix(&elements, &nodes);
         let gl_eq_loads_m = idfem::fem::equivalent_loads::create_joined_equivalent_loads(
             &elements,
             &nodes,
@@ -205,7 +211,99 @@ mod tests {
         let displacement = idfem::fem::fem_handler::calculate_displacements(
             &nodes,
             idfem::fem::utils::col_height(&nodes, &elements),
-            &gl_stiff_m,
+            &mut gl_stiff_m,
+            &gl_eq_loads_m,
+        );
+        println!("{}", displacement);
+        assert!(relative_eq!(
+            displacement[(0, 0)],
+            0.0000,
+            max_relative = 0.01
+        ));
+        assert!(relative_eq!(
+            displacement[(1, 0)],
+            0.0000,
+            max_relative = 0.01
+        ));
+        assert!(relative_eq!(
+            displacement[(2, 0)],
+            -0.02649,
+            max_relative = 0.01
+        ));
+        assert!(relative_eq!(
+            displacement[(3, 0)],
+            125.72384,
+            max_relative = 0.01
+        ));
+        assert!(relative_eq!(
+            displacement[(4, 0)],
+            -0.05714,
+            max_relative = 0.01
+        ));
+        assert!(relative_eq!(
+            displacement[(5, 0)],
+            -0.00643,
+            max_relative = 0.01
+        ));
+        assert!(relative_eq!(
+            displacement[(6, 0)],
+            0.0000,
+            max_relative = 0.01
+        ));
+        assert!(relative_eq!(
+            displacement[(7, 0)],
+            0.0000,
+            max_relative = 0.01
+        ));
+        assert!(relative_eq!(
+            displacement[(8, 0)],
+            -0.01351,
+            max_relative = 0.01
+        ));
+        assert!(relative_eq!(
+            displacement[(9, 0)],
+            125.70473,
+            max_relative = 0.01
+        ));
+        assert!(relative_eq!(
+            displacement[(10, 0)],
+            -0.05714,
+            max_relative = 0.01
+        ));
+        assert!(relative_eq!(
+            displacement[(11, 0)],
+            0.00643,
+            max_relative = 0.01
+        ));
+        assert!(relative_eq!(
+            displacement[(12, 0)],
+            -0.02628,
+            max_relative = 0.01
+        ));
+        assert!(relative_eq!(
+            displacement[(13, 0)],
+            -0.04419,
+            max_relative = 0.01
+        ));
+    }
+
+    #[test]
+    fn reactions_2() {
+        let (elements, nodes) = common::get_structure_fem_matriisit_releases();
+        let loads = common::get_fem_matriisi_loads();
+        let mut equation_handler = vputilslib::equation_handler::EquationHandler::new();
+        let mut gl_stiff_m =
+            idfem::fem::stiffness::create_joined_stiffness_matrix(&elements, &nodes);
+        let gl_eq_loads_m = idfem::fem::equivalent_loads::create_joined_equivalent_loads(
+            &elements,
+            &nodes,
+            &loads,
+            &mut equation_handler,
+        );
+        let displacement = idfem::fem::fem_handler::calculate_displacements(
+            &nodes,
+            idfem::fem::utils::col_height(&nodes, &elements),
+            &mut gl_stiff_m,
             &gl_eq_loads_m,
         );
         let reactions = idfem::fem::fem_handler::calculate_reactions(
@@ -231,6 +329,51 @@ mod tests {
         assert!(relative_eq!(reactions[(6, 0)], 8.75e3, max_relative = 0.01));
         assert!(relative_eq!(reactions[(7, 0)], 3.00e4, max_relative = 0.01));
         assert!(relative_eq!(reactions[(8, 0)], 4.99e6, max_relative = 0.01));
+        assert!((reactions[(9, 0)].round() == 0.0));
+        assert!((reactions[(10, 0)].round() == 0.0));
+        assert!((reactions[(11, 0)].round() == 0.0));
+        assert!((reactions[(12, 0)].round() == 0.0));
+        assert!((reactions[(13, 0)].round() == 0.0));
+    }
+
+    #[test]
+    fn reactions_3() {
+        let (elements, mut nodes) = common::get_structure_fem_matriisit_releases();
+        nodes.get_mut(&1).unwrap().support.r_spring = 1e9;
+        nodes.get_mut(&1).unwrap().support.ry = false;
+        nodes.get_mut(&3).unwrap().support.r_spring = 1e9;
+        nodes.get_mut(&3).unwrap().support.ry = false;
+        let loads = common::get_fem_matriisi_loads();
+        let mut equation_handler = vputilslib::equation_handler::EquationHandler::new();
+        let mut gl_stiff_m =
+            idfem::fem::stiffness::create_joined_stiffness_matrix(&elements, &nodes);
+        let gl_eq_loads_m = idfem::fem::equivalent_loads::create_joined_equivalent_loads(
+            &elements,
+            &nodes,
+            &loads,
+            &mut equation_handler,
+        );
+        let displacement = idfem::fem::fem_handler::calculate_displacements(
+            &nodes,
+            idfem::fem::utils::col_height(&nodes, &elements),
+            &mut gl_stiff_m,
+            &gl_eq_loads_m,
+        );
+        let reactions = idfem::fem::fem_handler::calculate_reactions(
+            &gl_stiff_m,
+            &displacement,
+            &gl_eq_loads_m,
+        );
+        println!("{}", reactions);
+        assert!(relative_eq!(reactions[(0, 0)], -2.6622e4, max_relative = 0.01));
+        assert!(relative_eq!(reactions[(1, 0)], 3.000e4, max_relative = 0.01));
+        assert!(relative_eq!(reactions[(2, 0)], 2.64878e7, max_relative = 0.01));
+        assert!((reactions[(3, 0)].round() == 0.0));
+        assert!((reactions[(4, 0)].round() == 0.0));
+        assert!((reactions[(5, 0)].round() == 0.0));
+        assert!(relative_eq!(reactions[(6, 0)], 6.622e3, max_relative = 0.01));
+        assert!(relative_eq!(reactions[(7, 0)], 3.00e4, max_relative = 0.01));
+        assert!(relative_eq!(reactions[(8, 0)], 1.3512158e7, max_relative = 0.01));
         assert!((reactions[(9, 0)].round() == 0.0));
         assert!((reactions[(10, 0)].round() == 0.0));
         assert!((reactions[(11, 0)].round() == 0.0));

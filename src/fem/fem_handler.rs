@@ -29,15 +29,16 @@ pub fn calculate(
 ) -> NodeResults {
     let col_height = crate::fem::utils::col_height(nodes, elements);
 
+    // TODO Convert equivalent load matrix to use calculation load gathered here.
     let _calculation_loads = utils::extract_calculation_loads(elements, nodes, loads, equation_handler);
 
-    let global_stiff_matrix = create_joined_stiffness_matrix(elements, nodes);
+    let mut global_stiff_matrix = create_joined_stiffness_matrix(elements, nodes);
     let global_equivalent_loads_matrix =
         create_joined_equivalent_loads(elements, nodes, loads, equation_handler);
     let displacements = calculate_displacements(
         nodes,
         col_height,
-        &global_stiff_matrix,
+        &mut global_stiff_matrix,
         &global_equivalent_loads_matrix,
     );
     let reactions = calculate_reactions(
@@ -62,9 +63,10 @@ pub fn calculate(
 pub fn calculate_displacements(
     nodes: &HashMap<i32, Node>,
     col_height: usize,
-    global_stiff_matrix: &DMatrix<f64>,
+    global_stiff_matrix: &mut DMatrix<f64>,
     global_equivalent_loads_matrix: &DMatrix<f64>,
 ) -> DMatrix<f64> {
+    apply_support_spring_values(nodes, global_stiff_matrix);
     // Get the rows with unknown translations to calculate the displacements for them.
     let unknown_translation_rows = get_unknown_translation_rows(nodes, &global_stiff_matrix);
     let unknown_translation_stiffness_rows =
@@ -94,8 +96,39 @@ pub fn calculate_displacements(
     for i in 0..unknown_translation_rows.len() {
         full_displacement_matrix[(unknown_translation_rows[i] as usize, 0)] = displacement[(i, 0)];
     }
+    remove_support_spring_values(nodes, global_stiff_matrix);
 
     full_displacement_matrix
+}
+
+fn apply_support_spring_values(
+    nodes: &HashMap<i32, Node>,
+    global_stiff_matrix: &mut DMatrix<f64>,
+) {
+    let dof = 3;
+    for node in nodes.values() {
+        for i in 0..dof {
+            if node.support.get_support_spring(i) != 0.0 && node.number > 0 {
+                let node_number = node.number as usize;
+                global_stiff_matrix[((node_number-1) * dof + i, (node_number-1) * dof + i)] += node.support.get_support_spring(i);
+            }
+        }        
+    }
+}
+
+fn remove_support_spring_values(
+    nodes: &HashMap<i32, Node>,
+    global_stiff_matrix: &mut DMatrix<f64>,
+) {
+    let dof = 3;
+    for node in nodes.values() {
+        for i in 0..dof {
+            if node.support.get_support_spring(i) != 0.0 && node.number > 0 {
+                let node_number = node.number as usize;
+                global_stiff_matrix[((node_number-1) * dof + i, (node_number-1) * dof + i)] -= node.support.get_support_spring(i);
+            }
+        }        
+    }
 }
 
 /// Calculates the displacements using cholesky decomposition for given rows that have unknown translations

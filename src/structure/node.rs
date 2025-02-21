@@ -72,6 +72,16 @@ impl Support {
             _ => panic!("Tried to get degree of freedom from support outside of degrees of freedom count!")
         }
     }
+
+    /// Returns the spring value at given index (0=x, 1=z, 2=r)
+    pub fn get_support_spring(&self, index: usize) -> f64 {
+        match index { 
+            0 => self.x_spring,
+            1 => self.z_spring,
+            2 => self.r_spring, 
+            _ => panic!("Tried to get spring value from support outside of degrees of freedom count!")
+        }
+    }
 }
 impl Default for Support {
     fn default() -> Self {
