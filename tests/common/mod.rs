@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use idfem::{
+use vefem::{
     loads::Load,
     material::Steel,
     structure::{element::MaterialType, Element, Node, Profile},
