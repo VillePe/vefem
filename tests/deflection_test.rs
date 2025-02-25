@@ -5,7 +5,7 @@ mod deflection_tests {
     use approx::relative_eq;
     use vputilslib::{equation_handler::EquationHandler, geometry2d::VpPoint};
 
-    use vefem::{fem::internal_forces::{calculate_axial_force_at, calculate_shear_at}, loads::{self, Load}, material::Steel, structure::{element::MaterialType, Element, Node, Profile}};
+    use vefem::{loads::{self, Load}, material::Steel, structure::{element::MaterialType, Element, Node, Profile}};
 
     use vefem::fem::deflection;
 

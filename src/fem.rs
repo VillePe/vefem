@@ -8,6 +8,7 @@ pub mod equivalent_loads;
 pub mod utils;
 pub mod internal_forces;
 pub mod deflection;
+pub mod axial_deformation;
 pub mod node_results;
 
 pub use node_results::NodeResults;
