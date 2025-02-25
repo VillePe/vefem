@@ -1,7 +1,7 @@
 ﻿mod common;
 
 #[cfg(test)]
-mod tests {
+mod fem_tests {
     use approx::relative_eq;
     use vefem::fem::matrices::{
         get_unknown_translation_rows, get_unknown_translation_stiffness_rows,

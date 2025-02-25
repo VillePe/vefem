@@ -1,5 +1,5 @@
 #[cfg(test)]
-mod tests {
+mod internal_forces_tests {
     use std::collections::HashMap;
 
     use approx::relative_eq;
