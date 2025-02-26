@@ -6,11 +6,13 @@ mod fem_tests {
     use vefem::fem::matrices::{
         get_unknown_translation_rows, get_unknown_translation_stiffness_rows,
     };
+    use vefem::loads;
     use vefem::material::Steel;
     use vefem::structure::element::MaterialType;
     use vefem::structure::Element;
     use vefem::structure::Node;
     use vefem::structure::Profile;
+    use vputilslib::equation_handler::EquationHandler;
     use std::collections::HashMap;
     use vputilslib::geometry2d;
     use vputilslib::geometry2d::VpPoint;
@@ -21,14 +23,13 @@ mod fem_tests {
     fn displacement_1() {
         let (elements, nodes) = common::get_structure_fem_matriisit();
         let loads = common::get_fem_matriisi_loads();
-        let mut equation_handler = vputilslib::equation_handler::EquationHandler::new();
         let mut gl_stiff_m =
             vefem::fem::stiffness::create_joined_stiffness_matrix(&elements, &nodes);
+        let calc_loads = loads::utils::extract_calculation_loads(&elements, &nodes, &loads, &EquationHandler::new());
         let gl_eq_loads_m = vefem::fem::equivalent_loads::create_joined_equivalent_loads(
             &elements,
             &nodes,
-            &loads,
-            &mut equation_handler,
+            &calc_loads,
         );
         let displacement = vefem::fem::fem_handler::calculate_displacements(
             &nodes,
@@ -103,14 +104,13 @@ mod fem_tests {
     fn displacement_2() {
         let (elements, nodes) = common::get_structure_fem_matriisit_releases();
         let loads = common::get_fem_matriisi_loads();
-        let mut equation_handler = vputilslib::equation_handler::EquationHandler::new();
         let mut gl_stiff_m =
             vefem::fem::stiffness::create_joined_stiffness_matrix(&elements, &nodes);
+        let calc_loads = loads::utils::extract_calculation_loads(&elements, &nodes, &loads, &EquationHandler::new());
         let gl_eq_loads_m = vefem::fem::equivalent_loads::create_joined_equivalent_loads(
             &elements,
             &nodes,
-            &loads,
-            &mut equation_handler,
+            &calc_loads,
         );
         let displacement = vefem::fem::fem_handler::calculate_displacements(
             &nodes,
@@ -199,14 +199,13 @@ mod fem_tests {
         nodes.get_mut(&3).unwrap().support.r_spring = 1e9;
         nodes.get_mut(&3).unwrap().support.ry = false;
         let loads = common::get_fem_matriisi_loads();
-        let mut equation_handler = vputilslib::equation_handler::EquationHandler::new();
         let mut gl_stiff_m =
             vefem::fem::stiffness::create_joined_stiffness_matrix(&elements, &nodes);
+        let calc_loads = loads::utils::extract_calculation_loads(&elements, &nodes, &loads, &EquationHandler::new());
         let gl_eq_loads_m = vefem::fem::equivalent_loads::create_joined_equivalent_loads(
             &elements,
             &nodes,
-            &loads,
-            &mut equation_handler,
+            &calc_loads,
         );
         let displacement = vefem::fem::fem_handler::calculate_displacements(
             &nodes,
@@ -291,14 +290,13 @@ mod fem_tests {
     fn reactions_2() {
         let (elements, nodes) = common::get_structure_fem_matriisit_releases();
         let loads = common::get_fem_matriisi_loads();
-        let mut equation_handler = vputilslib::equation_handler::EquationHandler::new();
         let mut gl_stiff_m =
             vefem::fem::stiffness::create_joined_stiffness_matrix(&elements, &nodes);
+        let calc_loads = loads::utils::extract_calculation_loads(&elements, &nodes, &loads, &EquationHandler::new());
         let gl_eq_loads_m = vefem::fem::equivalent_loads::create_joined_equivalent_loads(
             &elements,
             &nodes,
-            &loads,
-            &mut equation_handler,
+            &calc_loads,
         );
         let displacement = vefem::fem::fem_handler::calculate_displacements(
             &nodes,
@@ -344,14 +342,13 @@ mod fem_tests {
         nodes.get_mut(&3).unwrap().support.r_spring = 1e9;
         nodes.get_mut(&3).unwrap().support.ry = false;
         let loads = common::get_fem_matriisi_loads();
-        let mut equation_handler = vputilslib::equation_handler::EquationHandler::new();
         let mut gl_stiff_m =
             vefem::fem::stiffness::create_joined_stiffness_matrix(&elements, &nodes);
+        let calc_loads = loads::utils::extract_calculation_loads(&elements, &nodes, &loads, &EquationHandler::new());
         let gl_eq_loads_m = vefem::fem::equivalent_loads::create_joined_equivalent_loads(
             &elements,
             &nodes,
-            &loads,
-            &mut equation_handler,
+            &calc_loads,
         );
         let displacement = vefem::fem::fem_handler::calculate_displacements(
             &nodes,

@@ -71,7 +71,7 @@ pub fn calculate_at(
     s_integral / (e_m * area)
 }
 
-/// Calculates the moment at x for a triangular load with the maximum load at the left hand side.
+/// Calculates the integral of the axial force function at x for a triangular load with the maximum load at the left hand side.
 /// ltr = Left to right
 fn handle_triang_ltr(load: &CalculationLoad, x: f64) -> f64 {
     let x_dir_factor = load.rotation.to_radians().cos();
@@ -96,7 +96,7 @@ fn handle_triang_ltr(load: &CalculationLoad, x: f64) -> f64 {
             // Load strength shrinks and ends after x (needs to be split into triangular and line loads)
             // Split the load into a line load and a triangular load at x.
             let ll = load.offset_end - load.offset_start;        
-            // Double intgeral of the moment from triangular load
+            // Intgeral of the axial force from triangular load
             let mut s_integral =
                 load.strength / ll * x_dir_factor * (x - load.offset_start).powi(3) * 1.0 / 6.0;            
             // The imaginary line load with the strength of smaller triangular load
@@ -111,7 +111,7 @@ fn handle_triang_ltr(load: &CalculationLoad, x: f64) -> f64 {
     0.0
 }
 
-/// Calculates the moment at x for a triangular load with the maximum load at the right hand side.
+/// Calculates the integral of the axial force function at x for a triangular load with the maximum load at the right hand side.
 /// ltr = Left to right
 fn handle_triang_rtl(load: &CalculationLoad, x: f64) -> f64 {
     let x_dir_factor = load.rotation.to_radians().cos();

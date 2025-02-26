@@ -122,3 +122,9 @@ pub struct CalculationLoad {
     pub rotation: f64,
     pub element_number: i32,
 }
+
+impl CalculationLoad {
+    pub fn get_length(&self) -> f64 {
+        (self.offset_end - self.offset_start).abs()
+    }
+}

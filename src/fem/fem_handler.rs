@@ -30,11 +30,11 @@ pub fn calculate(
     let col_height = crate::fem::utils::col_height(nodes, elements);
 
     // TODO Convert equivalent load matrix to use calculation load gathered here.
-    let _calculation_loads = utils::extract_calculation_loads(elements, nodes, loads, equation_handler);
+    let calculation_loads = utils::extract_calculation_loads(elements, nodes, loads, equation_handler);
 
     let mut global_stiff_matrix = create_joined_stiffness_matrix(elements, nodes);
     let global_equivalent_loads_matrix =
-        create_joined_equivalent_loads(elements, nodes, loads, equation_handler);
+        create_joined_equivalent_loads(elements, nodes, &calculation_loads);
     let displacements = calculate_displacements(
         nodes,
         col_height,
