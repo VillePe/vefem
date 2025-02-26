@@ -473,6 +473,76 @@ mod tests {
     }
 
     #[test]
+    fn t_handle_point_load_at_start() {
+        let el: Element = Element {
+            number: 1,
+            node_start: 1,
+            node_end: 2,
+            ..Element::default()
+        };
+        let mut nodes: HashMap<i32, Node> = HashMap::new();
+        nodes.insert(1, Node::new_hinged(1, VpPoint::new(0.0, 0.0)));
+        nodes.insert(2, Node::new_hinged(1, VpPoint::new(0.0, 4000.0)));
+        let load = Load::new_point_load(
+            "".to_string(),
+            "1".to_string(),
+            "0".to_string(),
+            "10000".to_string(),
+            0.0,
+        );
+        let elements = vec![el];
+        let loads = &mut vec![load];
+        let calc_loads = loads::utils::extract_calculation_loads(&elements, &nodes, loads, &EquationHandler::new());
+        let el_length = elements[0].get_length(&nodes);
+        let result = handle_point_load(
+            el_length,
+            elements[0].get_rotation(&nodes),
+            &calc_loads[0],
+        );
+        assert!((result[0] - (0.0)).abs() < 0.1);
+        assert!((result[1] - (-10000.0)).abs() < 0.1);
+        assert!((result[2] - (-0e6)).abs() < 0.1);
+        assert!((result[3] - (0.0)).abs() < 0.1);
+        assert!((result[4] - (-0.0)).abs() < 0.1);
+        assert!((result[5] - (0e6)).abs() < 0.1);
+    }
+
+    #[test]
+    fn t_handle_point_load_at_end() {
+        let el: Element = Element {
+            number: 1,
+            node_start: 1,
+            node_end: 2,
+            ..Element::default()
+        };
+        let mut nodes: HashMap<i32, Node> = HashMap::new();
+        nodes.insert(1, Node::new_hinged(1, VpPoint::new(0.0, 0.0)));
+        nodes.insert(2, Node::new_hinged(1, VpPoint::new(0.0, 4000.0)));
+        let load = Load::new_point_load(
+            "".to_string(),
+            "1".to_string(),
+            "L".to_string(),
+            "10000".to_string(),
+            0.0,
+        );
+        let elements = vec![el];
+        let loads = &mut vec![load];
+        let calc_loads = loads::utils::extract_calculation_loads(&elements, &nodes, loads, &EquationHandler::new());
+        let el_length = elements[0].get_length(&nodes);
+        let result = handle_point_load(
+            el_length,
+            elements[0].get_rotation(&nodes),
+            &calc_loads[0],
+        );
+        assert!((result[0] - (0.0)).abs() < 0.1);
+        assert!((result[1] - (-00000.0)).abs() < 0.1);
+        assert!((result[2] - (-0e6)).abs() < 0.1);
+        assert!((result[3] - (0.0)).abs() < 0.1);
+        assert!((result[4] - (-10000.0)).abs() < 0.1);
+        assert!((result[5] - (0e6)).abs() < 0.1);
+    }
+
+    #[test]
     fn t_handle_moment_load() {
         let el: Element = Element {
             number: 1,

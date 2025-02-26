@@ -26,34 +26,94 @@ mod deflection_tests {
         let results = vefem::fem::fem_handler::calculate(&elements, &nodes, &loads, &mut EquationHandler::new());
         let defl = deflection::calculate_at(1000.0, &elements[0], &nodes, &cacl_loads, &results);
         println!("Deflection(1000): {} mm", defl);
-        assert_eq!(relative_eq!(defl, -5.238, epsilon = 0.01), true);
+        assert!(relative_eq!(defl, -5.238, epsilon = 0.01));
         let defl = deflection::calculate_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
         println!("Deflection(2000): {} mm", defl);
-        assert_eq!(relative_eq!(defl, -7.619, epsilon = 0.01), true);
+        assert!(relative_eq!(defl, -7.619, epsilon = 0.01));
         let defl = deflection::calculate_at(3000.0, &elements[0], &nodes, &cacl_loads, &results);
         println!("Deflection(3000): {} mm", defl);
-        assert_eq!(relative_eq!(defl, -5.238, epsilon = 0.01), true);   
+        assert!(relative_eq!(defl, -5.238, epsilon = 0.01));   
         
         loads[0].rotation = -45.0;
         let cacl_loads = loads::utils::extract_calculation_loads(&elements, &nodes, &loads, &EquationHandler::new());
         let results = vefem::fem::fem_handler::calculate(&elements, &nodes, &loads, &mut EquationHandler::new());
         let defl = deflection::calculate_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);  
         println!("Deflection(2000<-45): {} mm", defl);
-        assert_eq!(relative_eq!(defl, -5.387, epsilon = 0.01), true); 
+        assert!(relative_eq!(defl, -5.387, epsilon = 0.01)); 
 
         loads[0].rotation = 45.0;
         let cacl_loads = loads::utils::extract_calculation_loads(&elements, &nodes, &loads, &EquationHandler::new());
         let results = vefem::fem::fem_handler::calculate(&elements, &nodes, &loads, &mut EquationHandler::new());
         let defl = deflection::calculate_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);  
         println!("Deflection(2000<45): {} mm", defl);
-        assert_eq!(relative_eq!(defl, 5.387, epsilon = 0.01), true);  
+        assert!(relative_eq!(defl, 5.387, epsilon = 0.01));  
 
         loads[0].rotation = 0.0;
         let cacl_loads = loads::utils::extract_calculation_loads(&elements, &nodes, &loads, &EquationHandler::new());
         let results = vefem::fem::fem_handler::calculate(&elements, &nodes, &loads, &mut EquationHandler::new());
         let defl = deflection::calculate_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);  
         println!("Deflection(horizontal): {} mm", defl);
-        assert_eq!(relative_eq!(defl, 0.0, epsilon = 0.01), true);      
+        assert!(relative_eq!(defl, 0.0, epsilon = 0.01));      
+    }
+
+    #[test]
+    fn t_calculate_deflection_at_pl_at_start() {
+        let el : Element = Element::new(1, 1, 2, 
+            Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0), 
+            MaterialType::Steel(Steel::default())
+        );
+        let nodes = HashMap::from([
+            (1, Node::new_free(1, VpPoint::new(0.0, 0.0))),
+            (2, Node::new_fixed(2, VpPoint::new(0.0, 4000.0))),
+        ]);
+        let elements = vec![el];
+        let p_load = Load::new_point_load("Pointload".to_string(), "1".to_string(), "0".to_string(), "10000".to_string(), 0.0);
+        let loads = vec![p_load];
+        let cacl_loads = loads::utils::extract_calculation_loads(&elements, &nodes, &loads, &EquationHandler::new());
+        let results = vefem::fem::fem_handler::calculate(&elements, &nodes, &loads, &mut EquationHandler::new());
+        let defl = deflection::calculate_at(0.0, &elements[0], &nodes, &cacl_loads, &results);
+        println!("Deflection(L): {} mm", defl);
+        assert!(relative_eq!(defl, -121.9, epsilon = 0.1));
+    }
+
+    #[test]
+    fn t_calculate_deflection_at_pl_at_end() {
+        let el : Element = Element::new(1, 1, 2, 
+            Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0), 
+            MaterialType::Steel(Steel::default())
+        );
+        let nodes = HashMap::from([
+            (1, Node::new_fixed(1, VpPoint::new(0.0, 0.0))),
+            (2, Node::new_free(2, VpPoint::new(0.0, 4000.0))),
+        ]);
+        let elements = vec![el];
+        let p_load = Load::new_point_load("Pointload".to_string(), "1".to_string(), "L".to_string(), "10e3".to_string(), 0.0);
+        let loads = vec![p_load];
+        let cacl_loads = loads::utils::extract_calculation_loads(&elements, &nodes, &loads, &EquationHandler::new());
+        let results = vefem::fem::fem_handler::calculate(&elements, &nodes, &loads, &mut EquationHandler::new());
+        let defl = deflection::calculate_at(4000.0, &elements[0], &nodes, &cacl_loads, &results);
+        println!("Deflection(L): {} mm", defl);
+        assert!(relative_eq!(defl, -121.9, epsilon = 0.1));
+    }
+
+    #[test]
+    fn t_calculate_deflection_at_rl_at_start() {
+        let el : Element = Element::new(1, 1, 2, 
+            Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0), 
+            MaterialType::Steel(Steel::default())
+        );
+        let nodes = HashMap::from([
+            (1, Node::new_free(1, VpPoint::new(0.0, 0.0))),
+            (2, Node::new_fixed(2, VpPoint::new(0.0, 4000.0))),
+        ]);
+        let elements = vec![el];
+        let p_load = Load::new_rotational_load("RotationalLoad".to_string(), "1".to_string(), "0".to_string(), "10e6".to_string());
+        let loads = vec![p_load];
+        let cacl_loads = loads::utils::extract_calculation_loads(&elements, &nodes, &loads, &EquationHandler::new());
+        let results = vefem::fem::fem_handler::calculate(&elements, &nodes, &loads, &mut EquationHandler::new());
+        let defl = deflection::calculate_at(0.0, &elements[0], &nodes, &cacl_loads, &results);
+        println!("Deflection(L): {} mm", defl);
+        assert!(relative_eq!(defl, -45.7143, epsilon = 0.1));
     }
 
     #[test]
