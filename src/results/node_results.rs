@@ -104,6 +104,7 @@ mod tests {
 
     use crate::loads::Load;
     use crate::material::Steel;
+    use crate::settings::CalculationSettings;
     use crate::structure::{element::MaterialType, Element, Node, Profile};
 
     #[test]
@@ -127,11 +128,12 @@ mod tests {
             00.0,
         );
         let elements = &vec![el];
-        let results = crate::fem::fem_handler::calculate(
+        let results = crate::fem::calculate(
             elements,
             &nodes,
             &vec![pl],
             &mut EquationHandler::new(),
+            &CalculationSettings::default()
         );
         let local_reactions = results.get_elem_local_reactions(&elements[0], &nodes);
         println!("Global reactions: {:.0}", results.support_reactions);

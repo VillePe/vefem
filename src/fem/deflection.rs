@@ -7,7 +7,7 @@ use crate::{
     structure::{Element, Node},
 };
 
-use super::NodeResults;
+use crate::results::NodeResults;
 
 /// Calculates the deflection at given point.
 pub fn calculate_at(

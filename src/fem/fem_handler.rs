@@ -1,54 +1,12 @@
 ﻿#![allow(dead_code)]
 
-use crate::fem::equivalent_loads::create_joined_equivalent_loads;
-use crate::fem::stiffness::create_joined_stiffness_matrix;
-use crate::loads::{utils, Load};
-use crate::structure::{Element, Node};
 use nalgebra::DMatrix;
 use std::collections::HashMap;
-use vputilslib::equation_handler::EquationHandler;
 
-use crate::fem::matrices::{
+use crate::{fem::matrices::{
     get_unknown_translation_eq_loads_rows, get_unknown_translation_rows,
     get_unknown_translation_stiffness_rows,
-};
-
-use super::NodeResults;
-
-/// Calculates the displacements, support reactions and element internal forces.
-/// * 'elements' - list of elements to calculate
-/// * 'nodes' - list of nodes for the elements.
-/// * 'loads' - list of loads to calculate
-/// * 'equation_handler' - equation handler that can contain custom variables set by the user. 
-/// The 'L' variable is reserved for the length of the element.
-pub fn calculate(
-    elements: &Vec<Element>,
-    nodes: &HashMap<i32, Node>,
-    loads: &Vec<Load>,
-    equation_handler: &mut EquationHandler,
-) -> NodeResults {
-    let col_height = crate::fem::utils::col_height(nodes, elements);
-
-    // TODO Convert equivalent load matrix to use calculation load gathered here.
-    let calculation_loads = utils::extract_calculation_loads(elements, nodes, loads, equation_handler);
-
-    let mut global_stiff_matrix = create_joined_stiffness_matrix(elements, nodes);
-    let global_equivalent_loads_matrix =
-        create_joined_equivalent_loads(elements, nodes, &calculation_loads);
-    let displacements = calculate_displacements(
-        nodes,
-        col_height,
-        &mut global_stiff_matrix,
-        &global_equivalent_loads_matrix,
-    );
-    let reactions = calculate_reactions(
-        &global_stiff_matrix,
-        &displacements,
-        &global_equivalent_loads_matrix,
-    );
-
-    NodeResults::new(displacements, reactions, nodes.len(), &equation_handler)
-}
+}, structure::Node};
 
 /// Calculates the displacement matrix for given elements, nodes and loads. The displacement matrix
 /// is in global coordinates.
@@ -174,9 +132,7 @@ mod tests {
 
     use vputilslib::{equation_handler::EquationHandler, geometry2d::VpPoint};
 
-    use crate::{loads::Load, material::Steel, structure::{element::MaterialType, Element, Node, Profile}};
-
-    use super::calculate;
+    use crate::{loads::Load, material::Steel, settings::CalculationSettings, structure::{element::MaterialType, Element, Node, Profile}};
 
     // #[test]
     fn t_simple_benchmark_calculation() {
@@ -193,7 +149,7 @@ mod tests {
         let timer = SystemTime::now();
         let load = Load::new_line_load("Lineload".to_string(), "-1".to_string(), "0".to_string(), "L".to_string(), "10".to_string(), -90.0);
 
-        let results = calculate(&elements, &nodes, &vec![load], &mut EquationHandler::new());
+        let results = crate::fem::calculate(&elements, &nodes, &vec![load], &mut EquationHandler::new(), &CalculationSettings::default());
         println!("Calculation time: {:?}", timer.elapsed().unwrap());
         println!("Element count: {}", elements.len());
         println!("Node count: {}", nodes.len());

@@ -2,8 +2,6 @@ use std::collections::HashMap;
 
 use crate::structure::Element;
 
-
-
 pub fn col_height(nodes: &HashMap<i32, crate::structure::Node>, elements: &Vec<Element>) -> usize {
     // Increase the joined stiffness matrix size by release count. Releases are set into their
     // own rows and columns at the end of the joined matrix

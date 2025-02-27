@@ -4,7 +4,7 @@ use std::collections::HashMap;
 
 use crate::{loads::load::{self, CalculationLoad}, structure::{Element, Node}};
 
-use super::NodeResults;
+use crate::results::NodeResults;
 
 pub fn calculate_moment_at(x: f64, element: &Element, nodes: &HashMap<i32, Node>, loads: &Vec<CalculationLoad>, results: &NodeResults) -> f64 {
     let mut moment = 0.0;
