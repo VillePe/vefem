@@ -1,3 +1,5 @@
+pub extern crate vputilslib;
+
 pub mod fem;
 pub mod loads;
 pub mod structure;
