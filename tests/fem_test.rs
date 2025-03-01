@@ -26,7 +26,7 @@ mod fem_tests {
         let mut gl_stiff_m =
             vefem::fem::stiffness::create_joined_stiffness_matrix(&elements, &nodes);
         let calc_loads = loads::utils::extract_calculation_loads(&elements, &nodes, &loads, &EquationHandler::new());
-        let gl_eq_loads_m = vefem::fem::equivalent_loads::create_joined_equivalent_loads(
+        let gl_eq_loads_m = vefem::fem::equivalent_loads::create(
             &elements,
             &nodes,
             &calc_loads,
@@ -107,7 +107,7 @@ mod fem_tests {
         let mut gl_stiff_m =
             vefem::fem::stiffness::create_joined_stiffness_matrix(&elements, &nodes);
         let calc_loads = loads::utils::extract_calculation_loads(&elements, &nodes, &loads, &EquationHandler::new());
-        let gl_eq_loads_m = vefem::fem::equivalent_loads::create_joined_equivalent_loads(
+        let gl_eq_loads_m = vefem::fem::equivalent_loads::create(
             &elements,
             &nodes,
             &calc_loads,
@@ -202,7 +202,7 @@ mod fem_tests {
         let mut gl_stiff_m =
             vefem::fem::stiffness::create_joined_stiffness_matrix(&elements, &nodes);
         let calc_loads = loads::utils::extract_calculation_loads(&elements, &nodes, &loads, &EquationHandler::new());
-        let gl_eq_loads_m = vefem::fem::equivalent_loads::create_joined_equivalent_loads(
+        let gl_eq_loads_m = vefem::fem::equivalent_loads::create(
             &elements,
             &nodes,
             &calc_loads,
@@ -293,7 +293,7 @@ mod fem_tests {
         let mut gl_stiff_m =
             vefem::fem::stiffness::create_joined_stiffness_matrix(&elements, &nodes);
         let calc_loads = loads::utils::extract_calculation_loads(&elements, &nodes, &loads, &EquationHandler::new());
-        let gl_eq_loads_m = vefem::fem::equivalent_loads::create_joined_equivalent_loads(
+        let gl_eq_loads_m = vefem::fem::equivalent_loads::create(
             &elements,
             &nodes,
             &calc_loads,
@@ -345,7 +345,7 @@ mod fem_tests {
         let mut gl_stiff_m =
             vefem::fem::stiffness::create_joined_stiffness_matrix(&elements, &nodes);
         let calc_loads = loads::utils::extract_calculation_loads(&elements, &nodes, &loads, &EquationHandler::new());
-        let gl_eq_loads_m = vefem::fem::equivalent_loads::create_joined_equivalent_loads(
+        let gl_eq_loads_m = vefem::fem::equivalent_loads::create(
             &elements,
             &nodes,
             &calc_loads,

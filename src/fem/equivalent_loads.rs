@@ -4,7 +4,7 @@ use crate::structure::{Element, Node};
 use nalgebra::DMatrix;
 use std::collections::HashMap;
 
-pub fn create_joined_equivalent_loads(
+pub fn create(
     elements: &Vec<Element>,
     nodes: &HashMap<i32, Node>,
     loads: &Vec<CalculationLoad>,
@@ -26,7 +26,7 @@ pub fn create_joined_equivalent_loads(
 
     for elem in elements {
         let el_global_eq_loads =
-            get_element_global_equivalent_loads(&elem, loads, nodes);
+            get_element_g_eq_loads(&elem, loads, nodes);
         // The index of the start node
         let s = (elem.node_start - 1) as usize;
         // The index of the end node
@@ -57,7 +57,7 @@ pub fn create_joined_equivalent_loads(
 
 /// Creates the equivalent load matrix in global coordinates for given element
 /// The returned matrix is in the size of \[6 rows, 1 columns] (a column vector)
-pub fn get_element_global_equivalent_loads(
+pub fn get_element_g_eq_loads(
     element: &Element,
     loads: &Vec<CalculationLoad>,
     nodes: &HashMap<i32, Node>,

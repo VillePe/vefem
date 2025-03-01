@@ -153,8 +153,8 @@ mod tests {
         println!("Calculation time: {:?}", timer.elapsed().unwrap());
         println!("Element count: {}", elements.len());
         println!("Node count: {}", nodes.len());
-        println!("Result displacement row count: {:?}", results.displacements.nrows());
-        println!("Support reaction (0,1): {} kN", results.get_support_reaction(1, 1)/1000.0);
+        println!("Result displacement row count: {:?}", results.node_results.displacements.nrows());
+        println!("Support reaction (0,1): {} kN", results.node_results.get_support_reaction(1, 1)/1000.0);
     }
     
 

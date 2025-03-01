@@ -8,3 +8,4 @@ pub use element::Element;
 pub use node::Node;
 pub use profile::Profile;
 pub use release::Release;
+pub use node::Support;

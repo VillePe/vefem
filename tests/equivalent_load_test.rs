@@ -15,7 +15,7 @@ mod equivalent_load_tests {
     use std::collections::HashMap;
     use vputilslib::equation_handler::EquationHandler;
     use vputilslib::geometry2d::VpPoint;
-    use vefem::fem::equivalent_loads::get_element_global_equivalent_loads;
+    use vefem::fem::equivalent_loads::get_element_g_eq_loads;
 
     use crate::common;
     use crate::common::get_structure_fem_matriisit_releases;
@@ -42,7 +42,7 @@ mod equivalent_load_tests {
         let mut loads = vec![load];
         let elements = vec![el];
         let calc_loads = loads::utils::extract_calculation_loads(&elements, &nodes, &loads, &EquationHandler::new());
-        let result = vefem::fem::equivalent_loads::get_element_global_equivalent_loads(
+        let result = vefem::fem::equivalent_loads::get_element_g_eq_loads(
             &elements[0],
             &calc_loads,
             &nodes,
@@ -56,7 +56,7 @@ mod equivalent_load_tests {
         assert!((result[5] - (13333333.0)).abs() < 1.0);
 
         nodes.get_mut(&2).unwrap().point = VpPoint::new(4000.0, 0.0);
-        let result = vefem::fem::equivalent_loads::get_element_global_equivalent_loads(
+        let result = vefem::fem::equivalent_loads::get_element_g_eq_loads(
             &elements[0],
             &calc_loads,
             &nodes,
@@ -70,7 +70,7 @@ mod equivalent_load_tests {
         assert!((result[5] - (0.0)).abs() < 0.1);
 
         nodes.get_mut(&2).unwrap().point = VpPoint::new(2828.5714, 2828.5714);
-        let result = vefem::fem::equivalent_loads::get_element_global_equivalent_loads(
+        let result = vefem::fem::equivalent_loads::get_element_g_eq_loads(
             &elements[0],
             &calc_loads,
             &nodes,
@@ -85,7 +85,7 @@ mod equivalent_load_tests {
 
         // 120°
         nodes.get_mut(&2).unwrap().point = VpPoint::new(-2000.0, 3464.10161513775458);
-        let result = vefem::fem::equivalent_loads::get_element_global_equivalent_loads(
+        let result = vefem::fem::equivalent_loads::get_element_g_eq_loads(
             &elements[0],
             &calc_loads,
             &nodes,
@@ -109,7 +109,7 @@ mod equivalent_load_tests {
         loads[0] = load;
         let calc_loads = loads::utils::extract_calculation_loads(&elements, &nodes, &loads, &EquationHandler::new());
         nodes.get_mut(&2).unwrap().point = VpPoint::new(0.0, 4000.0);
-        let result = vefem::fem::equivalent_loads::get_element_global_equivalent_loads(
+        let result = vefem::fem::equivalent_loads::get_element_g_eq_loads(
             &elements[0],
             &calc_loads,
             &nodes,
@@ -123,7 +123,7 @@ mod equivalent_load_tests {
         assert!((result[5] - (11.6048e6)).abs() < 1.0e2);
 
         nodes.get_mut(&2).unwrap().point = VpPoint::new(4000.0, 0.0);
-        let result = vefem::fem::equivalent_loads::get_element_global_equivalent_loads(
+        let result = vefem::fem::equivalent_loads::get_element_g_eq_loads(
             &elements[0],
             &calc_loads,
             &nodes,
@@ -137,7 +137,7 @@ mod equivalent_load_tests {
         assert!((result[5] - (0.0)).abs() < 0.1);
 
         nodes.get_mut(&2).unwrap().point = VpPoint::new(2828.5714, 2828.5714);
-        let result = vefem::fem::equivalent_loads::get_element_global_equivalent_loads(
+        let result = vefem::fem::equivalent_loads::get_element_g_eq_loads(
             &elements[0],
             &calc_loads,
             &nodes,
@@ -152,7 +152,7 @@ mod equivalent_load_tests {
 
         // 120°
         nodes.get_mut(&2).unwrap().point = VpPoint::new(-2000.0, 3464.10161513775458);
-        let result = vefem::fem::equivalent_loads::get_element_global_equivalent_loads(
+        let result = vefem::fem::equivalent_loads::get_element_g_eq_loads(
             &elements[0],
             &calc_loads,
             &nodes,
@@ -188,7 +188,7 @@ mod equivalent_load_tests {
         let mut loads = vec![load];
         let elements = vec![el];
         let calc_loads = loads::utils::extract_calculation_loads(&elements, &nodes, &loads, &EquationHandler::new());
-        let result = vefem::fem::equivalent_loads::get_element_global_equivalent_loads(
+        let result = vefem::fem::equivalent_loads::get_element_g_eq_loads(
             &elements[0],
             &calc_loads,
             &nodes,
@@ -202,7 +202,7 @@ mod equivalent_load_tests {
         assert!((result[5] - (5.333333e6)).abs() < 1.0);
 
         nodes.get_mut(&2).unwrap().point = VpPoint::new(4000.0, 0.0);
-        let result = vefem::fem::equivalent_loads::get_element_global_equivalent_loads(
+        let result = vefem::fem::equivalent_loads::get_element_g_eq_loads(
             &elements[0],
             &calc_loads,
             &nodes,
@@ -216,7 +216,7 @@ mod equivalent_load_tests {
         assert!((result[5] - (0.0)).abs() < 0.1);
 
         nodes.get_mut(&2).unwrap().point = VpPoint::new(2828.5714, 2828.5714);
-        let result = vefem::fem::equivalent_loads::get_element_global_equivalent_loads(
+        let result = vefem::fem::equivalent_loads::get_element_g_eq_loads(
             &elements[0],
             &calc_loads,
             &nodes,
@@ -231,7 +231,7 @@ mod equivalent_load_tests {
 
         // 120°
         nodes.get_mut(&2).unwrap().point = VpPoint::new(-2000.0, 3464.10161513775458);
-        let result = vefem::fem::equivalent_loads::get_element_global_equivalent_loads(
+        let result = vefem::fem::equivalent_loads::get_element_g_eq_loads(
             &elements[0],
             &calc_loads,
             &nodes,
@@ -255,7 +255,7 @@ mod equivalent_load_tests {
         loads[0] = load;
         let calc_loads = loads::utils::extract_calculation_loads(&elements, &nodes, &loads, &EquationHandler::new());
         nodes.get_mut(&2).unwrap().point = VpPoint::new(0.0, 4000.0);
-        let result = vefem::fem::equivalent_loads::get_element_global_equivalent_loads(
+        let result = vefem::fem::equivalent_loads::get_element_g_eq_loads(
             &elements[0],
             &calc_loads,
             &nodes,
@@ -269,7 +269,7 @@ mod equivalent_load_tests {
         assert!((result[5] - (5.1921e6)).abs() < 1.0e2);
 
         nodes.get_mut(&2).unwrap().point = VpPoint::new(4000.0, 0.0);
-        let result = vefem::fem::equivalent_loads::get_element_global_equivalent_loads(
+        let result = vefem::fem::equivalent_loads::get_element_g_eq_loads(
             &elements[0],
             &calc_loads,
             &nodes,
@@ -283,7 +283,7 @@ mod equivalent_load_tests {
         assert!((result[5] - (0.0)).abs() < 0.1);
 
         nodes.get_mut(&2).unwrap().point = VpPoint::new(2828.5714, 2828.5714);
-        let result = vefem::fem::equivalent_loads::get_element_global_equivalent_loads(
+        let result = vefem::fem::equivalent_loads::get_element_g_eq_loads(
             &elements[0],
             &calc_loads,
             &nodes,
@@ -298,7 +298,7 @@ mod equivalent_load_tests {
 
         // 120°
         nodes.get_mut(&2).unwrap().point = VpPoint::new(-2000.0, 3464.10161513775458);
-        let result = vefem::fem::equivalent_loads::get_element_global_equivalent_loads(
+        let result = vefem::fem::equivalent_loads::get_element_g_eq_loads(
             &elements[0],
             &calc_loads,
             &nodes,
@@ -315,7 +315,7 @@ mod equivalent_load_tests {
         loads[0].offset_start = "3500".to_string();
         loads[0].offset_end = "1000".to_string();
         let calc_loads = loads::utils::extract_calculation_loads(&elements, &nodes, &loads, &EquationHandler::new());
-        let result = vefem::fem::equivalent_loads::get_element_global_equivalent_loads(
+        let result = vefem::fem::equivalent_loads::get_element_g_eq_loads(
             &elements[0],
             &calc_loads,
             &nodes,
@@ -350,7 +350,7 @@ mod equivalent_load_tests {
         let loads = vec![load];
         let elements = vec![el];
         let calc_loads = loads::utils::extract_calculation_loads(&elements, &nodes, &loads, &EquationHandler::new());
-        let result = get_element_global_equivalent_loads(
+        let result = get_element_g_eq_loads(
             &elements[0], &calc_loads, &nodes,
         );
         println!("{:?}", result);
@@ -383,7 +383,7 @@ mod equivalent_load_tests {
         let loads = vec![load];
         let elements = vec![el];
         let calc_loads = loads::utils::extract_calculation_loads(&elements, &nodes, &loads, &EquationHandler::new());
-        let result = get_element_global_equivalent_loads(
+        let result = get_element_g_eq_loads(
             &elements[0], &calc_loads, &nodes
         );
         println!("{:?}", result);
@@ -403,7 +403,7 @@ mod equivalent_load_tests {
         let loads = common::get_fem_matriisi_loads();
         let calc_loads = loads::utils::extract_calculation_loads(&elements, &nodes, &loads, &EquationHandler::new());  
 
-        let joined = vefem::fem::equivalent_loads::create_joined_equivalent_loads(&elements, &nodes, &calc_loads);
+        let joined = vefem::fem::equivalent_loads::create(&elements, &nodes, &calc_loads);
         for i in 0..12 {
             let val = joined[(i, 0)];
             if val.abs() < 0.001 {
@@ -436,7 +436,7 @@ mod equivalent_load_tests {
         let loads = common::get_fem_matriisi_loads();
         let calc_loads = loads::utils::extract_calculation_loads(&elements, &nodes, &loads, &EquationHandler::new());   
 
-        let joined = vefem::fem::equivalent_loads::create_joined_equivalent_loads(&elements, &nodes, &calc_loads);
+        let joined = vefem::fem::equivalent_loads::create(&elements, &nodes, &calc_loads);
 
         for i in 0..14 {
             let val = joined[(i,0)];
@@ -471,7 +471,7 @@ mod equivalent_load_tests {
         let loads = common::get_fem_matriisi_loads();
         let calc_loads = loads::utils::extract_calculation_loads(&elements, &nodes, &loads, &EquationHandler::new());   
 
-        let global_eq_loads_matrix = vefem::fem::equivalent_loads::create_joined_equivalent_loads(
+        let global_eq_loads_matrix = vefem::fem::equivalent_loads::create(
             &elements, 
             &nodes, 
             &calc_loads

@@ -49,7 +49,7 @@ mod internal_forces_tests {
             &loads,
             &mut EquationHandler::new(),
             &CalculationSettings::default(),
-        );
+        ).node_results;
         let mom = calculate_moment_at(1000.0, &elements[0], &nodes, &cacl_loads, &results);
         println!("Moment(1000): {} kNm", mom / 1e6);
         assert_eq!(relative_eq!(mom, 5e6, epsilon = 1.0), true);
@@ -73,7 +73,7 @@ mod internal_forces_tests {
             &loads,
             &mut EquationHandler::new(),
             &CalculationSettings::default(),
-        );
+        ).node_results;
         let mom = calculate_moment_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
         println!("Moment(2000<-45): {} kNm", mom / 1e6);
         assert_eq!(relative_eq!(mom, 10e6 / 2f64.sqrt(), epsilon = 1.0), true);
@@ -91,7 +91,7 @@ mod internal_forces_tests {
             &loads,
             &mut EquationHandler::new(),
             &CalculationSettings::default(),
-        );
+        ).node_results;
         let mom = calculate_moment_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
         println!("Moment(2000<45): {} kNm", mom / 1e6);
         assert_eq!(relative_eq!(mom, -10e6 / 2f64.sqrt(), epsilon = 1.0), true);
@@ -109,7 +109,7 @@ mod internal_forces_tests {
             &loads,
             &mut EquationHandler::new(),
             &CalculationSettings::default(),
-        );
+        ).node_results;
         let mom = calculate_moment_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
         println!("Moment(horizontal): {} kNm", mom / 1e6);
         assert_eq!(relative_eq!(mom, 0.0, epsilon = 1.0), true);
@@ -148,7 +148,7 @@ mod internal_forces_tests {
             &loads,
             &mut EquationHandler::new(),
             &CalculationSettings::default(),
-        );
+        ).node_results;
         let mom = calculate_moment_at(1000.0, &elements[0], &nodes, &cacl_loads, &results);
         println!("Moment(1000): {} kNm", mom / 1e6);
         assert_eq!(relative_eq!(mom, 2.5e6, epsilon = 1.0), true);
@@ -198,7 +198,7 @@ mod internal_forces_tests {
             &loads,
             &mut EquationHandler::new(),
             &CalculationSettings::default(),
-        );
+        ).node_results;
         let mom = calculate_moment_at(1000.0, &elements[0], &nodes, &cacl_loads, &results);
         println!("Moment(1000): {} kNm", mom / 1e6);
         assert_eq!(
@@ -239,7 +239,7 @@ mod internal_forces_tests {
             &loads,
             &mut EquationHandler::new(),
             &CalculationSettings::default(),
-        );
+        ).node_results;
         let mom = calculate_moment_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
         println!("Moment(2000<-45): {} kNm", mom / 1e6);
         assert_eq!(
@@ -264,7 +264,7 @@ mod internal_forces_tests {
             &loads,
             &mut EquationHandler::new(),
             &CalculationSettings::default(),
-        );
+        ).node_results;
         let mom = calculate_moment_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
         println!("Moment(2000<45): {} kNm", mom / 1e6);
         assert_eq!(
@@ -289,7 +289,7 @@ mod internal_forces_tests {
             &loads,
             &mut EquationHandler::new(),
             &CalculationSettings::default(),
-        );
+        ).node_results;
         let mom = calculate_moment_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
         println!("Moment(horizontal): {} kNm", mom / 1e6);
         assert_eq!(relative_eq!(mom, 0.0, epsilon = 1.0), true);
@@ -330,7 +330,7 @@ mod internal_forces_tests {
             &loads,
             &mut EquationHandler::new(),
             &CalculationSettings::default(),
-        );
+        ).node_results;
         let mom = calculate_moment_at(1000.0, &elements[0], &nodes, &cacl_loads, &results);
         println!("Moment(1000): {} kNm", mom / 1e6);
         assert_eq!(relative_eq!(mom, 8.75e6, epsilon = 1.0), true);
@@ -354,7 +354,7 @@ mod internal_forces_tests {
             &loads,
             &mut EquationHandler::new(),
             &CalculationSettings::default(),
-        );
+        ).node_results;
         let mom = calculate_moment_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
         println!("Moment(2000<-45): {} kNm", mom / 1e6);
         assert_eq!(
@@ -375,7 +375,7 @@ mod internal_forces_tests {
             &loads,
             &mut EquationHandler::new(),
             &CalculationSettings::default(),
-        );
+        ).node_results;
         let mom = calculate_moment_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
         println!("Moment(2000<45): {} kNm", mom / 1e6);
         assert_eq!(
@@ -396,7 +396,7 @@ mod internal_forces_tests {
             &loads,
             &mut EquationHandler::new(),
             &CalculationSettings::default(),
-        );
+        ).node_results;
         let mom = calculate_moment_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
         println!("Moment(horizontal)): {} kNm", mom / 1e6);
         assert_eq!(relative_eq!(mom, 0.0, epsilon = 1.0), true);
@@ -437,7 +437,7 @@ mod internal_forces_tests {
             &loads,
             &mut EquationHandler::new(),
             &CalculationSettings::default(),
-        );
+        ).node_results;
         let mom = calculate_moment_at(1000.0, &elements[0], &nodes, &cacl_loads, &results);
         println!("Moment(1000): {} kNm", mom / 1e6);
         assert_eq!(relative_eq!(mom, 6.25e6, epsilon = 1.0), true);
@@ -461,7 +461,7 @@ mod internal_forces_tests {
             &loads,
             &mut EquationHandler::new(),
             &CalculationSettings::default(),
-        );
+        ).node_results;
         let mom = calculate_moment_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
         println!("Moment(2000<-45): {} kNm", mom / 1e6);
         assert_eq!(
@@ -482,7 +482,7 @@ mod internal_forces_tests {
             &loads,
             &mut EquationHandler::new(),
             &CalculationSettings::default(),
-        );
+        ).node_results;
         let mom = calculate_moment_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
         println!("Moment(2000<45): {} kNm", mom / 1e6);
         assert_eq!(
@@ -503,7 +503,7 @@ mod internal_forces_tests {
             &loads,
             &mut EquationHandler::new(),
             &CalculationSettings::default(),
-        );
+        ).node_results;
         let mom = calculate_moment_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
         println!("Moment(horizontal)): {} kNm", mom / 1e6);
         assert_eq!(relative_eq!(mom, 0.0, epsilon = 1.0), true);
@@ -543,7 +543,7 @@ mod internal_forces_tests {
             &loads,
             &mut EquationHandler::new(),
             &CalculationSettings::default(),
-        );
+        ).node_results;
         let shear = calculate_shear_at(1000.0, &elements[0], &nodes, &cacl_loads, &results);
         println!("Shear(1000): {} kN", shear / 1e3);
         assert_eq!(relative_eq!(shear, 5e3, epsilon = 1.0), true);
@@ -567,7 +567,7 @@ mod internal_forces_tests {
             &loads,
             &mut EquationHandler::new(),
             &CalculationSettings::default(),
-        );
+        ).node_results;
         let shear = calculate_shear_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
         println!("Shear(2000<-45): {} kN", shear / 1e3);
         assert_eq!(relative_eq!(shear, -5e3 / 2f64.sqrt(), epsilon = 1.0), true);
@@ -585,7 +585,7 @@ mod internal_forces_tests {
             &loads,
             &mut EquationHandler::new(),
             &CalculationSettings::default(),
-        );
+        ).node_results;
         let shear = calculate_shear_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
         println!("Shear(2000<45): {} kN", shear / 1e3);
         assert_eq!(relative_eq!(shear, 5e3 / 2f64.sqrt(), epsilon = 1.0), true);
@@ -603,7 +603,7 @@ mod internal_forces_tests {
             &loads,
             &mut EquationHandler::new(),
             &CalculationSettings::default(),
-        );
+        ).node_results;
         let shear = calculate_shear_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
         println!("Shear(horizontal): {} kN", shear / 1e3);
         assert_eq!(relative_eq!(shear, 0.0, epsilon = 1.0), true);
@@ -642,7 +642,7 @@ mod internal_forces_tests {
             &loads,
             &mut EquationHandler::new(),
             &CalculationSettings::default(),
-        );
+        ).node_results;
         let shear = calculate_shear_at(1000.0, &elements[0], &nodes, &cacl_loads, &results);
 
         println!("Shear(1000): {} kN", shear / 1e3);
@@ -693,7 +693,7 @@ mod internal_forces_tests {
             &loads,
             &mut EquationHandler::new(),
             &CalculationSettings::default(),
-        );
+        ).node_results;
         let shear = calculate_shear_at(1000.0, &elements[0], &nodes, &cacl_loads, &results);
 
         println!("Shear(1000): {} kN", shear / 1e3);
@@ -724,7 +724,7 @@ mod internal_forces_tests {
             &loads,
             &mut EquationHandler::new(),
             &CalculationSettings::default(),
-        );
+        ).node_results;
         let shear = calculate_shear_at(1000.0, &elements[0], &nodes, &cacl_loads, &results);
         println!("Shear(1000<-45): {} kN", shear / 1e3);
         assert_eq!(
@@ -749,7 +749,7 @@ mod internal_forces_tests {
             &loads,
             &mut EquationHandler::new(),
             &CalculationSettings::default(),
-        );
+        ).node_results;
         let shear = calculate_shear_at(1000.0, &elements[0], &nodes, &cacl_loads, &results);
         println!("Shear(1000<45): {} kN", shear / 1e3);
         assert_eq!(
@@ -774,7 +774,7 @@ mod internal_forces_tests {
             &loads,
             &mut EquationHandler::new(),
             &CalculationSettings::default(),
-        );
+        ).node_results;
         let shear = calculate_shear_at(1000.0, &elements[0], &nodes, &cacl_loads, &results);
         println!("Shear(horizontal): {} kN", shear / 1e3);
         assert_eq!(relative_eq!(shear, 0.0, epsilon = 1.0), true);
@@ -815,7 +815,7 @@ mod internal_forces_tests {
             &loads,
             &mut EquationHandler::new(),
             &CalculationSettings::default(),
-        );
+        ).node_results;
         let shear = calculate_shear_at(1000.0, &elements[0], &nodes, &cacl_loads, &results);
 
         println!("Shear(1000): {} kN", shear / 1e3);
@@ -870,7 +870,7 @@ mod internal_forces_tests {
             &loads,
             &mut EquationHandler::new(),
             &CalculationSettings::default(),
-        );
+        ).node_results;
         let shear = calculate_shear_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
         println!("Shear(2000<-45): {} kN", shear / 1e3);
         assert_eq!(
@@ -899,7 +899,7 @@ mod internal_forces_tests {
             &loads,
             &mut EquationHandler::new(),
             &CalculationSettings::default(),
-        );
+        ).node_results;
         let shear = calculate_shear_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
         println!("Shear(2000<45): {} kN", shear / 1e3);
         assert_eq!(
@@ -928,7 +928,7 @@ mod internal_forces_tests {
             &loads,
             &mut EquationHandler::new(),
             &CalculationSettings::default(),
-        );
+        ).node_results;
         let shear = calculate_shear_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
         println!("Shear(horizontal)): {} kN", shear / 1e3);
         assert_eq!(relative_eq!(shear, 0.0, epsilon = 1.0), true);
@@ -969,7 +969,7 @@ mod internal_forces_tests {
             &loads,
             &mut EquationHandler::new(),
             &CalculationSettings::default(),
-        );
+        ).node_results;
 
         let shear = calculate_shear_at(1000.0, &elements[0], &nodes, &cacl_loads, &results);
         println!("Shear(1000): {} kN", shear / 1e3);
@@ -1015,7 +1015,7 @@ mod internal_forces_tests {
             &loads,
             &mut EquationHandler::new(),
             &CalculationSettings::default(),
-        );
+        ).node_results;
         let shear = calculate_shear_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
         println!("Shear(2000<-45): {} kN", shear / 1e3);
         assert_eq!(
@@ -1040,7 +1040,7 @@ mod internal_forces_tests {
             &loads,
             &mut EquationHandler::new(),
             &CalculationSettings::default(),
-        );
+        ).node_results;
         let shear = calculate_shear_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
         println!("Shear(2000<45): {} kN", shear / 1e3);
         assert_eq!(
@@ -1066,7 +1066,7 @@ mod internal_forces_tests {
             &loads,
             &mut EquationHandler::new(),
             &CalculationSettings::default(),
-        );
+        ).node_results;
         let shear = calculate_shear_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
         println!("Shear(horizontal)): {} kN", shear / 1e3);
         assert_eq!(relative_eq!(shear, 0.0, epsilon = 1.0), true);
@@ -1106,7 +1106,7 @@ mod internal_forces_tests {
             &loads,
             &mut EquationHandler::new(),
             &CalculationSettings::default(),
-        );
+        ).node_results;
         let axial_f = calculate_axial_force_at(1000.0, &elements[0], &nodes, &cacl_loads, &results);
         println!("Axial force(1000): {} kN", axial_f / 1e3);
         assert_eq!(relative_eq!(axial_f, 5e3, epsilon = 1.0), true);
@@ -1130,7 +1130,7 @@ mod internal_forces_tests {
             &loads,
             &mut EquationHandler::new(),
             &CalculationSettings::default(),
-        );
+        ).node_results;
         let axial_f = calculate_axial_force_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
         println!("Axial force(2000<-45): {} kN", axial_f / 1e3);
         assert_eq!(
@@ -1151,7 +1151,7 @@ mod internal_forces_tests {
             &loads,
             &mut EquationHandler::new(),
             &CalculationSettings::default(),
-        );
+        ).node_results;
         let axial_f = calculate_axial_force_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
         println!("Axial force(2000<45): {} kN", axial_f / 1e3);
         assert_eq!(
@@ -1193,7 +1193,7 @@ mod internal_forces_tests {
             &loads,
             &mut EquationHandler::new(),
             &CalculationSettings::default(),
-        );
+        ).node_results;
         let axial_f = calculate_axial_force_at(1000.0, &elements[0], &nodes, &cacl_loads, &results);
 
         println!("Axial force(1999): {} kN", axial_f / 1e3);
@@ -1241,7 +1241,7 @@ mod internal_forces_tests {
             &loads,
             &mut EquationHandler::new(),
             &CalculationSettings::default(),
-        );
+        ).node_results;
         let axial_f = calculate_axial_force_at(1000.0, &elements[0], &nodes, &cacl_loads, &results);
 
         println!("Axial force(1000): {} kN", axial_f / 1e3);
@@ -1280,7 +1280,7 @@ mod internal_forces_tests {
             &loads,
             &mut EquationHandler::new(),
             &CalculationSettings::default(),
-        );
+        ).node_results;
         let axial_f = calculate_axial_force_at(1000.0, &elements[0], &nodes, &cacl_loads, &results);
         println!("Axial force(1000<-45): {} kN", axial_f / 1e3);
         assert_eq!(
@@ -1305,7 +1305,7 @@ mod internal_forces_tests {
             &loads,
             &mut EquationHandler::new(),
             &CalculationSettings::default(),
-        );
+        ).node_results;
         let axial_f = calculate_axial_force_at(1000.0, &elements[0], &nodes, &cacl_loads, &results);
         println!("Axial force(1000<45): {} kN", axial_f / 1e3);
         assert_eq!(
@@ -1353,7 +1353,7 @@ mod internal_forces_tests {
             &loads,
             &mut EquationHandler::new(),
             &CalculationSettings::default(),
-        );
+        ).node_results;
         let axial_f = calculate_axial_force_at(1000.0, &elements[0], &nodes, &cacl_loads, &results);
 
         println!("Axial force(1000): {} kN", axial_f / 1e3);
@@ -1408,7 +1408,7 @@ mod internal_forces_tests {
             &loads,
             &mut EquationHandler::new(),
             &CalculationSettings::default(),
-        );
+        ).node_results;
         let axial_f = calculate_axial_force_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
         println!("Axial force(2000<-45): {} kN", axial_f / 1e3);
         assert_eq!(
@@ -1437,7 +1437,7 @@ mod internal_forces_tests {
             &loads,
             &mut EquationHandler::new(),
             &CalculationSettings::default(),
-        );
+        ).node_results;
         let axial_f = calculate_axial_force_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
         println!("Axial force(2000<45): {} kN", axial_f / 1e3);
         assert_eq!(
@@ -1489,7 +1489,7 @@ mod internal_forces_tests {
             &loads,
             &mut EquationHandler::new(),
             &CalculationSettings::default(),
-        );
+        ).node_results;
 
         let axial_f = calculate_axial_force_at(1000.0, &elements[0], &nodes, &cacl_loads, &results);
         println!("Axial force(1000): {} kN", axial_f / 1e3);
@@ -1535,7 +1535,7 @@ mod internal_forces_tests {
             &loads,
             &mut EquationHandler::new(),
             &CalculationSettings::default(),
-        );
+        ).node_results;
         let axial_f = calculate_axial_force_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
         println!("Axial force(2000<-45): {} kN", axial_f / 1e3);
         assert_eq!(
@@ -1560,7 +1560,7 @@ mod internal_forces_tests {
             &loads,
             &mut EquationHandler::new(),
             &CalculationSettings::default(),
-        );
+        ).node_results;
         let axial_f = calculate_axial_force_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
         println!("Axial force(2000<45): {} kN", axial_f / 1e3);
         assert_eq!(

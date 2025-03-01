@@ -14,6 +14,12 @@ pub struct NodeResults {
 }
 
 impl NodeResults {
+
+    /// Initializes a new instance of NodeResults
+    /// * 'displacements' - the displacements matrix
+    /// * 'support_reactions' - the support reactions matrix
+    /// * 'node_count' - the number of nodes
+    /// * 'equation_handler' - the equation handler. This equation handler is copied to the new instance.
     pub fn new(
         displacements: DMatrix<f64>,
         support_reactions: DMatrix<f64>,
@@ -135,8 +141,8 @@ mod tests {
             &mut EquationHandler::new(),
             &CalculationSettings::default()
         );
-        let local_reactions = results.get_elem_local_reactions(&elements[0], &nodes);
-        println!("Global reactions: {:.0}", results.support_reactions);
+        let local_reactions = results.node_results.get_elem_local_reactions(&elements[0], &nodes);
+        println!("Global reactions: {:.0}", results.node_results.support_reactions);
         println!("Local reactions: {:.0}", local_reactions);
         assert!(relative_eq!(local_reactions[(0, 0)], 0.0, epsilon = 1.0));
         assert!(relative_eq!(local_reactions[(1, 0)], 7500.0, epsilon = 1.0));
