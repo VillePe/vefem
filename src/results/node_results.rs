@@ -111,6 +111,7 @@ mod tests {
     use crate::loads::Load;
     use crate::material::Steel;
     use crate::settings::CalculationSettings;
+    use crate::structure::CalculationModel;
     use crate::structure::{element::MaterialType, Element, Node, Profile};
 
     #[test]
@@ -133,15 +134,19 @@ mod tests {
             "10000".to_string(),
             00.0,
         );
-        let elements = &vec![el];
+        let elements = vec![el];
+        let calc_model = CalculationModel {
+            nodes,
+            elements: elements,
+            loads: vec![pl],
+            calc_settings: CalculationSettings::default(),
+            load_combinations: vec![],
+        };
         let results = crate::fem::calculate(
-            elements,
-            &nodes,
-            &vec![pl],
+            &calc_model,
             &mut EquationHandler::new(),
-            &CalculationSettings::default()
         );
-        let local_reactions = results.node_results.get_elem_local_reactions(&elements[0], &nodes);
+        let local_reactions = results.node_results.get_elem_local_reactions(&calc_model.elements[0], &calc_model.nodes);
         println!("Global reactions: {:.0}", results.node_results.support_reactions);
         println!("Local reactions: {:.0}", local_reactions);
         assert!(relative_eq!(local_reactions[(0, 0)], 0.0, epsilon = 1.0));

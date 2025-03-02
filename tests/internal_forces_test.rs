@@ -10,7 +10,7 @@ mod internal_forces_tests {
         loads::{self, Load},
         material::Steel,
         settings::CalculationSettings,
-        structure::{element::MaterialType, Element, Node, Profile},
+        structure::{element::MaterialType, CalculationModel, Element, Node, Profile},
     };
 
     use vefem::fem::internal_forces::calculate_moment_at;
@@ -36,81 +36,76 @@ mod internal_forces_tests {
             "10000".to_string(),
             -90.0,
         );
-        let mut loads = vec![p_load];
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
+        let loads = vec![p_load];
+        let mut calc_model = CalculationModel{
+            nodes,
+            elements,
+            loads,
+            calc_settings: CalculationSettings::default(),
+            load_combinations: vec![]
+        };
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model.elements,
+            &calc_model.nodes,
+            &calc_model.loads,
             &EquationHandler::new(),
         );
         let results = vefem::fem::calculate(
-            &elements,
-            &nodes,
-            &loads,
+            &calc_model,
             &mut EquationHandler::new(),
-            &CalculationSettings::default(),
         ).node_results;
-        let mom = calculate_moment_at(1000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let mom = calculate_moment_at(1000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Moment(1000): {} kNm", mom / 1e6);
         assert_eq!(relative_eq!(mom, 5e6, epsilon = 1.0), true);
-        let mom = calculate_moment_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let mom = calculate_moment_at(2000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Moment(2000): {} kNm", mom / 1e6);
         assert_eq!(relative_eq!(mom, 10e6, epsilon = 1.0), true);
-        let mom = calculate_moment_at(3000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let mom = calculate_moment_at(3000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Moment(3000): {} kNm", mom / 1e6);
         assert_eq!(relative_eq!(mom, 5e6, epsilon = 1.0), true);
 
-        loads[0].rotation = -45.0;
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
+        calc_model.loads[0].rotation = -45.0;
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model.elements,
+            &calc_model.nodes,
+            &calc_model.loads,
             &EquationHandler::new(),
         );
         let results = vefem::fem::calculate(
-            &elements,
-            &nodes,
-            &loads,
+            &calc_model,
             &mut EquationHandler::new(),
-            &CalculationSettings::default(),
         ).node_results;
-        let mom = calculate_moment_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let mom = calculate_moment_at(2000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Moment(2000<-45): {} kNm", mom / 1e6);
         assert_eq!(relative_eq!(mom, 10e6 / 2f64.sqrt(), epsilon = 1.0), true);
 
-        loads[0].rotation = 45.0;
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
+        calc_model.loads[0].rotation = 45.0;
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model.elements,
+            &calc_model.nodes,
+            &calc_model.loads,
             &EquationHandler::new(),
         );
         let results = vefem::fem::calculate(
-            &elements,
-            &nodes,
-            &loads,
+            &calc_model,
             &mut EquationHandler::new(),
-            &CalculationSettings::default(),
         ).node_results;
-        let mom = calculate_moment_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let mom = calculate_moment_at(2000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Moment(2000<45): {} kNm", mom / 1e6);
         assert_eq!(relative_eq!(mom, -10e6 / 2f64.sqrt(), epsilon = 1.0), true);
 
-        loads[0].rotation = 0.0;
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
+        calc_model.loads[0].rotation = 0.0;
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model.elements,
+            &calc_model.nodes,
+            &calc_model.loads,
             &EquationHandler::new(),
         );
         let results = vefem::fem::calculate(
-            &elements,
-            &nodes,
-            &loads,
+            &calc_model,
             &mut EquationHandler::new(),
-            &CalculationSettings::default(),
         ).node_results;
-        let mom = calculate_moment_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let mom = calculate_moment_at(2000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Moment(horizontal): {} kNm", mom / 1e6);
         assert_eq!(relative_eq!(mom, 0.0, epsilon = 1.0), true);
     }
@@ -136,29 +131,33 @@ mod internal_forces_tests {
             "10000000".to_string(),
         );
         let loads = vec![r_load];
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
+        let calc_model = CalculationModel{
+            nodes,
+            elements,
+            loads,
+            calc_settings: CalculationSettings::default(),
+            load_combinations: vec![]
+        };
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model.elements,
+            &calc_model.nodes,
+            &calc_model.loads,
             &EquationHandler::new(),
         );
         let results = vefem::fem::calculate(
-            &elements,
-            &nodes,
-            &loads,
+            &calc_model,
             &mut EquationHandler::new(),
-            &CalculationSettings::default(),
         ).node_results;
-        let mom = calculate_moment_at(1000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let mom = calculate_moment_at(1000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Moment(1000): {} kNm", mom / 1e6);
         assert_eq!(relative_eq!(mom, 2.5e6, epsilon = 1.0), true);
-        let mom = calculate_moment_at(1999.0, &elements[0], &nodes, &cacl_loads, &results);
+        let mom = calculate_moment_at(1999.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Moment(1999): {} kNm", mom / 1e6);
         assert_eq!(relative_eq!(mom, 2500.0 * 1999.0, epsilon = 1.0), true);
-        let mom = calculate_moment_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let mom = calculate_moment_at(2000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Moment(2000): {} kNm", mom / 1e6);
         assert_eq!(relative_eq!(mom, -5e6, epsilon = 1.0), true);
-        let mom = calculate_moment_at(3000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let mom = calculate_moment_at(3000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Moment(3000): {} kNm", mom / 1e6);
         assert_eq!(relative_eq!(mom, -2.5e6, epsilon = 1.0), true);
     }
@@ -185,21 +184,25 @@ mod internal_forces_tests {
             "10".to_string(),
             -90.0,
         );
-        let mut loads = vec![l_load];
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
+        let loads = vec![l_load];
+        let mut calc_model = CalculationModel{
+            nodes,
+            elements,
+            loads,
+            calc_settings: CalculationSettings::default(),
+            load_combinations: vec![]
+        };
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model.elements,
+            &calc_model.nodes,
+            &calc_model.loads,
             &EquationHandler::new(),
         );
         let results = vefem::fem::calculate(
-            &elements,
-            &nodes,
-            &loads,
+            &calc_model,
             &mut EquationHandler::new(),
-            &CalculationSettings::default(),
         ).node_results;
-        let mom = calculate_moment_at(1000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let mom = calculate_moment_at(1000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Moment(1000): {} kNm", mom / 1e6);
         assert_eq!(
             relative_eq!(
@@ -209,13 +212,13 @@ mod internal_forces_tests {
             ),
             true
         );
-        let mom = calculate_moment_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let mom = calculate_moment_at(2000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Moment(2000): {} kNm", mom / 1e6);
         assert_eq!(
             relative_eq!(mom, 10.0 * 4000f64.powi(2) / 8.0, epsilon = 1.0),
             true
         );
-        let mom = calculate_moment_at(3000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let mom = calculate_moment_at(3000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Moment(3000): {} kNm", mom / 1e6);
         assert_eq!(
             relative_eq!(
@@ -226,21 +229,18 @@ mod internal_forces_tests {
             true
         );
 
-        loads[0].rotation = -45.0;
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
+        calc_model.loads[0].rotation = -45.0;
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model.elements,
+            &calc_model.nodes,
+            &calc_model.loads,
             &EquationHandler::new(),
         );
         let results = vefem::fem::calculate(
-            &elements,
-            &nodes,
-            &loads,
+            &calc_model,
             &mut EquationHandler::new(),
-            &CalculationSettings::default(),
         ).node_results;
-        let mom = calculate_moment_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let mom = calculate_moment_at(2000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Moment(2000<-45): {} kNm", mom / 1e6);
         assert_eq!(
             relative_eq!(
@@ -251,21 +251,18 @@ mod internal_forces_tests {
             true
         );
 
-        loads[0].rotation = 45.0;
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
+        calc_model.loads[0].rotation = 45.0;
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model.elements,
+            &calc_model.nodes,
+            &calc_model.loads,
             &EquationHandler::new(),
         );
         let results = vefem::fem::calculate(
-            &elements,
-            &nodes,
-            &loads,
+            &calc_model,
             &mut EquationHandler::new(),
-            &CalculationSettings::default(),
         ).node_results;
-        let mom = calculate_moment_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let mom = calculate_moment_at(2000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Moment(2000<45): {} kNm", mom / 1e6);
         assert_eq!(
             relative_eq!(
@@ -276,21 +273,18 @@ mod internal_forces_tests {
             true
         );
 
-        loads[0].rotation = 0.0;
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
+        calc_model.loads[0].rotation = 0.0;
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model.elements,
+            &calc_model.nodes,
+            &calc_model.loads,
             &EquationHandler::new(),
         );
         let results = vefem::fem::calculate(
-            &elements,
-            &nodes,
-            &loads,
+            &calc_model,
             &mut EquationHandler::new(),
-            &CalculationSettings::default(),
         ).node_results;
-        let mom = calculate_moment_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let mom = calculate_moment_at(2000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Moment(horizontal): {} kNm", mom / 1e6);
         assert_eq!(relative_eq!(mom, 0.0, epsilon = 1.0), true);
     }
@@ -317,87 +311,82 @@ mod internal_forces_tests {
             "10".to_string(),
             -90.0,
         );
-        let mut loads = vec![l_load];
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
+        let loads = vec![l_load];
+        let mut calc_model = CalculationModel{
+            nodes,
+            elements,
+            loads,
+            calc_settings: CalculationSettings::default(),
+            load_combinations: vec![]
+        };
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model.elements,
+            &calc_model.nodes,
+            &calc_model.loads,
             &EquationHandler::new(),
         );
         let results = vefem::fem::calculate(
-            &elements,
-            &nodes,
-            &loads,
+            &calc_model,
             &mut EquationHandler::new(),
-            &CalculationSettings::default(),
         ).node_results;
-        let mom = calculate_moment_at(1000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let mom = calculate_moment_at(1000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Moment(1000): {} kNm", mom / 1e6);
         assert_eq!(relative_eq!(mom, 8.75e6, epsilon = 1.0), true);
-        let mom = calculate_moment_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let mom = calculate_moment_at(2000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Moment(2000): {} kNm", mom / 1e6);
         assert_eq!(relative_eq!(mom, 10.00e6, epsilon = 1.0), true);
-        let mom = calculate_moment_at(3000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let mom = calculate_moment_at(3000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Moment(3000): {} kNm", mom / 1e6);
         assert_eq!(relative_eq!(mom, 6.25e6, epsilon = 1.0), true);
 
-        loads[0].rotation = -45.0;
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
+        calc_model.loads[0].rotation = -45.0;
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model.elements,
+            &calc_model.nodes,
+            &calc_model.loads,
             &EquationHandler::new(),
         );
         let results = vefem::fem::calculate(
-            &elements,
-            &nodes,
-            &loads,
+            &calc_model,
             &mut EquationHandler::new(),
-            &CalculationSettings::default(),
         ).node_results;
-        let mom = calculate_moment_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let mom = calculate_moment_at(2000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Moment(2000<-45): {} kNm", mom / 1e6);
         assert_eq!(
             relative_eq!(mom, 10.00e6 / 2f64.sqrt(), epsilon = 1.0),
             true
         );
 
-        loads[0].rotation = 45.0;
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
+        calc_model.loads[0].rotation = 45.0;
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model.elements,
+            &calc_model.nodes,
+            &calc_model.loads,
             &EquationHandler::new(),
         );
         let results = vefem::fem::calculate(
-            &elements,
-            &nodes,
-            &loads,
+            &calc_model,
             &mut EquationHandler::new(),
-            &CalculationSettings::default(),
         ).node_results;
-        let mom = calculate_moment_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let mom = calculate_moment_at(2000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Moment(2000<45): {} kNm", mom / 1e6);
         assert_eq!(
             relative_eq!(mom, -10.00e6 / 2f64.sqrt(), epsilon = 1.0),
             true
         );
 
-        loads[0].rotation = 0.0;
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
+        calc_model.loads[0].rotation = 0.0;
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model.elements,
+            &calc_model.nodes,
+            &calc_model.loads,
             &EquationHandler::new(),
         );
         let results = vefem::fem::calculate(
-            &elements,
-            &nodes,
-            &loads,
+            &calc_model,
             &mut EquationHandler::new(),
-            &CalculationSettings::default(),
         ).node_results;
-        let mom = calculate_moment_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let mom = calculate_moment_at(2000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Moment(horizontal)): {} kNm", mom / 1e6);
         assert_eq!(relative_eq!(mom, 0.0, epsilon = 1.0), true);
     }
@@ -424,87 +413,82 @@ mod internal_forces_tests {
             "10".to_string(),
             -90.0,
         );
-        let mut loads = vec![l_load];
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
+        let loads = vec![l_load];
+        let mut calc_model = CalculationModel{
+            nodes,
+            elements,
+            loads,
+            calc_settings: CalculationSettings::default(),
+            load_combinations: vec![]
+        };
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model.elements,
+            &calc_model.nodes,
+            &calc_model.loads,
             &EquationHandler::new(),
         );
         let results = vefem::fem::calculate(
-            &elements,
-            &nodes,
-            &loads,
+            &calc_model,
             &mut EquationHandler::new(),
-            &CalculationSettings::default(),
         ).node_results;
-        let mom = calculate_moment_at(1000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let mom = calculate_moment_at(1000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Moment(1000): {} kNm", mom / 1e6);
         assert_eq!(relative_eq!(mom, 6.25e6, epsilon = 1.0), true);
-        let mom = calculate_moment_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let mom = calculate_moment_at(2000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Moment(2000): {} kNm", mom / 1e6);
         assert_eq!(relative_eq!(mom, 10.00e6, epsilon = 1.0), true);
-        let mom = calculate_moment_at(3000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let mom = calculate_moment_at(3000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Moment(3000): {} kNm", mom / 1e6);
         assert_eq!(relative_eq!(mom, 8.75e6, epsilon = 1.0), true);
 
-        loads[0].rotation = -45.0;
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
+        calc_model.loads[0].rotation = -45.0;
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model.elements,
+            &calc_model.nodes,
+            &calc_model.loads,
             &EquationHandler::new(),
         );
         let results = vefem::fem::calculate(
-            &elements,
-            &nodes,
-            &loads,
+            &calc_model,
             &mut EquationHandler::new(),
-            &CalculationSettings::default(),
         ).node_results;
-        let mom = calculate_moment_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let mom = calculate_moment_at(2000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Moment(2000<-45): {} kNm", mom / 1e6);
         assert_eq!(
             relative_eq!(mom, 10.00e6 / 2f64.sqrt(), epsilon = 1.0),
             true
         );
 
-        loads[0].rotation = 45.0;
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
+        calc_model.loads[0].rotation = 45.0;
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model.elements,
+            &calc_model.nodes,
+            &calc_model.loads,
             &EquationHandler::new(),
         );
         let results = vefem::fem::calculate(
-            &elements,
-            &nodes,
-            &loads,
+            &calc_model,
             &mut EquationHandler::new(),
-            &CalculationSettings::default(),
         ).node_results;
-        let mom = calculate_moment_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let mom = calculate_moment_at(2000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Moment(2000<45): {} kNm", mom / 1e6);
         assert_eq!(
             relative_eq!(mom, -10.00e6 / 2f64.sqrt(), epsilon = 1.0),
             true
         );
 
-        loads[0].rotation = 0.0;
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
+        calc_model.loads[0].rotation = 0.0;
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model.elements,
+            &calc_model.nodes,
+            &calc_model.loads,
             &EquationHandler::new(),
         );
         let results = vefem::fem::calculate(
-            &elements,
-            &nodes,
-            &loads,
+            &calc_model,
             &mut EquationHandler::new(),
-            &CalculationSettings::default(),
         ).node_results;
-        let mom = calculate_moment_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let mom = calculate_moment_at(2000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Moment(horizontal)): {} kNm", mom / 1e6);
         assert_eq!(relative_eq!(mom, 0.0, epsilon = 1.0), true);
     }
@@ -530,81 +514,76 @@ mod internal_forces_tests {
             "10000".to_string(),
             -90.0,
         );
-        let mut loads = vec![p_load];
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
+        let loads = vec![p_load];
+        let mut calc_model = CalculationModel{
+            nodes,
+            elements,
+            loads,
+            calc_settings: CalculationSettings::default(),
+            load_combinations: vec![]
+        };
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model.elements,
+            &calc_model.nodes,
+            &calc_model.loads,
             &EquationHandler::new(),
         );
         let results = vefem::fem::calculate(
-            &elements,
-            &nodes,
-            &loads,
+            &calc_model,
             &mut EquationHandler::new(),
-            &CalculationSettings::default(),
         ).node_results;
-        let shear = calculate_shear_at(1000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let shear = calculate_shear_at(1000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Shear(1000): {} kN", shear / 1e3);
         assert_eq!(relative_eq!(shear, 5e3, epsilon = 1.0), true);
-        let shear = calculate_shear_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let shear = calculate_shear_at(2000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Shear(2000): {} kN", shear / 1e3);
         assert_eq!(relative_eq!(shear, -5e3, epsilon = 1.0), true);
-        let shear = calculate_shear_at(3000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let shear = calculate_shear_at(3000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Shear(3000): {} kN", shear / 1e3);
         assert_eq!(relative_eq!(shear, -5e3, epsilon = 1.0), true);
 
-        loads[0].rotation = -45.0;
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
+        calc_model.loads[0].rotation = -45.0;
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model.elements,
+            &calc_model.nodes,
+            &calc_model.loads,
             &EquationHandler::new(),
         );
         let results = vefem::fem::calculate(
-            &elements,
-            &nodes,
-            &loads,
+            &calc_model,
             &mut EquationHandler::new(),
-            &CalculationSettings::default(),
         ).node_results;
-        let shear = calculate_shear_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let shear = calculate_shear_at(2000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Shear(2000<-45): {} kN", shear / 1e3);
         assert_eq!(relative_eq!(shear, -5e3 / 2f64.sqrt(), epsilon = 1.0), true);
 
-        loads[0].rotation = 45.0;
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
+        calc_model.loads[0].rotation = 45.0;
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model.elements,
+            &calc_model.nodes,
+            &calc_model.loads,
             &EquationHandler::new(),
         );
         let results = vefem::fem::calculate(
-            &elements,
-            &nodes,
-            &loads,
+            &calc_model,
             &mut EquationHandler::new(),
-            &CalculationSettings::default(),
         ).node_results;
-        let shear = calculate_shear_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let shear = calculate_shear_at(2000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Shear(2000<45): {} kN", shear / 1e3);
         assert_eq!(relative_eq!(shear, 5e3 / 2f64.sqrt(), epsilon = 1.0), true);
 
-        loads[0].rotation = 0.0;
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
+        calc_model.loads[0].rotation = 0.0;
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model.elements,
+            &calc_model.nodes,
+            &calc_model.loads,
             &EquationHandler::new(),
         );
         let results = vefem::fem::calculate(
-            &elements,
-            &nodes,
-            &loads,
+            &calc_model,
             &mut EquationHandler::new(),
-            &CalculationSettings::default(),
         ).node_results;
-        let shear = calculate_shear_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let shear = calculate_shear_at(2000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Shear(horizontal): {} kN", shear / 1e3);
         assert_eq!(relative_eq!(shear, 0.0, epsilon = 1.0), true);
     }
@@ -630,30 +609,34 @@ mod internal_forces_tests {
             "10000000".to_string(),
         );
         let loads = vec![r_load];
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
+        let calc_model = CalculationModel{
+            nodes,
+            elements,
+            loads,
+            calc_settings: CalculationSettings::default(),
+            load_combinations: vec![]
+        };
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model.elements,
+            &calc_model.nodes,
+            &calc_model.loads,
             &EquationHandler::new(),
         );
         let results = vefem::fem::calculate(
-            &elements,
-            &nodes,
-            &loads,
+            &calc_model,
             &mut EquationHandler::new(),
-            &CalculationSettings::default(),
         ).node_results;
-        let shear = calculate_shear_at(1000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let shear = calculate_shear_at(1000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
 
         println!("Shear(1000): {} kN", shear / 1e3);
         assert_eq!(relative_eq!(shear, 2.5e3, epsilon = 1.0), true);
-        let shear = calculate_shear_at(1999.0, &elements[0], &nodes, &cacl_loads, &results);
+        let shear = calculate_shear_at(1999.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Shear(1999): {} kN", shear / 1e3);
         assert_eq!(relative_eq!(shear, 2.5e3, epsilon = 1.0), true);
-        let shear = calculate_shear_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let shear = calculate_shear_at(2000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Shear(2000): {} kN", shear / 1e3);
         assert_eq!(relative_eq!(shear, 2.5e3, epsilon = 1.0), true);
-        let shear = calculate_shear_at(3000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let shear = calculate_shear_at(3000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Shear(3000): {} kN", shear / 1e3);
         assert_eq!(relative_eq!(shear, 2.5e3, epsilon = 1.0), true);
     }
@@ -680,52 +663,53 @@ mod internal_forces_tests {
             "10".to_string(),
             -90.0,
         );
-        let mut loads = vec![l_load];
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
+        let loads = vec![l_load];
+        let mut calc_model = CalculationModel{
+            nodes,
+            elements,
+            loads,
+            calc_settings: CalculationSettings::default(),
+            load_combinations: vec![]
+        };
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model.elements,
+            &calc_model.nodes,
+            &calc_model.loads,
             &EquationHandler::new(),
         );
         let results = vefem::fem::calculate(
-            &elements,
-            &nodes,
-            &loads,
+            &calc_model,
             &mut EquationHandler::new(),
-            &CalculationSettings::default(),
         ).node_results;
-        let shear = calculate_shear_at(1000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let shear = calculate_shear_at(1000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
 
         println!("Shear(1000): {} kN", shear / 1e3);
         assert_eq!(
             relative_eq!(shear, (10.0 * 4.0 / 2.0 - 10.0 * 1.0) * 1e3, epsilon = 1.0),
             true
         );
-        let shear = calculate_shear_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let shear = calculate_shear_at(2000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Shear(2000): {} kN", shear / 1e3);
         assert_eq!(relative_eq!(shear, 0.0, epsilon = 1.0), true);
-        let shear = calculate_shear_at(3000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let shear = calculate_shear_at(3000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Shear(3000): {} kN", shear / 1e3);
         assert_eq!(
             relative_eq!(shear, (10.0 * 4.0 / 2.0 - 10.0 * 3.0) * 1e3, epsilon = 1.0),
             true
         );
 
-        loads[0].rotation = -45.0;
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
+        calc_model.loads[0].rotation = -45.0;
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model.elements,
+            &calc_model.nodes,
+            &calc_model.loads,
             &EquationHandler::new(),
         );
         let results = vefem::fem::calculate(
-            &elements,
-            &nodes,
-            &loads,
+            &calc_model,
             &mut EquationHandler::new(),
-            &CalculationSettings::default(),
         ).node_results;
-        let shear = calculate_shear_at(1000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let shear = calculate_shear_at(1000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Shear(1000<-45): {} kN", shear / 1e3);
         assert_eq!(
             relative_eq!(
@@ -736,21 +720,18 @@ mod internal_forces_tests {
             true
         );
 
-        loads[0].rotation = 45.0;
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
+        calc_model.loads[0].rotation = 45.0;
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model.elements,
+            &calc_model.nodes,
+            &calc_model.loads,
             &EquationHandler::new(),
         );
         let results = vefem::fem::calculate(
-            &elements,
-            &nodes,
-            &loads,
+            &calc_model,
             &mut EquationHandler::new(),
-            &CalculationSettings::default(),
         ).node_results;
-        let shear = calculate_shear_at(1000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let shear = calculate_shear_at(1000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Shear(1000<45): {} kN", shear / 1e3);
         assert_eq!(
             relative_eq!(
@@ -761,21 +742,18 @@ mod internal_forces_tests {
             true
         );
 
-        loads[0].rotation = 0.0;
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
+        calc_model.loads[0].rotation = 0.0;
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model.elements,
+            &calc_model.nodes,
+            &calc_model.loads,
             &EquationHandler::new(),
         );
         let results = vefem::fem::calculate(
-            &elements,
-            &nodes,
-            &loads,
+            &calc_model,
             &mut EquationHandler::new(),
-            &CalculationSettings::default(),
         ).node_results;
-        let shear = calculate_shear_at(1000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let shear = calculate_shear_at(1000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Shear(horizontal): {} kN", shear / 1e3);
         assert_eq!(relative_eq!(shear, 0.0, epsilon = 1.0), true);
     }
@@ -802,21 +780,25 @@ mod internal_forces_tests {
             "10".to_string(),
             -90.0,
         );
-        let mut loads = vec![l_load];
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
+        let loads = vec![l_load];
+        let mut calc_model = CalculationModel{
+            nodes,
+            elements,
+            loads,
+            calc_settings: CalculationSettings::default(),
+            load_combinations: vec![]
+        };
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model.elements,
+            &calc_model.nodes,
+            &calc_model.loads,
             &EquationHandler::new(),
         );
         let results = vefem::fem::calculate(
-            &elements,
-            &nodes,
-            &loads,
+            &calc_model,
             &mut EquationHandler::new(),
-            &CalculationSettings::default(),
         ).node_results;
-        let shear = calculate_shear_at(1000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let shear = calculate_shear_at(1000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
 
         println!("Shear(1000): {} kN", shear / 1e3);
         assert_eq!(
@@ -830,7 +812,7 @@ mod internal_forces_tests {
             ),
             true
         );
-        let shear = calculate_shear_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let shear = calculate_shear_at(2000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Shear(2000): {} kN", shear / 1e3);
         assert_eq!(
             relative_eq!(
@@ -843,7 +825,7 @@ mod internal_forces_tests {
             ),
             true
         );
-        let shear = calculate_shear_at(3000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let shear = calculate_shear_at(3000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Shear(3000): {} kN", shear / 1e3);
         assert_eq!(
             relative_eq!(
@@ -857,21 +839,18 @@ mod internal_forces_tests {
             true
         );
 
-        loads[0].rotation = -45.0;
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
+        calc_model.loads[0].rotation = -45.0;
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model.elements,
+            &calc_model.nodes,
+            &calc_model.loads,
             &EquationHandler::new(),
         );
         let results = vefem::fem::calculate(
-            &elements,
-            &nodes,
-            &loads,
+            &calc_model,
             &mut EquationHandler::new(),
-            &CalculationSettings::default(),
         ).node_results;
-        let shear = calculate_shear_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let shear = calculate_shear_at(2000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Shear(2000<-45): {} kN", shear / 1e3);
         assert_eq!(
             relative_eq!(
@@ -886,21 +865,18 @@ mod internal_forces_tests {
             true
         );
 
-        loads[0].rotation = 45.0;
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
+        calc_model.loads[0].rotation = 45.0;
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model.elements,
+            &calc_model.nodes,
+            &calc_model.loads,
             &EquationHandler::new(),
         );
         let results = vefem::fem::calculate(
-            &elements,
-            &nodes,
-            &loads,
+            &calc_model,
             &mut EquationHandler::new(),
-            &CalculationSettings::default(),
         ).node_results;
-        let shear = calculate_shear_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let shear = calculate_shear_at(2000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Shear(2000<45): {} kN", shear / 1e3);
         assert_eq!(
             relative_eq!(
@@ -915,21 +891,18 @@ mod internal_forces_tests {
             true
         );
 
-        loads[0].rotation = 0.0;
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
+        calc_model.loads[0].rotation = 0.0;
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model.elements,
+            &calc_model.nodes,
+            &calc_model.loads,
             &EquationHandler::new(),
         );
         let results = vefem::fem::calculate(
-            &elements,
-            &nodes,
-            &loads,
+            &calc_model,
             &mut EquationHandler::new(),
-            &CalculationSettings::default(),
         ).node_results;
-        let shear = calculate_shear_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let shear = calculate_shear_at(2000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Shear(horizontal)): {} kN", shear / 1e3);
         assert_eq!(relative_eq!(shear, 0.0, epsilon = 1.0), true);
     }
@@ -956,22 +929,26 @@ mod internal_forces_tests {
             "10".to_string(),
             -90.0,
         );
-        let mut loads = vec![l_load];
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
+        let loads = vec![l_load];
+        let mut calc_model = CalculationModel{
+            nodes,
+            elements,
+            loads,
+            calc_settings: CalculationSettings::default(),
+            load_combinations: vec![]
+        };
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model.elements,
+            &calc_model.nodes,
+            &calc_model.loads,
             &EquationHandler::new(),
         );
         let results = vefem::fem::calculate(
-            &elements,
-            &nodes,
-            &loads,
+            &calc_model,
             &mut EquationHandler::new(),
-            &CalculationSettings::default(),
         ).node_results;
 
-        let shear = calculate_shear_at(1000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let shear = calculate_shear_at(1000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Shear(1000): {} kN", shear / 1e3);
         assert_eq!(
             relative_eq!(
@@ -981,7 +958,7 @@ mod internal_forces_tests {
             ),
             true
         );
-        let shear = calculate_shear_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let shear = calculate_shear_at(2000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Shear(2000): {} kN", shear / 1e3);
         assert_eq!(
             relative_eq!(
@@ -991,7 +968,7 @@ mod internal_forces_tests {
             ),
             true
         );
-        let shear = calculate_shear_at(3000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let shear = calculate_shear_at(3000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Shear(3000): {} kN", shear / 1e3);
         assert_eq!(
             relative_eq!(
@@ -1002,21 +979,18 @@ mod internal_forces_tests {
             true
         );
 
-        loads[0].rotation = -45.0;
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
+        calc_model.loads[0].rotation = -45.0;
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model.elements,
+            &calc_model.nodes,
+            &calc_model.loads,
             &EquationHandler::new(),
         );
         let results = vefem::fem::calculate(
-            &elements,
-            &nodes,
-            &loads,
+            &calc_model,
             &mut EquationHandler::new(),
-            &CalculationSettings::default(),
         ).node_results;
-        let shear = calculate_shear_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let shear = calculate_shear_at(2000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Shear(2000<-45): {} kN", shear / 1e3);
         assert_eq!(
             relative_eq!(
@@ -1027,21 +1001,18 @@ mod internal_forces_tests {
             true
         );
 
-        loads[0].rotation = 45.0;
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
+        calc_model.loads[0].rotation = 45.0;
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model.elements,
+            &calc_model.nodes,
+            &calc_model.loads,
             &EquationHandler::new(),
         );
         let results = vefem::fem::calculate(
-            &elements,
-            &nodes,
-            &loads,
+            &calc_model,
             &mut EquationHandler::new(),
-            &CalculationSettings::default(),
         ).node_results;
-        let shear = calculate_shear_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let shear = calculate_shear_at(2000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Shear(2000<45): {} kN", shear / 1e3);
         assert_eq!(
             relative_eq!(
@@ -1053,21 +1024,18 @@ mod internal_forces_tests {
             true
         );
 
-        loads[0].rotation = 0.0;
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
+        calc_model.loads[0].rotation = 0.0;
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model.elements,
+            &calc_model.nodes,
+            &calc_model.loads,
             &EquationHandler::new(),
         );
         let results = vefem::fem::calculate(
-            &elements,
-            &nodes,
-            &loads,
+            &calc_model,
             &mut EquationHandler::new(),
-            &CalculationSettings::default(),
         ).node_results;
-        let shear = calculate_shear_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let shear = calculate_shear_at(2000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Shear(horizontal)): {} kN", shear / 1e3);
         assert_eq!(relative_eq!(shear, 0.0, epsilon = 1.0), true);
     }
@@ -1093,66 +1061,64 @@ mod internal_forces_tests {
             "10000".to_string(),
             0.0,
         );
-        let mut loads = vec![p_load];
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
+        let loads = vec![p_load];
+        let mut calc_model = CalculationModel{
+            nodes,
+            elements,
+            loads,
+            calc_settings: CalculationSettings::default(),
+            load_combinations: vec![]
+        };
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model.elements,
+            &calc_model.nodes,
+            &calc_model.loads,
             &EquationHandler::new(),
         );
         let results = vefem::fem::calculate(
-            &elements,
-            &nodes,
-            &loads,
+            &calc_model,
             &mut EquationHandler::new(),
-            &CalculationSettings::default(),
         ).node_results;
-        let axial_f = calculate_axial_force_at(1000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let axial_f = calculate_axial_force_at(1000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Axial force(1000): {} kN", axial_f / 1e3);
         assert_eq!(relative_eq!(axial_f, 5e3, epsilon = 1.0), true);
-        let axial_f = calculate_axial_force_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let axial_f = calculate_axial_force_at(2000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Axial force(2000): {} kN", axial_f / 1e3);
         assert_eq!(relative_eq!(axial_f, -5e3, epsilon = 1.0), true);
-        let axial_f = calculate_axial_force_at(3000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let axial_f = calculate_axial_force_at(3000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Axial force(3000): {} kN", axial_f / 1e3);
         assert_eq!(relative_eq!(axial_f, -5e3, epsilon = 1.0), true);
 
-        loads[0].rotation = -45.0;
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
+        calc_model.loads[0].rotation = -45.0;
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model.elements,
+            &calc_model.nodes,
+            &calc_model.loads,
             &EquationHandler::new(),
         );
         let results = vefem::fem::calculate(
-            &elements,
-            &nodes,
-            &loads,
+            &calc_model,
             &mut EquationHandler::new(),
-            &CalculationSettings::default(),
         ).node_results;
-        let axial_f = calculate_axial_force_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let axial_f = calculate_axial_force_at(2000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Axial force(2000<-45): {} kN", axial_f / 1e3);
         assert_eq!(
             relative_eq!(axial_f, -5e3 / 2f64.sqrt(), epsilon = 1.0),
             true
         );
 
-        loads[0].rotation = 45.0;
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
+        calc_model.loads[0].rotation = 45.0;
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model.elements,
+            &calc_model.nodes,
+            &calc_model.loads,
             &EquationHandler::new(),
         );
         let results = vefem::fem::calculate(
-            &elements,
-            &nodes,
-            &loads,
+            &calc_model,
             &mut EquationHandler::new(),
-            &CalculationSettings::default(),
         ).node_results;
-        let axial_f = calculate_axial_force_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let axial_f = calculate_axial_force_at(2000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Axial force(2000<45): {} kN", axial_f / 1e3);
         assert_eq!(
             relative_eq!(axial_f, -5e3 / 2f64.sqrt(), epsilon = 1.0),
@@ -1181,27 +1147,31 @@ mod internal_forces_tests {
             "10000000".to_string(),
         );
         let loads = vec![r_load];
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
+        let calc_model = CalculationModel{
+            nodes,
+            elements,
+            loads,
+            calc_settings: CalculationSettings::default(),
+            load_combinations: vec![]
+        };
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model.elements,
+            &calc_model.nodes,
+            &calc_model.loads,
             &EquationHandler::new(),
         );
         let results = vefem::fem::calculate(
-            &elements,
-            &nodes,
-            &loads,
+            &calc_model,
             &mut EquationHandler::new(),
-            &CalculationSettings::default(),
         ).node_results;
-        let axial_f = calculate_axial_force_at(1000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let axial_f = calculate_axial_force_at(1000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
 
         println!("Axial force(1999): {} kN", axial_f / 1e3);
         assert_eq!(relative_eq!(axial_f, 0e3, epsilon = 1.0), true);
-        let axial_f = calculate_axial_force_at(1999.0, &elements[0], &nodes, &cacl_loads, &results);
+        let axial_f = calculate_axial_force_at(1999.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Axial force(2000): {} kN", axial_f / 1e3);
         assert_eq!(relative_eq!(axial_f, 0e3, epsilon = 1.0), true);
-        let axial_f = calculate_axial_force_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let axial_f = calculate_axial_force_at(2000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Axial force(2001): {} kN", axial_f / 1e3);
         assert_eq!(relative_eq!(axial_f, 0e3, epsilon = 1.0), true);
     }
@@ -1228,21 +1198,25 @@ mod internal_forces_tests {
             "10".to_string(),
             0.0,
         );
-        let mut loads = vec![l_load];
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
+        let loads = vec![l_load];
+        let mut calc_model = CalculationModel{
+            nodes,
+            elements,
+            loads,
+            calc_settings: CalculationSettings::default(),
+            load_combinations: vec![]
+        };
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model.elements,
+            &calc_model.nodes,
+            &calc_model.loads,
             &EquationHandler::new(),
         );
         let results = vefem::fem::calculate(
-            &elements,
-            &nodes,
-            &loads,
+            &calc_model,
             &mut EquationHandler::new(),
-            &CalculationSettings::default(),
         ).node_results;
-        let axial_f = calculate_axial_force_at(1000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let axial_f = calculate_axial_force_at(1000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
 
         println!("Axial force(1000): {} kN", axial_f / 1e3);
         assert_eq!(
@@ -1253,10 +1227,10 @@ mod internal_forces_tests {
             ),
             true
         );
-        let axial_f = calculate_axial_force_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let axial_f = calculate_axial_force_at(2000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Axial force(2000): {} kN", axial_f / 1e3);
         assert_eq!(relative_eq!(axial_f, 0.0, epsilon = 1.0), true);
-        let axial_f = calculate_axial_force_at(3000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let axial_f = calculate_axial_force_at(3000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Axial force(3000): {} kN", axial_f / 1e3);
         assert_eq!(
             relative_eq!(
@@ -1267,21 +1241,18 @@ mod internal_forces_tests {
             true
         );
 
-        loads[0].rotation = -45.0;
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
+        calc_model.loads[0].rotation = -45.0;
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model.elements,
+            &calc_model.nodes,
+            &calc_model.loads,
             &EquationHandler::new(),
         );
         let results = vefem::fem::calculate(
-            &elements,
-            &nodes,
-            &loads,
+            &calc_model,
             &mut EquationHandler::new(),
-            &CalculationSettings::default(),
         ).node_results;
-        let axial_f = calculate_axial_force_at(1000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let axial_f = calculate_axial_force_at(1000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Axial force(1000<-45): {} kN", axial_f / 1e3);
         assert_eq!(
             relative_eq!(
@@ -1292,21 +1263,18 @@ mod internal_forces_tests {
             true
         );
 
-        loads[0].rotation = 45.0;
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
+        calc_model.loads[0].rotation = 45.0;
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model.elements,
+            &calc_model.nodes,
+            &calc_model.loads,
             &EquationHandler::new(),
         );
         let results = vefem::fem::calculate(
-            &elements,
-            &nodes,
-            &loads,
+            &calc_model,
             &mut EquationHandler::new(),
-            &CalculationSettings::default(),
         ).node_results;
-        let axial_f = calculate_axial_force_at(1000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let axial_f = calculate_axial_force_at(1000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Axial force(1000<45): {} kN", axial_f / 1e3);
         assert_eq!(
             relative_eq!(
@@ -1340,21 +1308,25 @@ mod internal_forces_tests {
             "10".to_string(),
             0.0,
         );
-        let mut loads = vec![l_load];
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
+        let loads = vec![l_load];
+        let mut calc_model = CalculationModel{
+            nodes,
+            elements,
+            loads,
+            calc_settings: CalculationSettings::default(),
+            load_combinations: vec![]
+        };
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model.elements,
+            &calc_model.nodes,
+            &calc_model.loads,
             &EquationHandler::new(),
         );
         let results = vefem::fem::calculate(
-            &elements,
-            &nodes,
-            &loads,
+            &calc_model,
             &mut EquationHandler::new(),
-            &CalculationSettings::default(),
         ).node_results;
-        let axial_f = calculate_axial_force_at(1000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let axial_f = calculate_axial_force_at(1000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
 
         println!("Axial force(1000): {} kN", axial_f / 1e3);
         assert_eq!(
@@ -1368,7 +1340,7 @@ mod internal_forces_tests {
             ),
             true
         );
-        let axial_f = calculate_axial_force_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let axial_f = calculate_axial_force_at(2000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Axial force(2000): {} kN", axial_f / 1e3);
         assert_eq!(
             relative_eq!(
@@ -1381,7 +1353,7 @@ mod internal_forces_tests {
             ),
             true
         );
-        let axial_f = calculate_axial_force_at(3000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let axial_f = calculate_axial_force_at(3000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Axial force(3000): {} kN", axial_f / 1e3);
         assert_eq!(
             relative_eq!(
@@ -1395,21 +1367,18 @@ mod internal_forces_tests {
             true
         );
 
-        loads[0].rotation = -45.0;
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
+        calc_model.loads[0].rotation = -45.0;
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model.elements,
+            &calc_model.nodes,
+            &calc_model.loads,
             &EquationHandler::new(),
         );
         let results = vefem::fem::calculate(
-            &elements,
-            &nodes,
-            &loads,
+            &calc_model,
             &mut EquationHandler::new(),
-            &CalculationSettings::default(),
         ).node_results;
-        let axial_f = calculate_axial_force_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let axial_f = calculate_axial_force_at(2000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Axial force(2000<-45): {} kN", axial_f / 1e3);
         assert_eq!(
             relative_eq!(
@@ -1424,21 +1393,18 @@ mod internal_forces_tests {
             true
         );
 
-        loads[0].rotation = 45.0;
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
+        calc_model.loads[0].rotation = 45.0;
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model.elements,
+            &calc_model.nodes,
+            &calc_model.loads,
             &EquationHandler::new(),
         );
         let results = vefem::fem::calculate(
-            &elements,
-            &nodes,
-            &loads,
+            &calc_model,
             &mut EquationHandler::new(),
-            &CalculationSettings::default(),
         ).node_results;
-        let axial_f = calculate_axial_force_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let axial_f = calculate_axial_force_at(2000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Axial force(2000<45): {} kN", axial_f / 1e3);
         assert_eq!(
             relative_eq!(
@@ -1476,22 +1442,26 @@ mod internal_forces_tests {
             "10".to_string(),
             0.0,
         );
-        let mut loads = vec![l_load];
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
+        let loads = vec![l_load];
+        let mut calc_model = CalculationModel{
+            nodes,
+            elements,
+            loads,
+            calc_settings: CalculationSettings::default(),
+            load_combinations: vec![]
+        };
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model.elements,
+            &calc_model.nodes,
+            &calc_model.loads,
             &EquationHandler::new(),
         );
         let results = vefem::fem::calculate(
-            &elements,
-            &nodes,
-            &loads,
+            &calc_model,
             &mut EquationHandler::new(),
-            &CalculationSettings::default(),
         ).node_results;
 
-        let axial_f = calculate_axial_force_at(1000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let axial_f = calculate_axial_force_at(1000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Axial force(1000): {} kN", axial_f / 1e3);
         assert_eq!(
             relative_eq!(
@@ -1501,7 +1471,7 @@ mod internal_forces_tests {
             ),
             true
         );
-        let axial_f = calculate_axial_force_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let axial_f = calculate_axial_force_at(2000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Axial force(2000): {} kN", axial_f / 1e3);
         assert_eq!(
             relative_eq!(
@@ -1511,7 +1481,7 @@ mod internal_forces_tests {
             ),
             true
         );
-        let axial_f = calculate_axial_force_at(3000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let axial_f = calculate_axial_force_at(3000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Axial force(3000): {} kN", axial_f / 1e3);
         assert_eq!(
             relative_eq!(
@@ -1522,21 +1492,18 @@ mod internal_forces_tests {
             true
         );
 
-        loads[0].rotation = -45.0;
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
+        calc_model.loads[0].rotation = -45.0;
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model.elements,
+            &calc_model.nodes,
+            &calc_model.loads,
             &EquationHandler::new(),
         );
         let results = vefem::fem::calculate(
-            &elements,
-            &nodes,
-            &loads,
+            &calc_model,
             &mut EquationHandler::new(),
-            &CalculationSettings::default(),
         ).node_results;
-        let axial_f = calculate_axial_force_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let axial_f = calculate_axial_force_at(2000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Axial force(2000<-45): {} kN", axial_f / 1e3);
         assert_eq!(
             relative_eq!(
@@ -1547,21 +1514,18 @@ mod internal_forces_tests {
             true
         );
 
-        loads[0].rotation = 45.0;
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
+        calc_model.loads[0].rotation = 45.0;
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model.elements,
+            &calc_model.nodes,
+            &calc_model.loads,
             &EquationHandler::new(),
         );
         let results = vefem::fem::calculate(
-            &elements,
-            &nodes,
-            &loads,
+            &calc_model,
             &mut EquationHandler::new(),
-            &CalculationSettings::default(),
         ).node_results;
-        let axial_f = calculate_axial_force_at(2000.0, &elements[0], &nodes, &cacl_loads, &results);
+        let axial_f = calculate_axial_force_at(2000.0, &calc_model.elements[0], &calc_model.nodes, &calc_loads, &results);
         println!("Axial force(2000<45): {} kN", axial_f / 1e3);
         assert_eq!(
             relative_eq!(

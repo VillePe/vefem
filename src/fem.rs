@@ -3,12 +3,14 @@
 
 use std::collections::HashMap;
 
+use vputilslib::equation_handler;
 use vputilslib::equation_handler::EquationHandler;
 
 use crate::fem::equivalent_loads::*;
 use crate::fem::fem_handler::*;
 use crate::fem::stiffness::*;
 use crate::loads;
+use crate::structure::CalculationModel;
 use crate::{
     loads::{load::CalculationLoad, Load},
     results::*,
@@ -32,12 +34,14 @@ pub mod utils;
 /// * 'equation_handler' - equation handler that can contain custom variables set by the user.
 /// The 'L' variable is reserved for the length of the element.
 pub fn calculate(
-    elements: &Vec<Element>,
-    nodes: &HashMap<i32, Node>,
-    loads: &Vec<Load>,
-    equation_handler: &mut EquationHandler,
-    calc_settings: &CalculationSettings,
+    calc_model: &CalculationModel,
+    equation_handler: &EquationHandler,
 ) -> CalculationResults {
+    let nodes = &calc_model.nodes;
+    let elements = &calc_model.elements;
+    let loads = &calc_model.loads;
+    let calc_settings = &calc_model.calc_settings;
+
     let col_height = utils::col_height(nodes, elements);
 
     let calculation_loads =

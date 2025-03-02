@@ -132,7 +132,7 @@ mod tests {
 
     use vputilslib::{equation_handler::EquationHandler, geometry2d::VpPoint};
 
-    use crate::{loads::Load, material::Steel, settings::CalculationSettings, structure::{element::MaterialType, Element, Node, Profile}};
+    use crate::{loads::Load, material::Steel, settings::CalculationSettings, structure::{element::MaterialType, CalculationModel, Element, Node, Profile}};
 
     // #[test]
     fn t_simple_benchmark_calculation() {
@@ -149,10 +149,17 @@ mod tests {
         let timer = SystemTime::now();
         let load = Load::new_line_load("Lineload".to_string(), "-1".to_string(), "0".to_string(), "L".to_string(), "10".to_string(), -90.0);
 
-        let results = crate::fem::calculate(&elements, &nodes, &vec![load], &mut EquationHandler::new(), &CalculationSettings::default());
+        let calc_model = CalculationModel {
+            nodes,
+            elements,
+            loads: vec![load],
+            calc_settings: CalculationSettings::default(),
+            load_combinations: vec![],
+        };
+        let results = crate::fem::calculate(&calc_model, &mut EquationHandler::new());
         println!("Calculation time: {:?}", timer.elapsed().unwrap());
-        println!("Element count: {}", elements.len());
-        println!("Node count: {}", nodes.len());
+        println!("Element count: {}", calc_model.elements.len());
+        println!("Node count: {}", calc_model.nodes.len());
         println!("Result displacement row count: {:?}", results.node_results.displacements.nrows());
         println!("Support reaction (0,1): {} kN", results.node_results.get_support_reaction(1, 1)/1000.0);
     }

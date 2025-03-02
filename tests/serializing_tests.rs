@@ -26,6 +26,8 @@ pub mod serializing_tests {
         assert_eq!(calc_model.load_combinations.len(), calc_model_deserialized.load_combinations.len());
         assert_eq!(calc_model.loads.len(), calc_model_deserialized.loads.len());
         assert_eq!(calc_model.calc_settings.calc_split_interval, calc_model_deserialized.calc_settings.calc_split_interval);
+
+        // let results = fem::calculate(&calc_model);
     }
 }
 
