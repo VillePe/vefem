@@ -1,6 +1,8 @@
 ﻿#![allow(dead_code)]
 
-#[derive(Debug)]
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Release {
     /// Start release in elements local X-axis. If set to true, the translation in X-axis is released
     pub s_tx: bool,

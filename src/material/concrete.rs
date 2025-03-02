@@ -1,5 +1,8 @@
 #![allow(dead_code)]
 
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Concrete {
     pub elastic_modulus: f64,
     pub thermal_expansion_coefficient: f64,

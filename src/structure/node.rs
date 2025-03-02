@@ -1,7 +1,8 @@
 ﻿#![allow(dead_code)]
+use serde::{Deserialize, Serialize};
 use vputilslib::geometry2d::VpPoint;
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Node {
     pub number: i32,
     pub point: VpPoint,
@@ -31,7 +32,7 @@ impl Node {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Support {
     /// If set to true, the translation in the global X-axis is locked at current node
     pub tx: bool,

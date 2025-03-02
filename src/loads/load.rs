@@ -1,7 +1,8 @@
+use serde::{Deserialize, Serialize};
 use vputilslib::equation_handler::EquationHandler;
 use crate::loads::load::LoadType::{Line, Rotational, Point, Strain, Thermal, Trapezoid, Triangular};
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Load {
     /// Name for the load. Does not need to be unique. Load combinations are created by using the load names.
     pub name : String,
@@ -93,7 +94,7 @@ impl Default for Load {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum LoadType {
     Point,
     Line,
@@ -105,7 +106,7 @@ pub enum LoadType {
     Thermal,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum CalculationLoadType {
     Point,
     Line,

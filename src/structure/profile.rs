@@ -1,8 +1,10 @@
 #![allow(dead_code)]
+use serde::{Deserialize, Serialize};
 use vputilslib::geometry2d::{Polygon, VpPoint};
 use vputilslib::geometry2d;
 use vputilslib::geometry2d::rectangle;
 
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Profile {
     /// The profile type
     pub profile_type: ProfileType,
@@ -128,7 +130,7 @@ impl Profile {
     }
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Serialize, Deserialize)]
 pub enum ProfileType {
     /// Polygon profile. All the values are calculated from the polygon
     Polygon,

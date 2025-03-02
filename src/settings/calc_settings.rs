@@ -1,7 +1,12 @@
+use serde::{Deserialize, Serialize};
+
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct CalculationSettings {
     pub calc_split_interval: CalcSplitInterval,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
 pub enum CalcSplitInterval {
     /// Splits the calculation into intervals of a fixed length.
     Absolute(f64),

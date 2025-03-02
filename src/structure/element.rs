@@ -1,5 +1,7 @@
 ﻿#![allow(dead_code)]
 
+use serde::{Deserialize, Serialize};
+
 use crate::material::*;
 use crate::structure::node::Node;
 use crate::structure::profile::Profile;
@@ -7,12 +9,14 @@ use std::collections::HashMap;
 use crate::material;
 use crate::structure::release::Release;
 
+#[derive(Debug, Serialize, Deserialize)]
 pub enum MaterialType {
     Concrete(Concrete),
     Steel(Steel),
     Timber(Timber),
 }
 
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Element {
     pub number: i32,
     pub node_start: i32,
