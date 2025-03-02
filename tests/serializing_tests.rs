@@ -21,8 +21,8 @@ pub mod serializing_tests {
             loads,
             calc_settings,
         };
-        let calc_model_json = serde_json::to_string(&calc_model).unwrap();
-        // println!("Calculation model JSON: {}", calc_model_json);
+        let calc_model_json = serde_json::to_string_pretty(&calc_model).unwrap();
+        println!("Calculation model JSON: {}", calc_model_json);
         let calc_model_deserialized: CalculationModel =
             serde_json::from_str(&calc_model_json).unwrap();
         assert_eq!(

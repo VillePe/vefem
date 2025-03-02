@@ -2,6 +2,7 @@
 mod node;
 mod profile;
 mod release;
+mod support;
 pub mod utils;
 
 use std::collections::HashMap;
@@ -10,7 +11,7 @@ pub use element::Element;
 pub use node::Node;
 pub use profile::Profile;
 pub use release::Release;
-pub use node::Support;
+pub use support::Support;
 
 use serde::{Deserialize, Serialize};
 use crate::{loads::{Load, LoadCombination}, settings::CalculationSettings};
