@@ -1,7 +1,7 @@
 ﻿#![allow(dead_code)]
 
 use nalgebra::DMatrix;
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use crate::{
     fem::matrices::{
@@ -22,7 +22,7 @@ use crate::{
 /// 2 = rotation about Y-axis`.
 /// ```
 pub fn calculate_displacements(
-    nodes: &HashMap<i32, Node>,
+    nodes: &BTreeMap<i32, Node>,
     col_height: usize,
     global_stiff_matrix: &mut DMatrix<f64>,
     global_equivalent_loads_matrix: &DMatrix<f64>,
@@ -64,7 +64,7 @@ pub fn calculate_displacements(
     full_displacement_matrix
 }
 
-fn apply_support_spring_values(nodes: &HashMap<i32, Node>, global_stiff_matrix: &mut DMatrix<f64>) {
+fn apply_support_spring_values(nodes: &BTreeMap<i32, Node>, global_stiff_matrix: &mut DMatrix<f64>) {
     let dof = 3;
     for node in nodes.values() {
         for i in 0..dof {
@@ -78,7 +78,7 @@ fn apply_support_spring_values(nodes: &HashMap<i32, Node>, global_stiff_matrix: 
 }
 
 fn remove_support_spring_values(
-    nodes: &HashMap<i32, Node>,
+    nodes: &BTreeMap<i32, Node>,
     global_stiff_matrix: &mut DMatrix<f64>,
 ) {
     let dof = 3;
@@ -133,7 +133,7 @@ pub fn calculate_reactions(
 
 #[cfg(test)]
 mod tests {
-    use std::{collections::HashMap, time::SystemTime};
+    use std::{collections::BTreeMap, time::SystemTime};
 
     use vputilslib::{equation_handler::EquationHandler, geometry2d::VpPoint};
 
@@ -142,7 +142,7 @@ mod tests {
     // #[test]
     fn t_simple_benchmark_calculation() {
         let mut elements: Vec<Element> = vec![];
-        let mut nodes: HashMap<i32, Node> = HashMap::new();
+        let mut nodes: BTreeMap<i32, Node> = BTreeMap::new();
         nodes.insert(1, Node::new_hinged(1, VpPoint::new(0.0, 0.0)));
         // Create multiple 4 meter long elements to test the speed of calculations
         for i in 0..1000 {

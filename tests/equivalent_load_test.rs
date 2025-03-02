@@ -3,7 +3,7 @@
 #[cfg(test)]
 mod equivalent_load_tests {
     use approx::relative_eq;
-    use std::collections::HashMap;
+    use std::collections::BTreeMap;
     use vefem::fem::equivalent_loads::get_element_g_eq_loads;
     use vefem::fem::matrices::get_unknown_translation_eq_loads_rows;
     use vefem::fem::matrices::get_unknown_translation_rows;
@@ -28,7 +28,7 @@ mod equivalent_load_tests {
             node_end: 2,
             ..Element::default()
         };
-        let mut nodes: HashMap<i32, Node> = HashMap::new();
+        let mut nodes: BTreeMap<i32, Node> = BTreeMap::new();
         nodes.insert(1, Node::new_hinged(1, VpPoint::new(0.0, 0.0)));
         nodes.insert(2, Node::new_hinged(1, VpPoint::new(0.0, 4000.0)));
         let load = Load::new_line_load(
@@ -160,7 +160,7 @@ mod equivalent_load_tests {
             node_end: 2,
             ..Element::default()
         };
-        let mut nodes: HashMap<i32, Node> = HashMap::new();
+        let mut nodes: BTreeMap<i32, Node> = BTreeMap::new();
         nodes.insert(1, Node::new_hinged(1, VpPoint::new(0.0, 0.0)));
         nodes.insert(2, Node::new_hinged(1, VpPoint::new(0.0, 4000.0)));
         let load = Load::new_triangular_load(
@@ -313,7 +313,7 @@ mod equivalent_load_tests {
             material: MaterialType::Steel(Steel::new(210000.)),
             ..Element::default()
         };
-        let mut nodes: HashMap<i32, Node> = HashMap::new();
+        let mut nodes: BTreeMap<i32, Node> = BTreeMap::new();
         nodes.insert(1, Node::new_hinged(1, VpPoint::new(0.0, 0.0)));
         nodes.insert(2, Node::new_hinged(1, VpPoint::new(0.0, 4000.0)));
         let load = Load::new_strain_load("".to_string(), "1".to_string(), "10".to_string());
@@ -345,7 +345,7 @@ mod equivalent_load_tests {
             material: MaterialType::Steel(Steel::new(210000.)),
             ..Element::default()
         };
-        let mut nodes: HashMap<i32, Node> = HashMap::new();
+        let mut nodes: BTreeMap<i32, Node> = BTreeMap::new();
         nodes.insert(1, Node::new_hinged(1, VpPoint::new(0.0, 0.0)));
         nodes.insert(2, Node::new_hinged(1, VpPoint::new(0.0, 4000.0)));
         let load = Load::new_thermal_load("".to_string(), "1".to_string(), "10".to_string());

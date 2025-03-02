@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use crate::{
     loads::load::{self, CalculationLoad},
@@ -13,7 +13,7 @@ use crate::results::NodeResults;
 pub fn calculate_at(
     x: f64,
     element: &Element,
-    nodes: &HashMap<i32, Node>,
+    nodes: &BTreeMap<i32, Node>,
     loads: &Vec<CalculationLoad>,
     results: &NodeResults,
 ) -> f64 {

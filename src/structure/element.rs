@@ -6,7 +6,7 @@ use crate::material;
 use crate::material::*;
 use crate::profile::Profile;
 use crate::structure::node::Node;
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use crate::structure::release::Release;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -45,14 +45,14 @@ impl Element {
     }
 
     /// Gets the elements length in millimeters (mm)
-    pub fn get_length(&self, nodes: &HashMap<i32, Node>) -> f64 {
+    pub fn get_length(&self, nodes: &BTreeMap<i32, Node>) -> f64 {
         let node_start = &nodes[&(self.node_start)];
         let node_end = &nodes[&(self.node_end)];
         vputilslib::geometry2d::calc_length_between_points(&node_start.point, &node_end.point)
     }
 
     /// Gets the elements rotation in angles (°)
-    pub fn get_rotation(&self, nodes: &HashMap<i32, Node>) -> f64 {
+    pub fn get_rotation(&self, nodes: &BTreeMap<i32, Node>) -> f64 {
         let node_start = &nodes[&(self.node_start)];
         let node_end = &nodes[&(self.node_end)];
         vputilslib::geometry2d::get_angle_from_points(&node_start.point, &node_end.point)
@@ -82,12 +82,12 @@ mod tests {
     use crate::structure::element::{Element, MaterialType};
     use crate::structure::node::Node;
     use crate::profile::{Profile, CustomProfile};
-    use std::collections::HashMap;
+    use std::collections::BTreeMap;
     use vputilslib::geometry2d::VpPoint;
 
     #[test]
     fn element_length() {
-        let mut nodes: HashMap<i32, Node> = HashMap::new();
+        let mut nodes: BTreeMap<i32, Node> = BTreeMap::new();
         nodes.insert(1, Node::new_hinged(1, VpPoint::new(0.0, 0.0)));
         nodes.insert(2, Node::new_hinged(2, VpPoint::new(0.0, 4000.0)));
 

@@ -1,7 +1,7 @@
 ﻿#![allow(non_snake_case)]
 #![allow(dead_code)]
 
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use vputilslib::equation_handler::EquationHandler;
 
@@ -73,12 +73,12 @@ pub fn calculate(
 
 fn calc_internal_forces(
     elements: &Vec<Element>,
-    nodes: &HashMap<i32, Node>,
+    nodes: &BTreeMap<i32, Node>,
     loads: &Vec<CalculationLoad>,
     node_results: &NodeResults,
     calc_settings: &CalculationSettings,
-) -> HashMap<i32, InternalForceResults> {
-    let mut map: HashMap<i32, InternalForceResults> = HashMap::new();
+) -> BTreeMap<i32, InternalForceResults> {
+    let mut map: BTreeMap<i32, InternalForceResults> = BTreeMap::new();
     for element in elements {
         let element_length = element.get_length(nodes);
         let split_interval = match calc_settings.calc_split_interval {

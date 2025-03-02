@@ -2,11 +2,11 @@
 use crate::loads::load::{CalculationLoad, CalculationLoadType};
 use crate::structure::{Element, Node};
 use nalgebra::DMatrix;
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 pub fn create(
     elements: &Vec<Element>,
-    nodes: &HashMap<i32, Node>,
+    nodes: &BTreeMap<i32, Node>,
     loads: &Vec<CalculationLoad>,
 ) -> DMatrix<f64> {
     let supp_count = nodes.len();
@@ -59,7 +59,7 @@ pub fn create(
 pub fn get_element_g_eq_loads(
     element: &Element,
     loads: &Vec<CalculationLoad>,
-    nodes: &HashMap<i32, Node>,
+    nodes: &BTreeMap<i32, Node>,
 ) -> DMatrix<f64> {
     let dof = 3;
     let mut result_vector = DMatrix::<f64>::zeros(dof * 2, 1);
@@ -361,7 +361,7 @@ mod tests {
     };
     use crate::loads::{self, Load};
     use crate::structure::{Element, Node};
-    use std::collections::HashMap;
+    use std::collections::BTreeMap;
     use std::vec;
     use vputilslib::equation_handler::EquationHandler;
     use vputilslib::geometry2d::VpPoint;
@@ -374,7 +374,7 @@ mod tests {
             node_end: 2,
             ..Element::default()
         };
-        let mut nodes: HashMap<i32, Node> = HashMap::new();
+        let mut nodes: BTreeMap<i32, Node> = BTreeMap::new();
         nodes.insert(1, Node::new_hinged(1, VpPoint::new(0.0, 0.0)));
         nodes.insert(2, Node::new_hinged(1, VpPoint::new(0.0, 4000.0)));
         let load = Load::new_point_load(
@@ -456,7 +456,7 @@ mod tests {
             node_end: 2,
             ..Element::default()
         };
-        let mut nodes: HashMap<i32, Node> = HashMap::new();
+        let mut nodes: BTreeMap<i32, Node> = BTreeMap::new();
         nodes.insert(1, Node::new_hinged(1, VpPoint::new(0.0, 0.0)));
         nodes.insert(2, Node::new_hinged(1, VpPoint::new(0.0, 4000.0)));
         let load = Load::new_point_load(
@@ -492,7 +492,7 @@ mod tests {
             node_end: 2,
             ..Element::default()
         };
-        let mut nodes: HashMap<i32, Node> = HashMap::new();
+        let mut nodes: BTreeMap<i32, Node> = BTreeMap::new();
         nodes.insert(1, Node::new_hinged(1, VpPoint::new(0.0, 0.0)));
         nodes.insert(2, Node::new_hinged(1, VpPoint::new(0.0, 4000.0)));
         let load = Load::new_point_load(
@@ -528,7 +528,7 @@ mod tests {
             node_end: 2,
             ..Element::default()
         };
-        let mut nodes: HashMap<i32, Node> = HashMap::new();
+        let mut nodes: BTreeMap<i32, Node> = BTreeMap::new();
         nodes.insert(1, Node::new_hinged(1, VpPoint::new(0.0, 0.0)));
         nodes.insert(2, Node::new_hinged(1, VpPoint::new(0.0, 4000.0)));
         let load = Load::new_rotational_load(
@@ -572,7 +572,7 @@ mod tests {
             node_end: 2,
             ..Element::default()
         };
-        let mut nodes: HashMap<i32, Node> = HashMap::new();
+        let mut nodes: BTreeMap<i32, Node> = BTreeMap::new();
         nodes.insert(1, Node::new_hinged(1, VpPoint::new(0.0, 0.0)));
         nodes.insert(2, Node::new_hinged(1, VpPoint::new(0.0, 4000.0)));
         let load = Load::new_line_load(
@@ -694,7 +694,7 @@ mod tests {
             node_end: 2,
             ..Element::default()
         };
-        let mut nodes: HashMap<i32, Node> = HashMap::new();
+        let mut nodes: BTreeMap<i32, Node> = BTreeMap::new();
         nodes.insert(1, Node::new_hinged(1, VpPoint::new(0.0, 0.0)));
         nodes.insert(2, Node::new_hinged(1, VpPoint::new(0.0, 4000.0)));
         let load = Load::new_triangular_load(

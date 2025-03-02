@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use crate::{
     loads::load::{self, CalculationLoad},
@@ -12,7 +12,7 @@ use crate::results::NodeResults;
 pub fn calculate_moment_at(
     x: f64,
     element: &Element,
-    nodes: &HashMap<i32, Node>,
+    nodes: &BTreeMap<i32, Node>,
     loads: &Vec<CalculationLoad>,
     results: &NodeResults,
 ) -> f64 {
@@ -64,7 +64,7 @@ pub fn calculate_moment_at(
 pub fn calculate_shear_at(
     x: f64,
     element: &Element,
-    nodes: &HashMap<i32, Node>,
+    nodes: &BTreeMap<i32, Node>,
     loads: &Vec<CalculationLoad>,
     results: &NodeResults,
 ) -> f64 {
@@ -111,7 +111,7 @@ pub fn calculate_shear_at(
 pub fn calculate_axial_force_at(
     x: f64,
     element: &Element,
-    nodes: &HashMap<i32, Node>,
+    nodes: &BTreeMap<i32, Node>,
     loads: &Vec<CalculationLoad>,
     results: &NodeResults,
 ) -> f64 {

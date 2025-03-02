@@ -3,7 +3,7 @@
 #[cfg(test)]
 mod fem_tests {
     use approx::relative_eq;
-    use std::collections::HashMap;
+    use std::collections::BTreeMap;
     use vefem::fem::matrices::{
         get_unknown_translation_rows, get_unknown_translation_stiffness_rows,
     };
@@ -411,7 +411,7 @@ mod fem_tests {
             22.0243128370,
         );
 
-        let mut nodes: HashMap<i32, Node> = HashMap::new();
+        let mut nodes: BTreeMap<i32, Node> = BTreeMap::new();
         nodes.insert(1, Node::new_hinged(1, VpPoint::new(0.0, 0.0)));
         nodes.insert(2, Node::new_hinged(1, end_point));
 
@@ -543,7 +543,7 @@ mod fem_tests {
             22.0243128370,
         );
 
-        let mut nodes: HashMap<i32, Node> = HashMap::new();
+        let mut nodes: BTreeMap<i32, Node> = BTreeMap::new();
         nodes.insert(1, Node::new_hinged(1, VpPoint::new(0.0, 0.0)));
         nodes.insert(2, Node::new_hinged(2, end_point));
         nodes.insert(

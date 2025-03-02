@@ -1,14 +1,14 @@
 #![allow(dead_code)]
 
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use vefem::{
     loads::Load, material::Steel, profile::Profile, structure::{element::MaterialType, Element, Node}
 };
 use vputilslib::geometry2d::VpPoint;
 
-pub fn get_structure_fem_matriisit_releases() -> (Vec<Element>, HashMap<i32, Node>) {
-    let mut nodes: HashMap<i32, Node> = HashMap::new();
+pub fn get_structure_fem_matriisit_releases() -> (Vec<Element>, BTreeMap<i32, Node>) {
+    let mut nodes: BTreeMap<i32, Node> = BTreeMap::new();
     nodes.insert(1, Node::new_fixed(1, VpPoint::new(0.0, 0.0))); // 0, 0
     nodes.insert(2, Node::new_free(2, VpPoint::new(0.0, 4000.0))); // 0, 4000
     nodes.insert(
@@ -50,8 +50,8 @@ pub fn get_structure_fem_matriisit_releases() -> (Vec<Element>, HashMap<i32, Nod
     (elements, nodes)
 }
 
-pub fn get_structure_fem_matriisit() -> (Vec<Element>, HashMap<i32, Node>) {
-    let mut nodes: HashMap<i32, Node> = HashMap::new();
+pub fn get_structure_fem_matriisit() -> (Vec<Element>, BTreeMap<i32, Node>) {
+    let mut nodes: BTreeMap<i32, Node> = BTreeMap::new();
     nodes.insert(1, Node::new_hinged(1, VpPoint::new(0.0, 0.0)));
     nodes.insert(2, Node::new_free(2, VpPoint::new(0.0, 4000.0)));
     nodes.insert(

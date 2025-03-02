@@ -1,4 +1,4 @@
-﻿use std::collections::HashMap;
+﻿use std::collections::BTreeMap;
 
 use vputilslib::equation_handler::EquationHandler;
 
@@ -148,7 +148,7 @@ mod tests {
 /// * `eq_handler` - Equation handler with pre initialized variables. Variable 'L' is preserved for element length.
 pub fn extract_calculation_loads(
     elements: &Vec<Element>,
-    nodes: &HashMap<i32, Node>,
+    nodes: &BTreeMap<i32, Node>,
     loads: &Vec<Load>,
     eq_handler: &EquationHandler,
 ) -> Vec<CalculationLoad> {

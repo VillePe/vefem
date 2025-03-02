@@ -23,7 +23,7 @@ vefem = { git = "https://github.com/VillePe/vefem" }
 
 An example how calculate a single span beam with line load on the beam.
 ```rust
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use vefem::{loads, material::Steel, settings::CalculationSettings, 
     structure::{element::MaterialType, Node, Profile}};
@@ -32,7 +32,7 @@ use vefem::vputilslib::{geometry2d::VpPoint, equation_handler::EquationHandler};
 fn test_vefem() {
     let n1 = Node::new_hinged(1, VpPoint::new(0.0, 0.0));
     let n2 = Node::new_hinged(2, VpPoint::new(4000.0, 0.0));
-    let nodes = HashMap::from([(n1.number, n1), (n2.number, n2)]);
+    let nodes = BTreeMap::from([(n1.number, n1), (n2.number, n2)]);
     let el = vefem::structure::Element::new(
         1, // Element number
         1, // The node number at the start of the element

@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod axial_deformation_tests {
-    use std::collections::HashMap;
+    use std::collections::BTreeMap;
 
     use approx::relative_eq;
     use vputilslib::{equation_handler::EquationHandler, geometry2d::VpPoint};
@@ -16,7 +16,7 @@ mod axial_deformation_tests {
             Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
             MaterialType::Steel(Steel::default()),
         );
-        let nodes = HashMap::from([
+        let nodes = BTreeMap::from([
             (1, Node::new_hinged(1, VpPoint::new(0.0, 0.0))),
             (2, Node::new_hinged(2, VpPoint::new(4000.0, 0.0))),
         ]);
@@ -126,7 +126,7 @@ mod axial_deformation_tests {
             Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
             MaterialType::Steel(Steel::default()),
         );
-        let nodes = HashMap::from([
+        let nodes = BTreeMap::from([
             (1, Node::new_hinged(1, VpPoint::new(0.0, 0.0))),
             (2, Node::new_hinged(2, VpPoint::new(4000.0, 0.0))),
         ]);
@@ -248,7 +248,7 @@ mod axial_deformation_tests {
             Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
             MaterialType::Steel(Steel::default()),
         );
-        let nodes = HashMap::from([
+        let nodes = BTreeMap::from([
             (1, Node::new_hinged(1, VpPoint::new(0.0, 0.0))),
             (2, Node::new_hinged(2, VpPoint::new(4000.0, 0.0))),
         ]);
@@ -351,7 +351,7 @@ mod axial_deformation_tests {
             Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
             MaterialType::Steel(Steel::default()),
         );
-        let nodes = HashMap::from([
+        let nodes = BTreeMap::from([
             (1, Node::new_hinged(1, VpPoint::new(0.0, 0.0))),
             (2, Node::new_hinged(2, VpPoint::new(4000.0, 0.0))),
         ]);
@@ -444,7 +444,7 @@ mod axial_deformation_tests {
             Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
             MaterialType::Steel(Steel::default()),
         );
-        let nodes = HashMap::from([
+        let nodes = BTreeMap::from([
             (1, Node::new_hinged(1, VpPoint::new(0.0, 0.0))),
             (2, Node::new_hinged(2, VpPoint::new(4000.0, 0.0))),
         ]);
@@ -547,7 +547,7 @@ mod axial_deformation_tests {
             Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
             MaterialType::Steel(Steel::default()),
         );
-        let nodes = HashMap::from([
+        let nodes = BTreeMap::from([
             (1, Node::new_hinged(1, VpPoint::new(0.0, 0.0))),
             (2, Node::new_hinged(2, VpPoint::new(4000.0, 0.0))),
         ]);

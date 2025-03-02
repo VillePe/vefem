@@ -4,12 +4,12 @@ use crate::fem::matrices::get_element_rotation_matrix;
 use crate::structure::element::{Element, MaterialType};
 use crate::structure::Node;
 use nalgebra::DMatrix;
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 /// Gets the elements stiffness matrix in the global coordinate system.
 pub fn get_element_global_stiffness_matrix(
     e: &Element,
-    nodes: &HashMap<i32, Node>,
+    nodes: &BTreeMap<i32, Node>,
 ) -> DMatrix<f64> {
     let e_stiff_matrix = get_element_stiffness_matrix(&e, nodes);
     let e_rotation_matrix = get_element_rotation_matrix(&e, nodes);
@@ -20,7 +20,7 @@ pub fn get_element_global_stiffness_matrix(
 
 /// Gets the stiffness matrix of the element in elements local coordinate system.
 /// Do not use this directly in the calculations. Use get_element_global_stiffness_matrix
-pub fn get_element_stiffness_matrix(element: &Element, nodes: &HashMap<i32, Node>) -> DMatrix<f64> {
+pub fn get_element_stiffness_matrix(element: &Element, nodes: &BTreeMap<i32, Node>) -> DMatrix<f64> {
     let E = match &element.material {
         MaterialType::Concrete(c) => c.elastic_modulus,
         MaterialType::Steel(s) => s.elastic_modulus,
@@ -80,7 +80,7 @@ pub fn get_element_stiffness_matrix(element: &Element, nodes: &HashMap<i32, Node
 
 pub fn create_joined_stiffness_matrix(
     elements: &Vec<Element>,
-    nodes: &HashMap<i32, Node>,
+    nodes: &BTreeMap<i32, Node>,
 ) -> DMatrix<f64> {
     let supp_count = nodes.len();
     // Increase the joined stiffness matrix size by release count. Releases are set into their

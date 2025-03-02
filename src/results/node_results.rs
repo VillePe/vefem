@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use nalgebra::DMatrix;
 use vputilslib::equation_handler::EquationHandler;
@@ -62,7 +62,7 @@ impl NodeResults {
     pub fn get_elem_local_reactions(
         &self,
         element: &Element,
-        nodes: &HashMap<i32, Node>,
+        nodes: &BTreeMap<i32, Node>,
     ) -> DMatrix<f64> {
         let mut global_reactions = DMatrix::<f64>::zeros(6, 1);
 
@@ -82,7 +82,7 @@ impl NodeResults {
     pub fn get_elem_local_displacements(
         &self,
         element: &Element,
-        nodes: &HashMap<i32, Node>,
+        nodes: &BTreeMap<i32, Node>,
     ) -> DMatrix<f64> {
         let mut global_matrix = DMatrix::<f64>::zeros(6, 1);
 
@@ -101,7 +101,7 @@ impl NodeResults {
 #[cfg(test)]
 mod tests {
     use approx::relative_eq;
-    use std::collections::HashMap;
+    use std::collections::BTreeMap;
     use vputilslib::equation_handler::EquationHandler;
 
     use vputilslib::geometry2d::VpPoint;
@@ -122,7 +122,7 @@ mod tests {
             Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
             MaterialType::Steel(Steel::default()),
         );
-        let nodes = HashMap::from([
+        let nodes = BTreeMap::from([
             (1, Node::new_hinged(1, VpPoint::new(0.0, 0.0))),
             (2, Node::new_hinged(2, VpPoint::new(0000.0, 4000.0))),
         ]);

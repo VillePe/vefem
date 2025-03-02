@@ -3,10 +3,10 @@
 use crate::structure::element::Element;
 use crate::structure::Node;
 use nalgebra::DMatrix;
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 /// Gets the rotation matrix for the element. This matrix is in elements local coordinate system
-pub fn get_element_rotation_matrix(element: &Element, nodes: &HashMap<i32, Node>) -> DMatrix<f64> {
+pub fn get_element_rotation_matrix(element: &Element, nodes: &BTreeMap<i32, Node>) -> DMatrix<f64> {
     let angle_radians = element.get_rotation(nodes).to_radians();
     let c = angle_radians.cos();
     let s = angle_radians.sin();
@@ -26,7 +26,7 @@ pub fn get_element_rotation_matrix(element: &Element, nodes: &HashMap<i32, Node>
     )
 }
 
-pub fn get_unknown_translation_rows(nodes: &HashMap<i32, Node>, matrix: &DMatrix<f64>) -> Vec<i32> {
+pub fn get_unknown_translation_rows(nodes: &BTreeMap<i32, Node>, matrix: &DMatrix<f64>) -> Vec<i32> {
     let node_count = nodes.len();
     let mut result: Vec<i32> = Vec::new();
     let dof: usize = 3;
