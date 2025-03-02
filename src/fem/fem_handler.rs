@@ -3,10 +3,13 @@
 use nalgebra::DMatrix;
 use std::collections::HashMap;
 
-use crate::{fem::matrices::{
-    get_unknown_translation_eq_loads_rows, get_unknown_translation_rows,
-    get_unknown_translation_stiffness_rows,
-}, structure::Node};
+use crate::{
+    fem::matrices::{
+        get_unknown_translation_eq_loads_rows, get_unknown_translation_rows,
+        get_unknown_translation_stiffness_rows,
+    },
+    structure::Node,
+};
 
 /// Calculates the displacement matrix for given elements, nodes and loads. The displacement matrix
 /// is in global coordinates.
@@ -32,13 +35,15 @@ pub fn calculate_displacements(
     let unknown_eq_loads_rows = get_unknown_translation_eq_loads_rows(
         &unknown_translation_rows,
         &global_equivalent_loads_matrix,
-    );    
-    let displacement : DMatrix<f64>;
+    );
+    let displacement: DMatrix<f64>;
     // If there are big number of rows with unknown translations, use cholesky decomposition for
-    // solving the system of equations. Otherwise use regular inversion (might not be necessary, 
+    // solving the system of equations. Otherwise use regular inversion (might not be necessary,
     // maybe could always solve with cholesky. Could be benchmarked).
     if unknown_translation_stiffness_rows.nrows() > 100 {
-        displacement = displacements_cholesky(unknown_translation_stiffness_rows, &unknown_eq_loads_rows).unwrap_or(DMatrix::zeros(col_height, 1));
+        displacement =
+            displacements_cholesky(unknown_translation_stiffness_rows, &unknown_eq_loads_rows)
+                .unwrap_or(DMatrix::zeros(col_height, 1));
     } else {
         let stiffness_matrix_inverted = invert_stiff_matrix(unknown_translation_stiffness_rows);
 
@@ -47,7 +52,7 @@ pub fn calculate_displacements(
         } else {
             DMatrix::zeros(col_height, 1)
         };
-    }    
+    }
     // Create the full displacement matrix by adding the calculated displacements to the unknown
     // displacements (other rows are zero)
     let mut full_displacement_matrix: DMatrix<f64> = DMatrix::zeros(col_height, 1);
@@ -59,18 +64,16 @@ pub fn calculate_displacements(
     full_displacement_matrix
 }
 
-fn apply_support_spring_values(
-    nodes: &HashMap<i32, Node>,
-    global_stiff_matrix: &mut DMatrix<f64>,
-) {
+fn apply_support_spring_values(nodes: &HashMap<i32, Node>, global_stiff_matrix: &mut DMatrix<f64>) {
     let dof = 3;
     for node in nodes.values() {
         for i in 0..dof {
             if node.support.get_support_spring(i) != 0.0 && node.number > 0 {
                 let node_number = node.number as usize;
-                global_stiff_matrix[((node_number-1) * dof + i, (node_number-1) * dof + i)] += node.support.get_support_spring(i);
+                global_stiff_matrix[((node_number - 1) * dof + i, (node_number - 1) * dof + i)] +=
+                    node.support.get_support_spring(i);
             }
-        }        
+        }
     }
 }
 
@@ -83,20 +86,22 @@ fn remove_support_spring_values(
         for i in 0..dof {
             if node.support.get_support_spring(i) != 0.0 && node.number > 0 {
                 let node_number = node.number as usize;
-                global_stiff_matrix[((node_number-1) * dof + i, (node_number-1) * dof + i)] -= node.support.get_support_spring(i);
+                global_stiff_matrix[((node_number - 1) * dof + i, (node_number - 1) * dof + i)] -=
+                    node.support.get_support_spring(i);
             }
-        }        
+        }
     }
 }
 
 /// Calculates the displacements using cholesky decomposition for given rows that have unknown translations
 /// * 'unknown_translation_stiffness_rows' - stiffness matrix rows that have unknown translations
 /// * 'unknown_eq_loads' - equivalent loads at the same rows as the stiffness matrix
-fn displacements_cholesky(unknown_translation_stiffness_rows: DMatrix<f64>, unknown_eq_loads: &DMatrix<f64>) -> Option<DMatrix<f64>> {
+fn displacements_cholesky(
+    unknown_translation_stiffness_rows: DMatrix<f64>,
+    unknown_eq_loads: &DMatrix<f64>,
+) -> Option<DMatrix<f64>> {
     match unknown_translation_stiffness_rows.cholesky() {
-        Some(cholesky) => {   
-            Some(cholesky.solve(&unknown_eq_loads))
-        },
+        Some(cholesky) => Some(cholesky.solve(&unknown_eq_loads)),
         None => None,
     }
 }
@@ -106,7 +111,7 @@ fn displacements_cholesky(unknown_translation_stiffness_rows: DMatrix<f64>, unkn
 /// * 'matrix' - matrix to invert (should be the stiffness matrix with uknonwn translations)
 fn invert_stiff_matrix(matrix: DMatrix<f64>) -> Option<DMatrix<f64>> {
     println!("Using regular inversion...");
-    return matrix.try_inverse()
+    return matrix.try_inverse();
 }
 
 /// Calculates the support reaction matrix for given elements, nodes and loads. The reaction matrix
@@ -132,22 +137,41 @@ mod tests {
 
     use vputilslib::{equation_handler::EquationHandler, geometry2d::VpPoint};
 
-    use crate::{loads::Load, material::Steel, settings::CalculationSettings, structure::{element::MaterialType, CalculationModel, Element, Node, Profile}};
+    use crate::{
+        loads::Load,
+        material::Steel,
+        settings::CalculationSettings,
+        structure::{element::MaterialType, CalculationModel, Element, Node, Profile},
+    };
 
     // #[test]
     fn t_simple_benchmark_calculation() {
-        let mut elements : Vec<Element>  = vec![];
+        let mut elements: Vec<Element> = vec![];
         let mut nodes: HashMap<i32, Node> = HashMap::new();
         nodes.insert(1, Node::new_hinged(1, VpPoint::new(0.0, 0.0)));
         // Create multiple 4 meter long elements to test the speed of calculations
         for i in 0..1000 {
-            nodes.insert(i+2, Node::new_hinged(i+2, VpPoint::new(((i+1) as f64)*4000.0f64, 0.0)));
-            elements.push(Element::new(i+1, i+1, i+2, 
-                Profile::new_rectangle("100x100".to_string(), 100.0, 100.0), 
-                MaterialType::Steel(Steel::new(210e3))));
+            nodes.insert(
+                i + 2,
+                Node::new_hinged(i + 2, VpPoint::new(((i + 1) as f64) * 4000.0f64, 0.0)),
+            );
+            elements.push(Element::new(
+                i + 1,
+                i + 1,
+                i + 2,
+                Profile::new_rectangle("100x100".to_string(), 100.0, 100.0),
+                MaterialType::Steel(Steel::new(210e3)),
+            ));
         }
         let timer = SystemTime::now();
-        let load = Load::new_line_load("Lineload".to_string(), "-1".to_string(), "0".to_string(), "L".to_string(), "10".to_string(), -90.0);
+        let load = Load::new_line_load(
+            "Lineload".to_string(),
+            "-1".to_string(),
+            "0".to_string(),
+            "L".to_string(),
+            "10".to_string(),
+            -90.0,
+        );
 
         let calc_model = CalculationModel {
             nodes,
@@ -160,9 +184,13 @@ mod tests {
         println!("Calculation time: {:?}", timer.elapsed().unwrap());
         println!("Element count: {}", calc_model.elements.len());
         println!("Node count: {}", calc_model.nodes.len());
-        println!("Result displacement row count: {:?}", results.node_results.displacements.nrows());
-        println!("Support reaction (0,1): {} kN", results.node_results.get_support_reaction(1, 1)/1000.0);
+        println!(
+            "Result displacement row count: {:?}",
+            results.node_results.displacements.nrows()
+        );
+        println!(
+            "Support reaction (0,1): {} kN",
+            results.node_results.get_support_reaction(1, 1) / 1000.0
+        );
     }
-    
-
 }

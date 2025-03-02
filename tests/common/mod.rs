@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use std::collections::HashMap;
 
 use vefem::{
@@ -54,8 +56,14 @@ pub fn get_structure_fem_matriisit() -> (Vec<Element>, HashMap<i32, Node>) {
     let mut nodes: HashMap<i32, Node> = HashMap::new();
     nodes.insert(1, Node::new_hinged(1, VpPoint::new(0.0, 0.0)));
     nodes.insert(2, Node::new_free(2, VpPoint::new(0.0, 4000.0)));
-    nodes.insert(3, Node::new_hinged(3, VpPoint::new(nodes[&2].point.x + 6000.0, 0.0)),);
-    nodes.insert(4, Node::new_free(4, VpPoint::new(nodes[&3].point.x, nodes[&2].point.y)),);
+    nodes.insert(
+        3,
+        Node::new_hinged(3, VpPoint::new(nodes[&2].point.x + 6000.0, 0.0)),
+    );
+    nodes.insert(
+        4,
+        Node::new_free(4, VpPoint::new(nodes[&3].point.x, nodes[&2].point.y)),
+    );
 
     let e1: Element = Element::new(
         1,

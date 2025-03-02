@@ -1,13 +1,16 @@
 ﻿#![allow(non_snake_case)]
 
-use std::collections::HashMap;
-use nalgebra::DMatrix;
 use crate::fem::matrices::get_element_rotation_matrix;
 use crate::structure::element::{Element, MaterialType};
 use crate::structure::Node;
+use nalgebra::DMatrix;
+use std::collections::HashMap;
 
 /// Gets the elements stiffness matrix in the global coordinate system.
-pub fn get_element_global_stiffness_matrix(e: &Element, nodes: &HashMap<i32, Node>) -> DMatrix<f64> {
+pub fn get_element_global_stiffness_matrix(
+    e: &Element,
+    nodes: &HashMap<i32, Node>,
+) -> DMatrix<f64> {
     let e_stiff_matrix = get_element_stiffness_matrix(&e, nodes);
     let e_rotation_matrix = get_element_rotation_matrix(&e, nodes);
     let e_rot_matrix_t = e_rotation_matrix.transpose();
@@ -19,25 +22,60 @@ pub fn get_element_global_stiffness_matrix(e: &Element, nodes: &HashMap<i32, Nod
 /// Do not use this directly in the calculations. Use get_element_global_stiffness_matrix
 pub fn get_element_stiffness_matrix(element: &Element, nodes: &HashMap<i32, Node>) -> DMatrix<f64> {
     let E = match &element.material {
-        MaterialType::Concrete(c) => {c.elastic_modulus}
-        MaterialType::Steel(s) => {s.elastic_modulus}
+        MaterialType::Concrete(c) => c.elastic_modulus,
+        MaterialType::Steel(s) => s.elastic_modulus,
         MaterialType::Timber(_) => {
             println!("Timber is not yet implemented!");
-            0.0}
+            0.0
+        }
     };
     let L = element.get_length(nodes);
     let A = element.profile.get_area();
-    let I = element.profile.get_major_second_mom_of_area();    
-    let EA = E*A;
-    let EI = E*I;
-    DMatrix::from_row_slice(6,6, &[
-        EA/L,  0.,                 0.,                -EA/L, 0.,                 0.,
-        0.0,   12.0*EI/L.powi(3),  6.0*EI/L.powi(2),  0.0,   -12.0*EI/L.powi(3), 6.0*EI/L.powi(2),
-        0.0,   6.0*EI/L.powi(2),   4.0*EI/L,          0.0,   -6.0*EI/L.powi(2),  2.0*EI/L,
-        -EA/L, 0.0,                0.0,               EA/L,  0.0,                0.0,
-        0.0,   -12.0*EI/L.powi(3), -6.0*EI/L.powi(2), 0.0,   12.0*EI/L.powi(3),  -6.0*EI/L.powi(2),
-        0.0,   6.0*EI/L.powi(2),   2.0*EI/L,          0.0,   -6.0*EI/L.powi(2),  4.0*EI/L,
-    ])
+    let I = element.profile.get_major_second_mom_of_area();
+    let EA = E * A;
+    let EI = E * I;
+    DMatrix::from_row_slice(
+        6,
+        6,
+        &[
+            EA / L,
+            0.,
+            0.,
+            -EA / L,
+            0.,
+            0.,
+            0.0,
+            12.0 * EI / L.powi(3),
+            6.0 * EI / L.powi(2),
+            0.0,
+            -12.0 * EI / L.powi(3),
+            6.0 * EI / L.powi(2),
+            0.0,
+            6.0 * EI / L.powi(2),
+            4.0 * EI / L,
+            0.0,
+            -6.0 * EI / L.powi(2),
+            2.0 * EI / L,
+            -EA / L,
+            0.0,
+            0.0,
+            EA / L,
+            0.0,
+            0.0,
+            0.0,
+            -12.0 * EI / L.powi(3),
+            -6.0 * EI / L.powi(2),
+            0.0,
+            12.0 * EI / L.powi(3),
+            -6.0 * EI / L.powi(2),
+            0.0,
+            6.0 * EI / L.powi(2),
+            2.0 * EI / L,
+            0.0,
+            -6.0 * EI / L.powi(2),
+            4.0 * EI / L,
+        ],
+    )
 }
 
 pub fn create_joined_stiffness_matrix(
@@ -68,11 +106,11 @@ pub fn create_joined_stiffness_matrix(
         let s = (elem.node_start - 1) as usize;
         // The index of the end node
         let e = (elem.node_end - 1) as usize;
-        for i in 0..dof*2 {
+        for i in 0..dof * 2 {
             // Reset the column counter at every row change
             let mut rel_col = supp_count * dof + rel_increment_count;
             let mut increment_rel_row_count = false;
-            for j in 0..dof*2 {
+            for j in 0..dof * 2 {
                 if i < dof {
                     supp_index1 = s;
                     i_normalized = i;
@@ -83,11 +121,11 @@ pub fn create_joined_stiffness_matrix(
                     } else {
                         // The bottom left triple (start element, end node)
                         supp_index2 = e;
-                        j_normalized = j-dof;
+                        j_normalized = j - dof;
                     }
                 } else {
                     supp_index1 = e;
-                    i_normalized = i-dof;
+                    i_normalized = i - dof;
                     if j < dof {
                         // the top right triple (end element, start node)
                         supp_index2 = s;
@@ -95,11 +133,13 @@ pub fn create_joined_stiffness_matrix(
                     } else {
                         // the top right triple (end element, end node)
                         supp_index2 = e;
-                        j_normalized = j-dof;
+                        j_normalized = j - dof;
                     }
                 }
                 // If there is a release at either i or j, it needs to be handled
-                if elem.releases.get_release_value(i).unwrap() || elem.releases.get_release_value(j).unwrap() {
+                if elem.releases.get_release_value(i).unwrap()
+                    || elem.releases.get_release_value(j).unwrap()
+                {
                     if i == j {
                         // If current row and column have release, place the value in the intersection of the current
                         // release row and column
@@ -108,13 +148,14 @@ pub fn create_joined_stiffness_matrix(
                         rel_increment_count += 1;
                     } else if elem.releases.get_release_value(i).unwrap() {
                         // If the current row has a release, move the whole row to the rel_row
-                        matrix_vector[supp_index2 * dof + j_normalized + rel_row * row_width]
-                            += e_glob_stiff_matrix[(i, j)];
+                        matrix_vector[supp_index2 * dof + j_normalized + rel_row * row_width] +=
+                            e_glob_stiff_matrix[(i, j)];
                         increment_rel_row_count = true;
                     } else if elem.releases.get_release_value(j).unwrap() {
                         // If the current column has a release, move the whole column to the rel_col
-                        matrix_vector[(supp_index1 * dof) * row_width + i_normalized * row_width + rel_col]
-                            += e_glob_stiff_matrix[(i, j)];
+                        matrix_vector[(supp_index1 * dof) * row_width
+                            + i_normalized * row_width
+                            + rel_col] += e_glob_stiff_matrix[(i, j)];
                         rel_col += 1;
                     }
                 } else {
@@ -122,14 +163,15 @@ pub fn create_joined_stiffness_matrix(
                     // supp_index2 * dof                     offset the columns by the support number
                     // j_normalized                          offset the columns by j
                     // i_normalized * row_width              offset the rows by i
-                    matrix_vector[(supp_index1 * dof)*row_width+i_normalized*row_width+ supp_index2 * dof + j_normalized]
-                        += e_glob_stiff_matrix[(i, j)];
+                    matrix_vector[(supp_index1 * dof) * row_width
+                        + i_normalized * row_width
+                        + supp_index2 * dof
+                        + j_normalized] += e_glob_stiff_matrix[(i, j)];
                 }
             }
             // Before moving to new row, increase the current row count by the number of releases
             if increment_rel_row_count {
                 rel_row += 1;
-                println!("Increment rel row count, rel_row: {}", rel_row);
             }
         }
     }

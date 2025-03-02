@@ -3,16 +3,14 @@
 
 use std::collections::HashMap;
 
-use vputilslib::equation_handler;
 use vputilslib::equation_handler::EquationHandler;
 
-use crate::fem::equivalent_loads::*;
 use crate::fem::fem_handler::*;
 use crate::fem::stiffness::*;
 use crate::loads;
 use crate::structure::CalculationModel;
 use crate::{
-    loads::{load::CalculationLoad, Load},
+    loads::load::CalculationLoad,
     results::*,
     settings::{self, CalculationSettings},
     structure::{Element, Node},
@@ -56,11 +54,7 @@ pub fn calculate(
         &mut global_stiff_matrix,
         &global_eq_l_matrix,
     );
-    let reactions = calculate_reactions(
-        &global_stiff_matrix,
-        &displacements,
-        &global_eq_l_matrix,
-    );
+    let reactions = calculate_reactions(&global_stiff_matrix, &displacements, &global_eq_l_matrix);
 
     let node_results = NodeResults::new(displacements, reactions, nodes.len(), &equation_handler);
     let internal_force_results = calc_internal_forces(

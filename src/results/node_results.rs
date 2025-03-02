@@ -14,7 +14,6 @@ pub struct NodeResults {
 }
 
 impl NodeResults {
-
     /// Initializes a new instance of NodeResults
     /// * 'displacements' - the displacements matrix
     /// * 'support_reactions' - the support reactions matrix
@@ -42,18 +41,18 @@ impl NodeResults {
     }
 
     /// Get the displacements at given node number and direction.
-    /// The direction is as follows: 
-    /// - 0 = translation in X-axis, 
-    /// - 1 = translation in Z-axis, 
+    /// The direction is as follows:
+    /// - 0 = translation in X-axis,
+    /// - 1 = translation in Z-axis,
     /// - 2 = rotation about Y-axis.
     pub fn get_displacement(&self, node_number: i32, dir: usize) -> f64 {
         self.displacements[((node_number - 1) * self.dof_count as i32 + dir as i32) as usize]
     }
 
     /// Get the support reactions at given node number and direction.
-    /// The direction is as follows: 
-    /// - 0 = reaction in X-axis, 
-    /// - 1 = reaction in Z-axis, 
+    /// The direction is as follows:
+    /// - 0 = reaction in X-axis,
+    /// - 1 = reaction in Z-axis,
     /// - 2 = moment about Y-axis.
     pub fn get_support_reaction(&self, node_number: i32, dir: usize) -> f64 {
         self.support_reactions[((node_number - 1) * self.dof_count as i32 + dir as i32) as usize]
@@ -91,8 +90,7 @@ impl NodeResults {
             global_matrix[(i, 0)] = self.get_displacement(element.node_start, i);
         }
         for i in 0..self.dof_count {
-            global_matrix[(self.dof_count + i, 0)] =
-                self.get_displacement(element.node_end, i);
+            global_matrix[(self.dof_count + i, 0)] = self.get_displacement(element.node_end, i);
         }
         let rot_matrix = crate::fem::matrices::get_element_rotation_matrix(element, nodes);
 
@@ -102,8 +100,8 @@ impl NodeResults {
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashMap;
     use approx::relative_eq;
+    use std::collections::HashMap;
     use vputilslib::equation_handler::EquationHandler;
 
     use vputilslib::geometry2d::VpPoint;
@@ -142,12 +140,14 @@ mod tests {
             calc_settings: CalculationSettings::default(),
             load_combinations: vec![],
         };
-        let results = crate::fem::calculate(
-            &calc_model,
-            &mut EquationHandler::new(),
+        let results = crate::fem::calculate(&calc_model, &mut EquationHandler::new());
+        let local_reactions = results
+            .node_results
+            .get_elem_local_reactions(&calc_model.elements[0], &calc_model.nodes);
+        println!(
+            "Global reactions: {:.0}",
+            results.node_results.support_reactions
         );
-        let local_reactions = results.node_results.get_elem_local_reactions(&calc_model.elements[0], &calc_model.nodes);
-        println!("Global reactions: {:.0}", results.node_results.support_reactions);
         println!("Local reactions: {:.0}", local_reactions);
         assert!(relative_eq!(local_reactions[(0, 0)], 0.0, epsilon = 1.0));
         assert!(relative_eq!(local_reactions[(1, 0)], 7500.0, epsilon = 1.0));

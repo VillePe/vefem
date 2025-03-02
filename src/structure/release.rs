@@ -42,7 +42,9 @@ impl Release {
         self.s_tx || self.s_tz || self.s_ry
     }
 
-    pub fn end_release_any(&self) -> bool { self.e_tx || self.e_tz || self.e_ry }
+    pub fn end_release_any(&self) -> bool {
+        self.e_tx || self.e_tz || self.e_ry
+    }
 
     pub fn start_release_count(&self) -> usize {
         let tx = if self.s_tx { 1 } else { 0 };

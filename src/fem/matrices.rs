@@ -78,15 +78,11 @@ pub fn get_unknown_translation_eq_loads_rows(
     unknown_translation_rows: &Vec<i32>,
     matrix: &DMatrix<f64>,
 ) -> DMatrix<f64> {
-    let mut return_matrix = DMatrix::zeros(
-        unknown_translation_rows.len(),
-        1,
-    );
+    let mut return_matrix = DMatrix::zeros(unknown_translation_rows.len(), 1);
     let mut cur_row = 0;
     // Iterate through the unknown translation rows and columns and add them to the return matrix
     for row in 0..unknown_translation_rows.len() {
-        return_matrix[(cur_row, 0)] = matrix[(unknown_translation_rows[row] as usize, 0
-        )];
+        return_matrix[(cur_row, 0)] = matrix[(unknown_translation_rows[row] as usize, 0)];
         cur_row += 1;
     }
 

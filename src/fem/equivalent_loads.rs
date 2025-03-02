@@ -25,8 +25,7 @@ pub fn create(
     let mut i_normalized: usize;
 
     for elem in elements {
-        let el_global_eq_loads =
-            get_element_g_eq_loads(&elem, loads, nodes);
+        let el_global_eq_loads = get_element_g_eq_loads(&elem, loads, nodes);
         // The index of the start node
         let s = (elem.node_start - 1) as usize;
         // The index of the end node
@@ -83,20 +82,17 @@ pub fn get_element_g_eq_loads(
                 result_vector += element_eql_matrix_gl;
             }
             CalculationLoadType::Line => {
-                let element_eql_matrix_lc =
-                    handle_line_load(el_length, el_rotation, load);
+                let element_eql_matrix_lc = handle_line_load(el_length, el_rotation, load);
                 let element_eql_matrix_gl = &rot_matrix * element_eql_matrix_lc;
                 result_vector += element_eql_matrix_gl;
             }
             CalculationLoadType::Triangular => {
-                let element_eql_matrix_lc =
-                    handle_triangular_load(el_length, el_rotation, load);
+                let element_eql_matrix_lc = handle_triangular_load(el_length, el_rotation, load);
                 let element_eql_matrix_gl = &rot_matrix * element_eql_matrix_lc;
                 result_vector += element_eql_matrix_gl;
             }
             CalculationLoadType::Rotational => {
-                let element_eql_matrix_lc =
-                    handle_rotational_load(el_length, load);
+                let element_eql_matrix_lc = handle_rotational_load(el_length, load);
                 let element_eql_matrix_gl = &rot_matrix * element_eql_matrix_lc;
                 result_vector += element_eql_matrix_gl;
             }
@@ -123,11 +119,7 @@ pub fn get_element_g_eq_loads(
 /// - 3: X-axis equivalent loads at the end of the element
 /// - 4: Z-axis equivalent loads at the end of the element
 /// - 5: rotation about Y-axis equivalent loads at the end of the element
-fn handle_point_load(
-    el_length: f64,
-    el_rotation: f64,
-    load: &CalculationLoad,
-) -> DMatrix<f64> {
+fn handle_point_load(el_length: f64, el_rotation: f64, load: &CalculationLoad) -> DMatrix<f64> {
     let load_strength: f64 = load.strength;
     let load_off_start = load.offset_start;
     let load_rotation = load.rotation;
@@ -147,8 +139,8 @@ fn handle_point_load(
     vector[0] = b / el_length * load_value_x;
     vector[3] = a / el_length * load_value_x;
     // The Z-axis values
-    vector[1] = 1.0*b.powi(2) * (3.0 * a + b) / el_length.powi(3) * load_value_z;
-    vector[4] = 1.0*a.powi(2) * (a + 3.0 * b) / el_length.powi(3) * load_value_z;
+    vector[1] = 1.0 * b.powi(2) * (3.0 * a + b) / el_length.powi(3) * load_value_z;
+    vector[4] = 1.0 * a.powi(2) * (a + 3.0 * b) / el_length.powi(3) * load_value_z;
     // The rotation about Y-axis values
     vector[2] = a * b.powi(2) / el_length.powi(2) * load_value_z;
     vector[5] = -1.0 * a.powi(2) * b / el_length.powi(2) * load_value_z;
@@ -156,10 +148,7 @@ fn handle_point_load(
     DMatrix::from_row_slice(6, 1, &vector)
 }
 
-fn handle_rotational_load(
-    el_length: f64,
-    load: &CalculationLoad,
-) -> DMatrix<f64> {
+fn handle_rotational_load(el_length: f64, load: &CalculationLoad) -> DMatrix<f64> {
     let load_strength: f64 = load.strength;
     let load_off_start = load.offset_start;
 
@@ -179,11 +168,7 @@ fn handle_rotational_load(
     DMatrix::from_row_slice(6, 1, &vector)
 }
 
-fn handle_line_load(
-    el_length: f64,
-    el_rotation: f64,
-    load: &CalculationLoad,
-) -> DMatrix<f64> {
+fn handle_line_load(el_length: f64, el_rotation: f64, load: &CalculationLoad) -> DMatrix<f64> {
     let load_strength: f64 = load.strength;
     let load_length = load.offset_end - load.offset_start;
     let load_rotation = load.rotation;
@@ -324,15 +309,16 @@ fn get_eq_loads_with_partial_eq_loads(
     } else {
         load.offset_end.clone()
     };
-    
-    let pl_start_hor: CalculationLoad = get_temp_pl(pl_sh_strength, offset_start, el_rotation);
-    let pl_end_hor: CalculationLoad =   get_temp_pl(pl_eh_strength, offset_end,   el_rotation);
 
-    let pl_start_vert: CalculationLoad = get_temp_pl(pl_sv_strength, offset_start, el_rotation + 90.0);
-    let pl_end_vert: CalculationLoad =   get_temp_pl(pl_ev_strength, offset_end,   el_rotation + 90.0);
+    let pl_start_hor: CalculationLoad = get_temp_pl(pl_sh_strength, offset_start, el_rotation);
+    let pl_end_hor: CalculationLoad = get_temp_pl(pl_eh_strength, offset_end, el_rotation);
+
+    let pl_start_vert: CalculationLoad =
+        get_temp_pl(pl_sv_strength, offset_start, el_rotation + 90.0);
+    let pl_end_vert: CalculationLoad = get_temp_pl(pl_ev_strength, offset_end, el_rotation + 90.0);
 
     let rl_start: CalculationLoad = get_temp_rotational_load(offset_start, rl_start_strength);
-    let rl_end: CalculationLoad =   get_temp_rotational_load(offset_end,   rl_end_strength);
+    let rl_end: CalculationLoad = get_temp_rotational_load(offset_end, rl_end_strength);
 
     vector += handle_point_load(el_length, el_rotation, &pl_start_hor);
     vector += handle_point_load(el_length, el_rotation, &pl_start_vert);
@@ -400,13 +386,14 @@ mod tests {
         );
         let elements = vec![el];
         let loads = &mut vec![load];
-        let calc_loads = loads::utils::extract_calculation_loads(&elements, &nodes, loads, &EquationHandler::new());
-        let el_length = elements[0].get_length(&nodes);
-        let result = handle_point_load(
-            el_length,
-            elements[0].get_rotation(&nodes),
-            &calc_loads[0],
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &elements,
+            &nodes,
+            loads,
+            &EquationHandler::new(),
         );
+        let el_length = elements[0].get_length(&nodes);
+        let result = handle_point_load(el_length, elements[0].get_rotation(&nodes), &calc_loads[0]);
         assert!((result[0] - (0.0)).abs() < 0.1);
         assert!((result[1] - (-5000.0)).abs() < 0.1);
         assert!((result[2] - (-5e6)).abs() < 0.1);
@@ -415,11 +402,7 @@ mod tests {
         assert!((result[5] - (5e6)).abs() < 0.1);
 
         nodes.get_mut(&2).unwrap().point = VpPoint::new(4000.0, 0.0);
-        let result = handle_point_load(
-            el_length,
-            elements[0].get_rotation(&nodes),
-            &calc_loads[0],
-        );
+        let result = handle_point_load(el_length, elements[0].get_rotation(&nodes), &calc_loads[0]);
         assert!((result[0] - (5000.0)).abs() < 0.1);
         assert!((result[1] - (0.0)).abs() < 0.1);
         assert!((result[2] - (0.0)).abs() < 0.1);
@@ -428,11 +411,7 @@ mod tests {
         assert!((result[5] - (0.0)).abs() < 0.1);
 
         nodes.get_mut(&2).unwrap().point = VpPoint::new(2828.5714, 2828.5714);
-        let result = handle_point_load(
-            el_length,
-            elements[0].get_rotation(&nodes),
-            &calc_loads[0],
-        );
+        let result = handle_point_load(el_length, elements[0].get_rotation(&nodes), &calc_loads[0]);
         println!("{:?}", result);
         assert!((result[0] - (3.536e3)).abs() < 1e1);
         assert!((result[1] - (-3.536e3)).abs() < 1e1);
@@ -443,11 +422,7 @@ mod tests {
 
         // 120°
         nodes.get_mut(&2).unwrap().point = VpPoint::new(-2000.0, 3464.10161513775458);
-        let result = handle_point_load(
-            el_length,
-            elements[0].get_rotation(&nodes),
-            &calc_loads[0],
-        );
+        let result = handle_point_load(el_length, elements[0].get_rotation(&nodes), &calc_loads[0]);
         assert!((result[0] - (-2.5e3)).abs() < 1e1);
         assert!((result[1] - (-4.330e3)).abs() < 1e1);
         assert!((result[2] - (-4.330e6)).abs() < 1e3);
@@ -456,13 +431,14 @@ mod tests {
         assert!((result[5] - (4.330e6)).abs() < 1e3);
 
         loads[0].rotation = -90.0;
-        let calc_loads = loads::utils::extract_calculation_loads(&elements, &nodes, loads, &EquationHandler::new());
-        nodes.get_mut(&2).unwrap().point = VpPoint::new(4000.0, 0.0);
-        let result = handle_point_load(
-            el_length,
-            elements[0].get_rotation(&nodes),
-            &calc_loads[0],
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &elements,
+            &nodes,
+            loads,
+            &EquationHandler::new(),
         );
+        nodes.get_mut(&2).unwrap().point = VpPoint::new(4000.0, 0.0);
+        let result = handle_point_load(el_length, elements[0].get_rotation(&nodes), &calc_loads[0]);
         println!("{:?}", result);
         assert!((result[0] - (0.0)).abs() < 0.1);
         assert!((result[1] - (-5000.0)).abs() < 0.1);
@@ -492,13 +468,14 @@ mod tests {
         );
         let elements = vec![el];
         let loads = &mut vec![load];
-        let calc_loads = loads::utils::extract_calculation_loads(&elements, &nodes, loads, &EquationHandler::new());
-        let el_length = elements[0].get_length(&nodes);
-        let result = handle_point_load(
-            el_length,
-            elements[0].get_rotation(&nodes),
-            &calc_loads[0],
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &elements,
+            &nodes,
+            loads,
+            &EquationHandler::new(),
         );
+        let el_length = elements[0].get_length(&nodes);
+        let result = handle_point_load(el_length, elements[0].get_rotation(&nodes), &calc_loads[0]);
         assert!((result[0] - (0.0)).abs() < 0.1);
         assert!((result[1] - (-10000.0)).abs() < 0.1);
         assert!((result[2] - (-0e6)).abs() < 0.1);
@@ -527,13 +504,14 @@ mod tests {
         );
         let elements = vec![el];
         let loads = &mut vec![load];
-        let calc_loads = loads::utils::extract_calculation_loads(&elements, &nodes, loads, &EquationHandler::new());
-        let el_length = elements[0].get_length(&nodes);
-        let result = handle_point_load(
-            el_length,
-            elements[0].get_rotation(&nodes),
-            &calc_loads[0],
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &elements,
+            &nodes,
+            loads,
+            &EquationHandler::new(),
         );
+        let el_length = elements[0].get_length(&nodes);
+        let result = handle_point_load(el_length, elements[0].get_rotation(&nodes), &calc_loads[0]);
         assert!((result[0] - (0.0)).abs() < 0.1);
         assert!((result[1] - (-00000.0)).abs() < 0.1);
         assert!((result[2] - (-0e6)).abs() < 0.1);
@@ -561,7 +539,12 @@ mod tests {
         );
         let elements = vec![el];
         let loads = &mut vec![load];
-        let calc_loads = loads::utils::extract_calculation_loads(&elements, &nodes, loads, &EquationHandler::new());
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &elements,
+            &nodes,
+            loads,
+            &EquationHandler::new(),
+        );
         let el_length = elements[0].get_length(&nodes);
         let result = handle_rotational_load(el_length, &calc_loads[0]);
         assert!((result[0] - (0.0)).abs() < 0.1);
@@ -602,13 +585,14 @@ mod tests {
         );
         let elements = vec![el];
         let loads = &mut vec![load];
-        let calc_loads = loads::utils::extract_calculation_loads(&elements, &nodes, loads, &EquationHandler::new());
-        let el_length = elements[0].get_length(&nodes);
-        let result = handle_line_load(
-            el_length,
-            elements[0].get_rotation(&nodes),
-            &calc_loads[0],
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &elements,
+            &nodes,
+            loads,
+            &EquationHandler::new(),
         );
+        let el_length = elements[0].get_length(&nodes);
+        let result = handle_line_load(el_length, elements[0].get_rotation(&nodes), &calc_loads[0]);
         println!("#1 {:?}", result);
         assert!((result[0] - (0.0)).abs() < 0.1);
         assert!((result[1] - (-20000.0)).abs() < 0.1);
@@ -618,11 +602,7 @@ mod tests {
         assert!((result[5] - (13333333.0)).abs() < 1.0);
 
         nodes.get_mut(&2).unwrap().point = VpPoint::new(4000.0, 0.0);
-        let result = handle_line_load(
-            el_length,
-            elements[0].get_rotation(&nodes),
-            &calc_loads[0],
-        );
+        let result = handle_line_load(el_length, elements[0].get_rotation(&nodes), &calc_loads[0]);
         println!("#2 {:?}", result);
         assert!((result[0] - (20000.0)).abs() < 0.1);
         assert!((result[1] - (0.0)).abs() < 0.1);
@@ -632,11 +612,7 @@ mod tests {
         assert!((result[5] - (0.0)).abs() < 0.1);
 
         nodes.get_mut(&2).unwrap().point = VpPoint::new(2828.5714, 2828.5714);
-        let result = handle_line_load(
-            el_length,
-            elements[0].get_rotation(&nodes),
-            &calc_loads[0],
-        );
+        let result = handle_line_load(el_length, elements[0].get_rotation(&nodes), &calc_loads[0]);
         println!("#3 {:?}", result);
         assert!((result[0] - (14.142e3)).abs() < 1e1);
         assert!((result[1] - (-14.142e3)).abs() < 1e1);
@@ -647,11 +623,7 @@ mod tests {
 
         // 120°
         nodes.get_mut(&2).unwrap().point = VpPoint::new(-2000.0, 3464.10161513775458);
-        let result = handle_line_load(
-            el_length,
-            elements[0].get_rotation(&nodes),
-            &calc_loads[0],
-        );
+        let result = handle_line_load(el_length, elements[0].get_rotation(&nodes), &calc_loads[0]);
         println!("#4 {:?}", result);
         assert!((result[0] - (-1.0e4)).abs() < 1e1);
         assert!((result[1] - (-1.7321e4)).abs() < 1e1);
@@ -668,13 +640,14 @@ mod tests {
             "10".to_string(),
             0.0,
         );
-        let calc_loads = loads::utils::extract_calculation_loads(&elements, &nodes, loads, &EquationHandler::new());
-        nodes.get_mut(&2).unwrap().point = VpPoint::new(0.0, 4000.0);
-        let result = handle_line_load(
-            el_length,
-            elements[0].get_rotation(&nodes),
-            &calc_loads[0],
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &elements,
+            &nodes,
+            loads,
+            &EquationHandler::new(),
         );
+        nodes.get_mut(&2).unwrap().point = VpPoint::new(0.0, 4000.0);
+        let result = handle_line_load(el_length, elements[0].get_rotation(&nodes), &calc_loads[0]);
         println!("#5 {:?}", result);
         assert!((result[0] - (0.0)).abs() < 0.1);
         assert!((result[1] - (-10.4736e3)).abs() < 0.1);
@@ -684,11 +657,7 @@ mod tests {
         assert!((result[5] - (11.6048e6)).abs() < 1.0e2);
 
         nodes.get_mut(&2).unwrap().point = VpPoint::new(4000.0, 0.0);
-        let result = handle_line_load(
-            el_length,
-            elements[0].get_rotation(&nodes),
-            &calc_loads[0],
-        );
+        let result = handle_line_load(el_length, elements[0].get_rotation(&nodes), &calc_loads[0]);
         println!("#6 {:?}", result);
         assert!((result[0] - (10.9375e3)).abs() < 0.1);
         assert!((result[1] - (0.0)).abs() < 0.1);
@@ -698,11 +667,7 @@ mod tests {
         assert!((result[5] - (0.0)).abs() < 0.1);
 
         nodes.get_mut(&2).unwrap().point = VpPoint::new(2828.5714, 2828.5714);
-        let result = handle_line_load(
-            el_length,
-            elements[0].get_rotation(&nodes),
-            &calc_loads[0],
-        );
+        let result = handle_line_load(el_length, elements[0].get_rotation(&nodes), &calc_loads[0]);
         assert!((result[0] - (7.734e3)).abs() < 1e1);
         assert!((result[1] - (-7.406e3)).abs() < 1e1);
         assert!((result[2] - (-6.8938e6)).abs() < 1e3);
@@ -712,11 +677,7 @@ mod tests {
 
         // 120°
         nodes.get_mut(&2).unwrap().point = VpPoint::new(-2000.0, 3464.10161513775458);
-        let result = handle_line_load(
-            el_length,
-            elements[0].get_rotation(&nodes),
-            &calc_loads[0],
-        );
+        let result = handle_line_load(el_length, elements[0].get_rotation(&nodes), &calc_loads[0]);
         assert!((result[0] - (-5.4688e3)).abs() < 1e1);
         assert!((result[1] - (-9.0704e3)).abs() < 1e1);
         assert!((result[2] - (-8.4432e6)).abs() < 1e3);
@@ -746,13 +707,15 @@ mod tests {
         );
         let elements = vec![el];
         let loads = &mut vec![load];
-        let calc_loads = loads::utils::extract_calculation_loads(&elements, &nodes, loads, &EquationHandler::new());
-        let el_length = elements[0].get_length(&nodes);
-        let result = handle_triangular_load(
-            el_length,
-            elements[0].get_rotation(&nodes),
-            &calc_loads[0],
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &elements,
+            &nodes,
+            loads,
+            &EquationHandler::new(),
         );
+        let el_length = elements[0].get_length(&nodes);
+        let result =
+            handle_triangular_load(el_length, elements[0].get_rotation(&nodes), &calc_loads[0]);
         assert!((result[0] - (0.0)).abs() < 0.1);
         assert!((result[1] - (-14e3)).abs() < 0.1);
         assert!((result[2] - (-8e6)).abs() < 1.0);
@@ -761,11 +724,8 @@ mod tests {
         assert!((result[5] - (5.333333e6)).abs() < 1.0);
 
         nodes.get_mut(&2).unwrap().point = VpPoint::new(4000.0, 0.0);
-        let result = handle_triangular_load(
-            el_length,
-            elements[0].get_rotation(&nodes),
-            &calc_loads[0],
-        );
+        let result =
+            handle_triangular_load(el_length, elements[0].get_rotation(&nodes), &calc_loads[0]);
         assert!((result[0] - (13.3333e3)).abs() < 0.1);
         assert!((result[1] - (0.0)).abs() < 0.1);
         assert!((result[2] - (0.0)).abs() < 0.1);
@@ -774,11 +734,8 @@ mod tests {
         assert!((result[5] - (0.0)).abs() < 0.1);
 
         nodes.get_mut(&2).unwrap().point = VpPoint::new(2828.5714, 2828.5714);
-        let result = handle_triangular_load(
-            el_length,
-            elements[0].get_rotation(&nodes),
-            &calc_loads[0],
-        );
+        let result =
+            handle_triangular_load(el_length, elements[0].get_rotation(&nodes), &calc_loads[0]);
         assert!((result[0] - (9.4281e3)).abs() < 1e1);
         assert!((result[1] - (-9.8995e3)).abs() < 1e1);
         assert!((result[2] - (-5.6569e6)).abs() < 1e2);
@@ -788,11 +745,8 @@ mod tests {
 
         // 120°
         nodes.get_mut(&2).unwrap().point = VpPoint::new(-2000.0, 3464.10161513775458);
-        let result = handle_triangular_load(
-            el_length,
-            elements[0].get_rotation(&nodes),
-            &calc_loads[0],
-        );
+        let result =
+            handle_triangular_load(el_length, elements[0].get_rotation(&nodes), &calc_loads[0]);
         assert!((result[0] - (-6.6666e3)).abs() < 1e1);
         assert!((result[1] - (-12.1244e3)).abs() < 1e1);
         assert!((result[2] - (-6.9282e6)).abs() < 1e3);
@@ -808,13 +762,15 @@ mod tests {
             "10".to_string(),
             0.0,
         );
-        let calc_loads = loads::utils::extract_calculation_loads(&elements, &nodes, loads, &EquationHandler::new());
-        nodes.get_mut(&2).unwrap().point = VpPoint::new(0.0, 4000.0);
-        let result = handle_triangular_load(
-            el_length,
-            elements[0].get_rotation(&nodes),
-            &calc_loads[0],
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &elements,
+            &nodes,
+            loads,
+            &EquationHandler::new(),
         );
+        nodes.get_mut(&2).unwrap().point = VpPoint::new(0.0, 4000.0);
+        let result =
+            handle_triangular_load(el_length, elements[0].get_rotation(&nodes), &calc_loads[0]);
         println!("{:?}", result);
         assert!((result[0] - (0.0)).abs() < 0.1);
         assert!((result[1] - (-7.0068e3)).abs() < 0.1);
@@ -824,11 +780,8 @@ mod tests {
         assert!((result[5] - (5.1921e6)).abs() < 1.0e2);
 
         nodes.get_mut(&2).unwrap().point = VpPoint::new(4000.0, 0.0);
-        let result = handle_triangular_load(
-            el_length,
-            elements[0].get_rotation(&nodes),
-            &calc_loads[0],
-        );
+        let result =
+            handle_triangular_load(el_length, elements[0].get_rotation(&nodes), &calc_loads[0]);
         println!("{:?}", result);
         assert!((result[0] - (6.7708e3)).abs() < 0.1);
         assert!((result[1] - (0.0)).abs() < 0.1);
@@ -838,11 +791,8 @@ mod tests {
         assert!((result[5] - (0.0)).abs() < 0.1);
 
         nodes.get_mut(&2).unwrap().point = VpPoint::new(2828.5714, 2828.5714);
-        let result = handle_triangular_load(
-            el_length,
-            elements[0].get_rotation(&nodes),
-            &calc_loads[0],
-        );
+        let result =
+            handle_triangular_load(el_length, elements[0].get_rotation(&nodes), &calc_loads[0]);
         assert!((result[0] - (4.7877e3)).abs() < 1e1);
         assert!((result[1] - (-4.9546e3)).abs() < 1e1);
         assert!((result[2] - (-4.3389e6)).abs() < 1e3);
@@ -852,11 +802,8 @@ mod tests {
 
         // 120°
         nodes.get_mut(&2).unwrap().point = VpPoint::new(-2000.0, 3464.10161513775458);
-        let result = handle_triangular_load(
-            el_length,
-            elements[0].get_rotation(&nodes),
-            &calc_loads[0],
-        );
+        let result =
+            handle_triangular_load(el_length, elements[0].get_rotation(&nodes), &calc_loads[0]);
         println!("{:?}", result);
         assert!((result[0] - (-3.3854e3)).abs() < 1e1);
         assert!((result[1] - (-6.0681e3)).abs() < 1e1);
@@ -868,12 +815,14 @@ mod tests {
         // 120°
         loads[0].offset_start = "3500".to_string();
         loads[0].offset_end = "1000".to_string();
-        let calc_loads = loads::utils::extract_calculation_loads(&elements, &nodes, loads, &EquationHandler::new());
-        let result = handle_triangular_load(
-            el_length,
-            elements[0].get_rotation(&nodes),
-            &calc_loads[0],
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &elements,
+            &nodes,
+            loads,
+            &EquationHandler::new(),
         );
+        let result =
+            handle_triangular_load(el_length, elements[0].get_rotation(&nodes), &calc_loads[0]);
         println!("{:?}", result);
         assert!((result[0] - (-2.0833e3)).abs() < 1e1);
         assert!((result[1] - (-3.0029e3)).abs() < 1e1);

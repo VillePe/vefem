@@ -2,12 +2,12 @@
 
 use serde::{Deserialize, Serialize};
 
+use crate::material;
 use crate::material::*;
 use crate::structure::node::Node;
 use crate::structure::profile::Profile;
-use std::collections::HashMap;
-use crate::material;
 use crate::structure::release::Release;
+use std::collections::HashMap;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum MaterialType {
@@ -27,7 +27,13 @@ pub struct Element {
 }
 
 impl Element {
-    pub fn new(number : i32, node_start: i32, node_end: i32, profile: Profile, material: MaterialType) -> Self {
+    pub fn new(
+        number: i32,
+        node_start: i32,
+        node_end: i32,
+        profile: Profile,
+        material: MaterialType,
+    ) -> Self {
         Self {
             number,
             node_start,
@@ -51,7 +57,7 @@ impl Element {
         let node_end = &nodes[&(self.node_end)];
         vputilslib::geometry2d::get_angle_from_points(&node_start.point, &node_end.point)
     }
-    
+
     pub fn get_elastic_modulus(&self) -> f64 {
         material::get_elastic_modulus(&self.material)
     }

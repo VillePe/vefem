@@ -34,19 +34,18 @@ pub fn calculate_at(
         match load.load_type {
             load::CalculationLoadType::Point => {
                 if load.offset_start <= x {
-                    s_integral -=
-                        load.strength * x_dir_factor * (x - load.offset_start);
+                    s_integral -= load.strength * x_dir_factor * (x - load.offset_start);
                 }
             }
             load::CalculationLoadType::Rotational => {}
             load::CalculationLoadType::Line => {
                 if load.offset_start <= x {
                     let load_length = x - load.offset_start;
-                    s_integral -= load.strength * x_dir_factor * load_length * load_length/2.0;
+                    s_integral -= load.strength * x_dir_factor * load_length * load_length / 2.0;
                     if load.offset_end <= x {
                         // The imaginary load to cancel the extra load after loads end and before x
                         s_integral +=
-                            load.strength * x_dir_factor * (x-load.offset_end).powi(2) / 2.0;
+                            load.strength * x_dir_factor * (x - load.offset_end).powi(2) / 2.0;
                     }
                 }
             }
@@ -87,21 +86,19 @@ fn handle_triang_ltr(load: &CalculationLoad, x: f64) -> f64 {
             s_integral +=
                 load.strength / ll * x_dir_factor * (x - load.offset_end).powi(3) * 1.0 / 6.0;
             // The imaginary line load with the strength of triangular load which would go from loads start to x
-            s_integral -=
-                load.strength / ll * x_dir_factor * (x - load.offset_start).powi(3) / 3.0;
+            s_integral -= load.strength / ll * x_dir_factor * (x - load.offset_start).powi(3) / 3.0;
             // The imaginary line load with the strength of triangular load
             s_integral += load.strength * x_dir_factor * (x - load.offset_start).powi(2) / 2.0;
             return s_integral;
         } else {
             // Load strength shrinks and ends after x (needs to be split into triangular and line loads)
             // Split the load into a line load and a triangular load at x.
-            let ll = load.offset_end - load.offset_start;        
+            let ll = load.offset_end - load.offset_start;
             // Intgeral of the axial force from triangular load
             let mut s_integral =
-                load.strength / ll * x_dir_factor * (x - load.offset_start).powi(3) * 1.0 / 6.0;            
+                load.strength / ll * x_dir_factor * (x - load.offset_start).powi(3) * 1.0 / 6.0;
             // The imaginary line load with the strength of smaller triangular load
-            s_integral -=
-                load.strength / ll * x_dir_factor * (x - load.offset_start).powi(3) / 3.0;
+            s_integral -= load.strength / ll * x_dir_factor * (x - load.offset_start).powi(3) / 3.0;
             // The imaginary line load with the strength of triangular load
             s_integral += load.strength * x_dir_factor * (x - load.offset_start).powi(2) / 2.0;
 
@@ -121,18 +118,14 @@ fn handle_triang_rtl(load: &CalculationLoad, x: f64) -> f64 {
     if left <= x {
         if right <= x {
             let ll = right - left;
-            let mut s_integral = 
-                load.strength / ll * x_dir_factor * (x-left).powi(3) / 6.0;
-            s_integral -= 
-                load.strength * x_dir_factor * (x-right).powi(2) / 2.0;
-            s_integral -= 
-                load.strength / ll * x_dir_factor * (x-right).powi(3) / 6.0;
-            return s_integral
+            let mut s_integral = load.strength / ll * x_dir_factor * (x - left).powi(3) / 6.0;
+            s_integral -= load.strength * x_dir_factor * (x - right).powi(2) / 2.0;
+            s_integral -= load.strength / ll * x_dir_factor * (x - right).powi(3) / 6.0;
+            return s_integral;
         } else {
             // Split the load at x. No need to split into a line load, because of
             let ll = right - left;
-            let s_integral = 
-                load.strength / ll * x_dir_factor * (x-left).powi(3) / 6.0;
+            let s_integral = load.strength / ll * x_dir_factor * (x - left).powi(3) / 6.0;
             return s_integral;
         }
     }

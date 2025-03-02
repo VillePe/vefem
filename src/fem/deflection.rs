@@ -104,7 +104,7 @@ fn handle_triang_ltr(load: &CalculationLoad, x: f64) -> f64 {
         } else {
             // Load strength shrinks and ends after x (needs to be split into triangular and line loads)
             // Split the load into a line load and a triangular load at x.
-            let ll = load.offset_end - load.offset_start;        
+            let ll = load.offset_end - load.offset_start;
             // Double intgeral of the moment from triangular load
             let mut d_integral =
                 load.strength / ll * z_dir_factor * (x - load.offset_start).powi(5) * 2.0 / 120.0;
@@ -126,21 +126,17 @@ fn handle_triang_rtl(load: &CalculationLoad, x: f64) -> f64 {
     // Load offsets at left or right hand side
     let left = load.offset_end;
     let right = load.offset_start;
-    if left <= x {        
+    if left <= x {
         if right <= x {
             let ll = right - left;
-            let mut d_integral = 
-                load.strength / ll * z_dir_factor * (x-left).powi(5) / 120.0;
-            d_integral -= 
-                load.strength * z_dir_factor * (x-right).powi(4) / 24.0;
-            d_integral -= 
-                load.strength / ll * z_dir_factor * (x-right).powi(5) / 120.0;
-            return d_integral
+            let mut d_integral = load.strength / ll * z_dir_factor * (x - left).powi(5) / 120.0;
+            d_integral -= load.strength * z_dir_factor * (x - right).powi(4) / 24.0;
+            d_integral -= load.strength / ll * z_dir_factor * (x - right).powi(5) / 120.0;
+            return d_integral;
         } else {
             // Split the load at x. No need to split into a line load, because of
             let ll = right - left;
-            let d_integral = 
-                load.strength / ll * z_dir_factor * (x-left).powi(5) * 1.0 / 120.0;
+            let d_integral = load.strength / ll * z_dir_factor * (x - left).powi(5) * 1.0 / 120.0;
             return d_integral;
         }
     }
