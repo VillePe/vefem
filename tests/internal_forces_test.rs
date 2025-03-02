@@ -6,11 +6,7 @@ mod internal_forces_tests {
     use vputilslib::{equation_handler::EquationHandler, geometry2d::VpPoint};
 
     use vefem::{
-        fem::internal_forces::{calculate_axial_force_at, calculate_shear_at},
-        loads::{self, Load},
-        material::Steel,
-        settings::CalculationSettings,
-        structure::{element::MaterialType, Element, Node, Profile},
+        fem::internal_forces::{calculate_axial_force_at, calculate_shear_at}, loads::{self, Load}, material::Steel, profile::Profile, settings::CalculationSettings, structure::{element::MaterialType, Element, Node}
     };
 
     use vefem::fem::internal_forces::calculate_moment_at;

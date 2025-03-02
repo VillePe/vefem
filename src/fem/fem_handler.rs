@@ -132,7 +132,7 @@ mod tests {
 
     use vputilslib::{equation_handler::EquationHandler, geometry2d::VpPoint};
 
-    use crate::{loads::Load, material::Steel, settings::CalculationSettings, structure::{element::MaterialType, Element, Node, Profile}};
+    use crate::{loads::Load, material::Steel, profile::Profile, settings::CalculationSettings, structure::{element::MaterialType, Element, Node}};
 
     // #[test]
     fn t_simple_benchmark_calculation() {

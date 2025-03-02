@@ -5,7 +5,6 @@ use std::collections::HashMap;
 
 use vputilslib::equation_handler::EquationHandler;
 
-use crate::fem::equivalent_loads::*;
 use crate::fem::fem_handler::*;
 use crate::fem::stiffness::*;
 use crate::loads;

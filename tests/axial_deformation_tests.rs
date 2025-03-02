@@ -5,7 +5,7 @@ mod axial_deformation_tests {
     use approx::relative_eq;
     use vputilslib::{equation_handler::EquationHandler, geometry2d::VpPoint};
 
-    use vefem::{fem::axial_deformation, loads::{self, Load}, material::Steel, settings::CalculationSettings, structure::{element::MaterialType, Element, Node, Profile}};
+    use vefem::{fem::axial_deformation, loads::{self, Load}, material::Steel, profile::Profile, settings::CalculationSettings, structure::{element::MaterialType, Element, Node}};
 
     #[test]
     fn t_calculate_axial_deformation_at_pl() {

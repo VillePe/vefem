@@ -2,3 +2,5 @@
 theory/~$FEM matriisit.xlsx
 theory/TestFrame.afdesign~lock~
 Cargo.lock
+/csharp
+/.idea
