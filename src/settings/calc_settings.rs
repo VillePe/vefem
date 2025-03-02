@@ -6,7 +6,7 @@ pub struct CalculationSettings {
     pub calc_split_interval: CalcSplitInterval,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub enum CalcSplitInterval {
     /// Splits the calculation into intervals of a fixed length.
     Absolute(f64),
