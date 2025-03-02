@@ -25,8 +25,9 @@ An example how calculate a single span beam with line load on the beam.
 ```rust
 use std::collections::BTreeMap;
 
-use vefem::{loads, material::Steel, settings::CalculationSettings, 
-    structure::{element::MaterialType, Node, Profile}};
+use vefem::{loads, material::Steel, profile::Profile, settings::CalculationSettings, 
+    structure::{element::MaterialType, CalculationModel, Node}
+};
 use vefem::vputilslib::{geometry2d::VpPoint, equation_handler::EquationHandler};
 
 fn test_vefem() {
@@ -49,8 +50,9 @@ fn test_vefem() {
         -90.0); // 0.0 points towards positive X-axis and goes counter clockwise
     let loads = vec![line_load];
     let mut eq_handler = EquationHandler::new();
-    let settings = CalculationSettings::default();
-    let results = vefem::fem::calculate(&elements, &nodes, &loads, &mut eq_handler, &settings);
+    let calc_settings = CalculationSettings::default();
+    let calc_model = CalculationModel{nodes, elements, loads, calc_settings, load_combinations: vec![]};
+    let results = vefem::fem::calculate(&calc_model, &mut eq_handler);
     // The default settings divide the internal force calculation points into 100 intervals.
     // Assert that the value at the middle of the element is ql^2/8
     assert_eq!(results.internal_force_results[&1].moment_forces[50].value_y, 
