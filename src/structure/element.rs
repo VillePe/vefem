@@ -4,10 +4,10 @@ use serde::{Deserialize, Serialize};
 
 use crate::material;
 use crate::material::*;
+use crate::profile::Profile;
 use crate::structure::node::Node;
-use crate::structure::profile::Profile;
-use crate::structure::release::Release;
 use std::collections::HashMap;
+use crate::structure::release::Release;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum MaterialType {
@@ -69,7 +69,7 @@ impl Default for Element {
             number: -1,
             node_start: 1,
             node_end: 2,
-            profile: Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
+            profile: Profile::PolygonProfile(crate::profile::PolygonProfile::new_rectangle("R100x100".to_string(), 100.0, 100.0)),
             material: MaterialType::Steel(Steel::new(210000.0)),
             releases: Release::new(),
         }
@@ -81,7 +81,7 @@ mod tests {
     use crate::material::*;
     use crate::structure::element::{Element, MaterialType};
     use crate::structure::node::Node;
-    use crate::structure::profile::Profile;
+    use crate::profile::{Profile, CustomProfile};
     use std::collections::HashMap;
     use vputilslib::geometry2d::VpPoint;
 
@@ -95,12 +95,12 @@ mod tests {
             1,
             1,
             2,
-            Profile {
+            Profile::CustomProfile(CustomProfile{
                 name: "TEST".to_string(),
                 custom_major_sec_mom_of_area: 200_000_000.0,
                 custom_area: 6000.0,
-                ..Profile::default()
-            },
+                ..CustomProfile::default()
+            }),
             MaterialType::Steel(Steel::new(200.0)),
         );
         assert_eq!(e1.get_length(&nodes), 4000.0);

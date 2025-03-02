@@ -1,6 +1,5 @@
 ﻿pub mod element;
 mod node;
-mod profile;
 mod release;
 mod support;
 pub mod utils;
@@ -9,7 +8,6 @@ use std::collections::HashMap;
 
 pub use element::Element;
 pub use node::Node;
-pub use profile::Profile;
 pub use release::Release;
 pub use support::Support;
 

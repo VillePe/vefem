@@ -13,7 +13,7 @@ mod equivalent_load_tests {
     use vefem::structure::element::MaterialType;
     use vefem::structure::Element;
     use vefem::structure::Node;
-    use vefem::structure::Profile;
+    use vefem::profile::Profile;
     use vputilslib::equation_handler::EquationHandler;
     use vputilslib::geometry2d::VpPoint;
 

@@ -5,9 +5,7 @@ use vputilslib::geometry2d::rectangle;
 use vputilslib::geometry2d::{Polygon, VpPoint};
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Profile {
-    /// The profile type
-    pub profile_type: ProfileType,
+pub struct PolygonProfile {
     /// Name for the profile. If profile type is set to StandardProfile, the values are read from profile
     /// database with the name
     pub name: String,
@@ -31,29 +29,17 @@ pub struct Profile {
     ///     VpPoint::new(0.0, 0.0),
     ///  ]);
     /// ```
-    pub polygon: Polygon,
-    /// Custom area for StandardProfile or Custom profile types
-    pub custom_area: f64,
-    /// Custom major second moment of area for StandardProfile or Custom profile types
-    pub custom_major_sec_mom_of_area: f64,
-    /// Custom minor second moment of area for StandardProfile or Custom profile types
-    pub custom_minor_sec_mom_of_area: f64,
-    /// Custom weight for StandardProfile or Custom profile types
-    pub custom_weight_per_meter: f64,
-    /// Custom torsional constant for StandardProfile or Custom profile types
-    pub custom_torsional_constant: f64,
-    /// Custom warping constant for StandardProfile or Custom profile types
-    pub custom_warping_constant: f64,
+    pub polygon: Polygon
 }
 
-impl Profile {
+impl PolygonProfile {
+    
     /// Creates new profile with the given polygon. Calculates the height and width from
     /// the bounding box of the polygon
     pub fn new(name: String, polygon: Polygon) -> Self {
         // the bounding box
         let bb: geometry2d::Rectangle = rectangle::bounding_box(&polygon).unwrap();
         Self {
-            profile_type: ProfileType::Polygon,
             name,
             polygon,
             width: bb.width,
@@ -65,7 +51,6 @@ impl Profile {
     /// Creates new rectangular profile
     pub fn new_rectangle(name: String, height: f64, width: f64) -> Self {
         Self {
-            profile_type: ProfileType::Polygon,
             name,
             height,
             width,
@@ -83,10 +68,7 @@ impl Profile {
     /// Gets the area of the profile in square millimeters (mm²)
     pub fn get_area(&self) -> f64 {
         // Only the polygon type is calculated. Other types have constant values.
-        if self.profile_type == ProfileType::Polygon {
-            return geometry2d::calculate_area(&self.polygon);
-        }
-        self.custom_area
+        geometry2d::calculate_area(&self.polygon)
     }
 
     /// Calculates the second moment of area with the polygon of the profile. Value in millimeters
@@ -95,10 +77,7 @@ impl Profile {
     /// For more info see <https://en.wikipedia.org/wiki/Second_moment_of_area>
     pub fn get_major_second_mom_of_area(&self) -> f64 {
         // Only the polygon type is calculated. Other types have constant values.
-        if self.profile_type == ProfileType::Polygon {
-            return self.calculate_major_second_mom_of_area();
-        }
-        self.custom_major_sec_mom_of_area
+        self.calculate_major_second_mom_of_area()
     }
 
     /// Calculates the second moment of area with the polygon of the profile. Value in millimeters
@@ -140,33 +119,27 @@ pub enum ProfileType {
     Custom,
 }
 
-impl Default for Profile {
+impl Default for PolygonProfile {
     fn default() -> Self {
         Self {
-            profile_type: ProfileType::Custom,
             name: "".to_string(),
             height: 0.0,
             width: 0.0,
             polygon: Polygon::new(vec![]),
-            custom_area: 0.0,
-            custom_major_sec_mom_of_area: 0.0,
-            custom_minor_sec_mom_of_area: 0.0,
-            custom_weight_per_meter: 0.0,
-            custom_torsional_constant: 0.0,
-            custom_warping_constant: 0.0,
         }
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::structure::profile::Profile;
     use vputilslib::geometry2d::VpPoint;
+    use crate::profile::Profile;
+
+    use super::*;
 
     #[test]
     fn major_second_mom_of_area() {
-        let p1 = Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0);
+        let p1: Profile = Profile::PolygonProfile(PolygonProfile::new_rectangle("R100x100".to_string(), 100.0, 100.0));
         let result = p1.get_major_second_mom_of_area();
         println!("P1 major_second_mom_of_area = {}", result);
         assert!((result - 8333333.0).abs() < 1.0);

@@ -12,7 +12,7 @@ mod fem_tests {
     use vefem::structure::element::MaterialType;
     use vefem::structure::Element;
     use vefem::structure::Node;
-    use vefem::structure::Profile;
+    use vefem::profile::{Profile, CustomProfile, PolygonProfile};
     use vputilslib::equation_handler::EquationHandler;
     use vputilslib::geometry2d;
     use vputilslib::geometry2d::VpPoint;
@@ -419,12 +419,12 @@ mod fem_tests {
             1,
             1,
             2,
-            Profile {
+            Profile::CustomProfile(CustomProfile {
                 name: "TEST".to_string(),
                 custom_major_sec_mom_of_area: 200_000_000.0,
                 custom_area: 6000.0,
-                ..Profile::default()
-            },
+                ..Default::default()
+            }),
             MaterialType::Steel(Steel::new(200.0)),
         );
         let e_glob_stiff_matrix =
@@ -555,24 +555,24 @@ mod fem_tests {
             1,
             1,
             2,
-            Profile {
+            Profile::CustomProfile(CustomProfile {
                 name: "TEST".to_string(),
                 custom_major_sec_mom_of_area: 200_000_000.0,
                 custom_area: 6000.0,
-                ..Profile::default()
-            },
+                ..Default::default()
+            }),
             MaterialType::Steel(Steel::new(200.0)),
         );
         let e2: Element = Element::new(
             2,
             2,
             3,
-            Profile {
+            Profile::CustomProfile(CustomProfile {
                 name: "TEST".to_string(),
                 custom_major_sec_mom_of_area: 200_000_000.0,
                 custom_area: 6000.0,
-                ..Profile::default()
-            },
+                ..Default::default()
+            }),
             // Note the elastic modulus of 200. Comes from the source material
             MaterialType::Steel(Steel::new(200.0)),
         );

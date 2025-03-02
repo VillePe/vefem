@@ -5,12 +5,7 @@ mod deflection_tests {
     use approx::relative_eq;
     use vputilslib::{equation_handler::EquationHandler, geometry2d::VpPoint};
 
-    use vefem::{
-        loads::{self, Load},
-        material::Steel,
-        settings::CalculationSettings,
-        structure::{element::MaterialType, CalculationModel, Element, Node, Profile},
-    };
+    use vefem::{loads::{self, Load}, material::Steel, profile::Profile, settings::CalculationSettings, structure::{element::MaterialType, CalculationModel, Element, Node}};
 
     use vefem::fem::deflection;
 

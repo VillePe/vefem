@@ -3,9 +3,7 @@
 use std::collections::HashMap;
 
 use vefem::{
-    loads::Load,
-    material::Steel,
-    structure::{element::MaterialType, Element, Node, Profile},
+    loads::Load, material::Steel, profile::Profile, structure::{element::MaterialType, Element, Node}
 };
 use vputilslib::geometry2d::VpPoint;
 

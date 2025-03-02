@@ -108,9 +108,10 @@ mod tests {
 
     use crate::loads::Load;
     use crate::material::Steel;
+    use crate::profile::Profile;
     use crate::settings::CalculationSettings;
     use crate::structure::CalculationModel;
-    use crate::structure::{element::MaterialType, Element, Node, Profile};
+    use crate::structure::{element::MaterialType, Element, Node};
 
     #[test]
     fn t_get_elem_local_reactions() {
