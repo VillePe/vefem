@@ -3,7 +3,7 @@
 use std::collections::BTreeMap;
 
 use vefem::{
-    loads::Load, material::Steel, profile::Profile, structure::{element::MaterialType, Element, Node}
+    loads::Load, material::{MaterialData, Steel}, profile::Profile, structure::{Element, Node}
 };
 use vputilslib::geometry2d::VpPoint;
 
@@ -25,21 +25,21 @@ pub fn get_structure_fem_matriisit_releases() -> (Vec<Element>, BTreeMap<i32, No
         1,
         2,
         Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
-        MaterialType::Steel(Steel::new(210e3)),
+        MaterialData::Steel(Steel::new(210e3)),
     );
     let e2: Element = Element::new(
         2,
         2,
         4,
         Profile::new_rectangle("R200x100".to_string(), 200.0, 100.0),
-        MaterialType::Steel(Steel::new(210e3)),
+        MaterialData::Steel(Steel::new(210e3)),
     );
     let mut e3: Element = Element::new(
         3,
         3,
         4,
         Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
-        MaterialType::Steel(Steel::new(210e3)),
+        MaterialData::Steel(Steel::new(210e3)),
     );
 
     e1.releases.e_ry = true;
@@ -68,21 +68,21 @@ pub fn get_structure_fem_matriisit() -> (Vec<Element>, BTreeMap<i32, Node>) {
         1,
         2,
         Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
-        MaterialType::Steel(Steel::new(210e3)),
+        MaterialData::Steel(Steel::new(210e3)),
     );
     let e2: Element = Element::new(
         2,
         2,
         4,
         Profile::new_rectangle("R200x100".to_string(), 200.0, 100.0),
-        MaterialType::Steel(Steel::new(210e3)),
+        MaterialData::Steel(Steel::new(210e3)),
     );
     let e3: Element = Element::new(
         3,
         4,
         3,
         Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
-        MaterialType::Steel(Steel::new(210e3)),
+        MaterialData::Steel(Steel::new(210e3)),
     );
 
     let elements = vec![e1, e2, e3];

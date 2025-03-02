@@ -137,7 +137,8 @@ mod tests {
 
     use vputilslib::{equation_handler::EquationHandler, geometry2d::VpPoint};
 
-    use crate::{loads::Load, material::Steel, profile::Profile, settings::CalculationSettings, structure::{element::MaterialType, CalculationModel, Element, Node}};
+    use crate::{loads::Load, material::{MaterialData, Steel}, profile::Profile, settings::CalculationSettings, 
+        structure::{CalculationModel, Element, Node}};
 
     // #[test]
     fn t_simple_benchmark_calculation() {
@@ -155,7 +156,7 @@ mod tests {
                 i + 1,
                 i + 2,
                 Profile::new_rectangle("100x100".to_string(), 100.0, 100.0),
-                MaterialType::Steel(Steel::new(210e3)),
+                MaterialData::Steel(Steel::new(210e3)),
             ));
         }
         let timer = SystemTime::now();

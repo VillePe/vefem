@@ -3,22 +3,30 @@ mod steel;
 mod timber;
 
 pub use concrete::Concrete;
+use serde::{Deserialize, Serialize};
 pub use steel::Steel;
 pub use timber::Timber;
-use crate::structure::element::MaterialType;
 
-pub fn get_elastic_modulus(material_type: &MaterialType) -> f64 {
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(tag = "$type", content = "data")]
+pub enum MaterialData {
+    Concrete(Concrete),
+    Steel(Steel),
+    Timber(Timber),
+}
+
+pub fn get_elastic_modulus(material_type: &MaterialData) -> f64 {
     match material_type {
-        MaterialType::Concrete(c) => c.elastic_modulus,
-        MaterialType::Steel(s) => s.elastic_modulus,
-        MaterialType::Timber(t) => t.elastic_modulus
+        MaterialData::Concrete(c) => c.elastic_modulus,
+        MaterialData::Steel(s) => s.elastic_modulus,
+        MaterialData::Timber(t) => t.elastic_modulus
     }
 }
 
-pub fn get_thermal_expansion_coefficient(material_type: &MaterialType) -> f64 {
+pub fn get_thermal_expansion_coefficient(material_type: &MaterialData) -> f64 {
     match material_type {
-        MaterialType::Concrete(c) => c.thermal_expansion_coefficient,
-        MaterialType::Steel(s) => s.thermal_expansion_coefficient,
-        MaterialType::Timber(t) => t.thermal_expansion_coefficient
+        MaterialData::Concrete(c) => c.thermal_expansion_coefficient,
+        MaterialData::Steel(s) => s.thermal_expansion_coefficient,
+        MaterialData::Timber(t) => t.thermal_expansion_coefficient
     }
 }

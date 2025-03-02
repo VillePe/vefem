@@ -107,11 +107,11 @@ mod tests {
     use vputilslib::geometry2d::VpPoint;
 
     use crate::loads::Load;
-    use crate::material::Steel;
+    use crate::material::{MaterialData, Steel};
     use crate::profile::Profile;
     use crate::settings::CalculationSettings;
     use crate::structure::CalculationModel;
-    use crate::structure::{element::MaterialType, Element, Node};
+    use crate::structure::{Element, Node};
 
     #[test]
     fn t_get_elem_local_reactions() {
@@ -120,7 +120,7 @@ mod tests {
             1,
             2,
             Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
-            MaterialType::Steel(Steel::default()),
+            MaterialData::Steel(Steel::default()),
         );
         let nodes = BTreeMap::from([
             (1, Node::new_hinged(1, VpPoint::new(0.0, 0.0))),

@@ -8,8 +8,7 @@ mod fem_tests {
         get_unknown_translation_rows, get_unknown_translation_stiffness_rows,
     };
     use vefem::loads;
-    use vefem::material::Steel;
-    use vefem::structure::element::MaterialType;
+    use vefem::material::{MaterialData, Steel};
     use vefem::structure::Element;
     use vefem::structure::Node;
     use vefem::profile::{Profile, CustomProfile, PolygonProfile};
@@ -425,7 +424,7 @@ mod fem_tests {
                 custom_area: 6000.0,
                 ..Default::default()
             }),
-            MaterialType::Steel(Steel::new(200.0)),
+            MaterialData::Steel(Steel::new(200.0)),
         );
         let e_glob_stiff_matrix =
             vefem::fem::stiffness::get_element_global_stiffness_matrix(&e, &nodes) / 200.0;
@@ -561,7 +560,7 @@ mod fem_tests {
                 custom_area: 6000.0,
                 ..Default::default()
             }),
-            MaterialType::Steel(Steel::new(200.0)),
+            MaterialData::Steel(Steel::new(200.0)),
         );
         let e2: Element = Element::new(
             2,
@@ -574,7 +573,7 @@ mod fem_tests {
                 ..Default::default()
             }),
             // Note the elastic modulus of 200. Comes from the source material
-            MaterialType::Steel(Steel::new(200.0)),
+            MaterialData::Steel(Steel::new(200.0)),
         );
         let joined = vefem::fem::stiffness::create_joined_stiffness_matrix(&vec![e1, e2], &nodes);
         for i in 0..9 {

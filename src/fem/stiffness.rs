@@ -1,7 +1,8 @@
 ﻿#![allow(non_snake_case)]
 
 use crate::fem::matrices::get_element_rotation_matrix;
-use crate::structure::element::{Element, MaterialType};
+use crate::material::MaterialData;
+use crate::structure::element::Element;
 use crate::structure::Node;
 use nalgebra::DMatrix;
 use std::collections::BTreeMap;
@@ -22,9 +23,9 @@ pub fn get_element_global_stiffness_matrix(
 /// Do not use this directly in the calculations. Use get_element_global_stiffness_matrix
 pub fn get_element_stiffness_matrix(element: &Element, nodes: &BTreeMap<i32, Node>) -> DMatrix<f64> {
     let E = match &element.material {
-        MaterialType::Concrete(c) => c.elastic_modulus,
-        MaterialType::Steel(s) => s.elastic_modulus,
-        MaterialType::Timber(_) => {
+        MaterialData::Concrete(c) => c.elastic_modulus,
+        MaterialData::Steel(s) => s.elastic_modulus,
+        MaterialData::Timber(_) => {
             println!("Timber is not yet implemented!");
             0.0
         }

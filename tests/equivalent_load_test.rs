@@ -3,6 +3,7 @@
 #[cfg(test)]
 mod equivalent_load_tests {
     use approx::relative_eq;
+    use vefem::material::MaterialData;
     use std::collections::BTreeMap;
     use vefem::fem::equivalent_loads::get_element_g_eq_loads;
     use vefem::fem::matrices::get_unknown_translation_eq_loads_rows;
@@ -10,7 +11,6 @@ mod equivalent_load_tests {
     use vefem::loads;
     use vefem::loads::Load;
     use vefem::material::Steel;
-    use vefem::structure::element::MaterialType;
     use vefem::structure::Element;
     use vefem::structure::Node;
     use vefem::profile::Profile;
@@ -310,7 +310,7 @@ mod equivalent_load_tests {
             node_start: 1,
             node_end: 2,
             profile: Profile::new_rectangle("100x100".to_string(), 100., 100.),
-            material: MaterialType::Steel(Steel::new(210000.)),
+            material: MaterialData::Steel(Steel::new(210000.)),
             ..Element::default()
         };
         let mut nodes: BTreeMap<i32, Node> = BTreeMap::new();
@@ -342,7 +342,7 @@ mod equivalent_load_tests {
             node_start: 1,
             node_end: 2,
             profile: Profile::new_rectangle("100x100".to_string(), 100., 100.),
-            material: MaterialType::Steel(Steel::new(210000.)),
+            material: MaterialData::Steel(Steel::new(210000.)),
             ..Element::default()
         };
         let mut nodes: BTreeMap<i32, Node> = BTreeMap::new();

@@ -6,7 +6,9 @@ mod internal_forces_tests {
     use vputilslib::{equation_handler::EquationHandler, geometry2d::VpPoint};
 
     use vefem::{
-        fem::internal_forces::{calculate_axial_force_at, calculate_shear_at}, loads::{self, Load}, material::Steel, profile::Profile, settings::CalculationSettings, structure::{element::MaterialType, CalculationModel, Element, Node}
+        fem::internal_forces::{calculate_axial_force_at, calculate_shear_at}, loads::{self, Load}, 
+        material::{MaterialData, Steel}, profile::Profile, settings::CalculationSettings, 
+        structure::{CalculationModel, Element, Node}
     };
 
     use vefem::fem::internal_forces::calculate_moment_at;
@@ -18,7 +20,7 @@ mod internal_forces_tests {
             1,
             2,
             Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
-            MaterialType::Steel(Steel::default()),
+            MaterialData::Steel(Steel::default()),
         );
         let nodes = BTreeMap::from([
             (1, Node::new_hinged(1, VpPoint::new(0.0, 0.0))),
@@ -137,7 +139,7 @@ mod internal_forces_tests {
             1,
             2,
             Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
-            MaterialType::Steel(Steel::default()),
+            MaterialData::Steel(Steel::default()),
         );
         let nodes = BTreeMap::from([
             (1, Node::new_hinged(1, VpPoint::new(0.0, 0.0))),
@@ -210,7 +212,7 @@ mod internal_forces_tests {
             1,
             2,
             Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
-            MaterialType::Steel(Steel::default()),
+            MaterialData::Steel(Steel::default()),
         );
         let nodes = BTreeMap::from([
             (1, Node::new_hinged(1, VpPoint::new(0.0, 0.0))),
@@ -361,7 +363,7 @@ mod internal_forces_tests {
             1,
             2,
             Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
-            MaterialType::Steel(Steel::default()),
+            MaterialData::Steel(Steel::default()),
         );
         let nodes = BTreeMap::from([
             (1, Node::new_hinged(1, VpPoint::new(0.0, 0.0))),
@@ -487,7 +489,7 @@ mod internal_forces_tests {
             1,
             2,
             Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
-            MaterialType::Steel(Steel::default()),
+            MaterialData::Steel(Steel::default()),
         );
         let nodes = BTreeMap::from([
             (1, Node::new_hinged(1, VpPoint::new(0.0, 0.0))),
@@ -613,7 +615,7 @@ mod internal_forces_tests {
             1,
             2,
             Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
-            MaterialType::Steel(Steel::default()),
+            MaterialData::Steel(Steel::default()),
         );
         let nodes = BTreeMap::from([
             (1, Node::new_hinged(1, VpPoint::new(0.0, 0.0))),
@@ -732,7 +734,7 @@ mod internal_forces_tests {
             1,
             2,
             Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
-            MaterialType::Steel(Steel::default()),
+            MaterialData::Steel(Steel::default()),
         );
         let nodes = BTreeMap::from([
             (1, Node::new_hinged(1, VpPoint::new(0.0, 0.0))),
@@ -806,7 +808,7 @@ mod internal_forces_tests {
             1,
             2,
             Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
-            MaterialType::Steel(Steel::default()),
+            MaterialData::Steel(Steel::default()),
         );
         let nodes = BTreeMap::from([
             (1, Node::new_hinged(1, VpPoint::new(0.0, 0.0))),
@@ -947,7 +949,7 @@ mod internal_forces_tests {
             1,
             2,
             Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
-            MaterialType::Steel(Steel::default()),
+            MaterialData::Steel(Steel::default()),
         );
         let nodes = BTreeMap::from([
             (1, Node::new_hinged(1, VpPoint::new(0.0, 0.0))),
@@ -1120,7 +1122,7 @@ mod internal_forces_tests {
             1,
             2,
             Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
-            MaterialType::Steel(Steel::default()),
+            MaterialData::Steel(Steel::default()),
         );
         let nodes = BTreeMap::from([
             (1, Node::new_hinged(1, VpPoint::new(0.0, 0.0))),
@@ -1277,7 +1279,7 @@ mod internal_forces_tests {
             1,
             2,
             Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
-            MaterialType::Steel(Steel::default()),
+            MaterialData::Steel(Steel::default()),
         );
         let nodes = BTreeMap::from([
             (1, Node::new_hinged(1, VpPoint::new(0.0, 0.0))),
@@ -1384,7 +1386,7 @@ mod internal_forces_tests {
             1,
             2,
             Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
-            MaterialType::Steel(Steel::default()),
+            MaterialData::Steel(Steel::default()),
         );
         let nodes = BTreeMap::from([
             (1, Node::new_hinged(1, VpPoint::new(0.0, 0.0))),
@@ -1449,7 +1451,7 @@ mod internal_forces_tests {
             1,
             2,
             Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
-            MaterialType::Steel(Steel::default()),
+            MaterialData::Steel(Steel::default()),
         );
         let nodes = BTreeMap::from([
             (1, Node::new_hinged(1, VpPoint::new(0.0, 0.0))),
@@ -1580,7 +1582,7 @@ mod internal_forces_tests {
             1,
             2,
             Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
-            MaterialType::Steel(Steel::default()),
+            MaterialData::Steel(Steel::default()),
         );
         let nodes = BTreeMap::from([
             (1, Node::new_hinged(1, VpPoint::new(0.0, 0.0))),
@@ -1735,7 +1737,7 @@ mod internal_forces_tests {
             1,
             2,
             Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
-            MaterialType::Steel(Steel::default()),
+            MaterialData::Steel(Steel::default()),
         );
         let nodes = BTreeMap::from([
             (1, Node::new_hinged(1, VpPoint::new(0.0, 0.0))),

@@ -10,18 +10,11 @@ use std::collections::BTreeMap;
 use crate::structure::release::Release;
 
 #[derive(Debug, Serialize, Deserialize)]
-pub enum MaterialType {
-    Concrete(Concrete),
-    Steel(Steel),
-    Timber(Timber),
-}
-
-#[derive(Debug, Serialize, Deserialize)]
 pub struct Element {
     pub number: i32,
     pub node_start: i32,
     pub node_end: i32,
-    pub material: MaterialType,
+    pub material: MaterialData,
     pub profile: Profile,
     pub releases: Release,
 }
@@ -32,7 +25,7 @@ impl Element {
         node_start: i32,
         node_end: i32,
         profile: Profile,
-        material: MaterialType,
+        material: MaterialData,
     ) -> Self {
         Self {
             number,
@@ -70,7 +63,7 @@ impl Default for Element {
             node_start: 1,
             node_end: 2,
             profile: Profile::PolygonProfile(crate::profile::PolygonProfile::new_rectangle("R100x100".to_string(), 100.0, 100.0)),
-            material: MaterialType::Steel(Steel::new(210000.0)),
+            material: MaterialData::Steel(Steel::new(210000.0)),
             releases: Release::new(),
         }
     }
@@ -79,7 +72,7 @@ impl Default for Element {
 #[cfg(test)]
 mod tests {
     use crate::material::*;
-    use crate::structure::element::{Element, MaterialType};
+    use crate::structure::element::{Element, MaterialData};
     use crate::structure::node::Node;
     use crate::profile::{Profile, CustomProfile};
     use std::collections::BTreeMap;
@@ -101,7 +94,7 @@ mod tests {
                 custom_area: 6000.0,
                 ..CustomProfile::default()
             }),
-            MaterialType::Steel(Steel::new(200.0)),
+            MaterialData::Steel(Steel::new(200.0)),
         );
         assert_eq!(e1.get_length(&nodes), 4000.0);
     }

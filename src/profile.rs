@@ -9,6 +9,7 @@ use serde::{Deserialize, Serialize};
 use vputilslib::geometry2d::{self, rectangle, Polygon, VpPoint};
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(tag = "$type", content = "data")]
 pub enum Profile {
     /// Polygon profile. All the values are calculated from the polygon
     PolygonProfile(PolygonProfile),

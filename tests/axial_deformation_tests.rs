@@ -5,7 +5,8 @@ mod axial_deformation_tests {
     use approx::relative_eq;
     use vputilslib::{equation_handler::EquationHandler, geometry2d::VpPoint};
 
-    use vefem::{fem::axial_deformation, loads::{self, Load}, material::Steel, profile::Profile, settings::CalculationSettings, structure::{element::MaterialType, CalculationModel, Element, Node}};
+    use vefem::{fem::axial_deformation, loads::{self, Load}, material::{MaterialData, Steel}, profile::Profile, 
+    settings::CalculationSettings, structure::{CalculationModel, Element, Node}};
 
     #[test]
     fn t_calculate_axial_deformation_at_pl() {
@@ -14,7 +15,7 @@ mod axial_deformation_tests {
             1,
             2,
             Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
-            MaterialType::Steel(Steel::default()),
+            MaterialData::Steel(Steel::default()),
         );
         let nodes = BTreeMap::from([
             (1, Node::new_hinged(1, VpPoint::new(0.0, 0.0))),
@@ -124,7 +125,7 @@ mod axial_deformation_tests {
             1,
             2,
             Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
-            MaterialType::Steel(Steel::default()),
+            MaterialData::Steel(Steel::default()),
         );
         let nodes = BTreeMap::from([
             (1, Node::new_hinged(1, VpPoint::new(0.0, 0.0))),
@@ -246,7 +247,7 @@ mod axial_deformation_tests {
             1,
             2,
             Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
-            MaterialType::Steel(Steel::default()),
+            MaterialData::Steel(Steel::default()),
         );
         let nodes = BTreeMap::from([
             (1, Node::new_hinged(1, VpPoint::new(0.0, 0.0))),
@@ -349,7 +350,7 @@ mod axial_deformation_tests {
             1,
             2,
             Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
-            MaterialType::Steel(Steel::default()),
+            MaterialData::Steel(Steel::default()),
         );
         let nodes = BTreeMap::from([
             (1, Node::new_hinged(1, VpPoint::new(0.0, 0.0))),
@@ -442,7 +443,7 @@ mod axial_deformation_tests {
             1,
             2,
             Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
-            MaterialType::Steel(Steel::default()),
+            MaterialData::Steel(Steel::default()),
         );
         let nodes = BTreeMap::from([
             (1, Node::new_hinged(1, VpPoint::new(0.0, 0.0))),
@@ -545,7 +546,7 @@ mod axial_deformation_tests {
             1,
             2,
             Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
-            MaterialType::Steel(Steel::default()),
+            MaterialData::Steel(Steel::default()),
         );
         let nodes = BTreeMap::from([
             (1, Node::new_hinged(1, VpPoint::new(0.0, 0.0))),
