@@ -1,9 +1,7 @@
 #![allow(dead_code)]
 
 use serde::{Deserialize, Serialize};
-use crate::material::ThermalExpansion;
-
-use super::ElasticModulus;
+use super::MaterialTrait;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Concrete {
@@ -86,13 +84,10 @@ impl Default for Concrete {
     }
 }
 
-impl ThermalExpansion for Concrete {
+impl MaterialTrait for Concrete {
     fn get_thermal_expansion_coefficient(&self) -> f64 {
         self.thermal_expansion_coefficient
     }
-}
-
-impl ElasticModulus for Concrete {
     fn get_elastic_modulus(&self) -> f64 {
         self.elastic_modulus
     }

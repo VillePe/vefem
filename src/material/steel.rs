@@ -2,7 +2,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use super::{ElasticModulus, ThermalExpansion};
+use super::MaterialTrait;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Steel {
@@ -66,14 +66,10 @@ impl Default for Steel {
         }
     }
 }
-
-impl ThermalExpansion for Steel {
+impl MaterialTrait for Steel {
     fn get_thermal_expansion_coefficient(&self) -> f64 {
         self.thermal_expansion_coefficient
     }
-}
-
-impl ElasticModulus for Steel {
     fn get_elastic_modulus(&self) -> f64 {
         self.elastic_modulus
     }

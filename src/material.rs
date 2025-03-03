@@ -15,6 +15,16 @@ pub enum MaterialData {
     Timber(Timber),
 }
 
+impl MaterialData {
+    pub fn value(&self) -> &dyn MaterialTrait {
+        match self {
+            MaterialData::Concrete(c) => c,
+            MaterialData::Timber(t) => t,
+            MaterialData::Steel(s) => s,
+        }
+    }
+}
+
 pub fn get_elastic_modulus(material_type: &MaterialData) -> f64 {
     match material_type {
         MaterialData::Concrete(c) => c.elastic_modulus,
@@ -23,14 +33,11 @@ pub fn get_elastic_modulus(material_type: &MaterialData) -> f64 {
     }
 }
 
-pub fn get_thermal_expansion_coefficient(material_type: impl ThermalExpansion) -> f64 {
+pub fn get_thermal_expansion_coefficient(material_type: &dyn MaterialTrait) -> f64 {
     material_type.get_thermal_expansion_coefficient()
 }
 
-pub trait ThermalExpansion {
+pub trait MaterialTrait {
     fn get_thermal_expansion_coefficient(&self) -> f64;
-}
-
-pub trait ElasticModulus {
     fn get_elastic_modulus(&self) -> f64;
 }

@@ -2,7 +2,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use super::{ElasticModulus, ThermalExpansion};
+use super::MaterialTrait;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Timber {
@@ -33,14 +33,10 @@ impl Default for Timber {
         Self { elastic_modulus: 9e3, thermal_expansion_coefficient: 5.0e-6 }
     }
 }
-
-impl ThermalExpansion for Timber {
+impl MaterialTrait for Timber {
     fn get_thermal_expansion_coefficient(&self) -> f64 {
         self.thermal_expansion_coefficient
     }
-}
-
-impl ElasticModulus for Timber {
     fn get_elastic_modulus(&self) -> f64 {
         self.elastic_modulus
     }

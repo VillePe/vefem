@@ -265,7 +265,7 @@ pub fn extract_calculation_loads(
                 super::load::LoadType::Thermal => {
                     // Convert the thermal coefficient to strain load
                     let thermal_coefficient =
-                        crate::material::get_thermal_expansion_coefficient(&element.material);
+                        crate::material::get_thermal_expansion_coefficient(element.material.value());
                     let displacement = strength * thermal_coefficient * el_length;
                     let calc_load = CalculationLoad {
                         offset_start,
