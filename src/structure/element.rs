@@ -52,7 +52,7 @@ impl Element {
     }
 
     pub fn get_elastic_modulus(&self) -> f64 {
-        material::get_elastic_modulus(&self.material)
+        material::get_elastic_modulus(self.material.value())
     }
 }
 

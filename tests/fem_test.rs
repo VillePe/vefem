@@ -63,7 +63,7 @@ mod fem_tests {
     };
     use vefem::loads;
     use vefem::material::{MaterialData, Steel};
-    use vefem::profile::{CustomProfile, PolygonProfile, Profile};
+    use vefem::profile::{CustomProfile, Profile};
     use vefem::structure::Element;
     use vefem::structure::Node;
     use vputilslib::equation_handler::EquationHandler;
