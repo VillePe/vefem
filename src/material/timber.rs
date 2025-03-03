@@ -2,6 +2,8 @@
 
 use serde::{Deserialize, Serialize};
 
+use super::{ElasticModulus, ThermalExpansion};
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Timber {
     pub elastic_modulus: f64,
@@ -29,5 +31,17 @@ impl Default for Timber {
         // "Eurokoodi 5 lyhennetty suunnitteluohje" "Sahatavara C18"
         // https://www.engineeringtoolbox.com/linear-expansion-coefficients-d_95.html
         Self { elastic_modulus: 9e3, thermal_expansion_coefficient: 5.0e-6 }
+    }
+}
+
+impl ThermalExpansion for Timber {
+    fn get_thermal_expansion_coefficient(&self) -> f64 {
+        self.thermal_expansion_coefficient
+    }
+}
+
+impl ElasticModulus for Timber {
+    fn get_elastic_modulus(&self) -> f64 {
+        self.elastic_modulus
     }
 }

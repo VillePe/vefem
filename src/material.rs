@@ -23,10 +23,14 @@ pub fn get_elastic_modulus(material_type: &MaterialData) -> f64 {
     }
 }
 
-pub fn get_thermal_expansion_coefficient(material_type: &MaterialData) -> f64 {
-    match material_type {
-        MaterialData::Concrete(c) => c.thermal_expansion_coefficient,
-        MaterialData::Steel(s) => s.thermal_expansion_coefficient,
-        MaterialData::Timber(t) => t.thermal_expansion_coefficient
-    }
+pub fn get_thermal_expansion_coefficient(material_type: impl ThermalExpansion) -> f64 {
+    material_type.get_thermal_expansion_coefficient()
+}
+
+pub trait ThermalExpansion {
+    fn get_thermal_expansion_coefficient(&self) -> f64;
+}
+
+pub trait ElasticModulus {
+    fn get_elastic_modulus(&self) -> f64;
 }
