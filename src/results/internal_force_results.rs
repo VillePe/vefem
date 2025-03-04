@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use serde_repr::{Deserialize_repr, Serialize_repr};
 
 #[derive(Serialize, Deserialize)]
 pub struct InternalForceResults {
@@ -26,10 +27,11 @@ pub struct InternalForcePoint {
     pub load_comb_number: i32,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize_repr, Deserialize_repr)]
+#[repr(u8)]
 pub enum ForceType {
-    Axial,
-    Shear,
-    Moment,
-    Deflection
+    Axial = 0,
+    Shear = 1,
+    Moment = 2,
+    Deflection = 3
 }
