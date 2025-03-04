@@ -2,6 +2,7 @@ use crate::loads::load::LoadType::{
     Line, Point, Rotational, Strain, Thermal, Trapezoid, Triangular,
 };
 use serde::{Deserialize, Serialize};
+use serde_repr::{Deserialize_repr, Serialize_repr};
 use vputilslib::equation_handler::EquationHandler;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -184,16 +185,17 @@ impl Default for Load {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize_repr, Deserialize_repr)]
+#[repr(u8)]
 pub enum LoadType {
-    Point,
-    Line,
-    Triangular,
-    Rotational,
+    Point = 0,
+    Line = 1,
+    Triangular = 2,
+    Rotational = 3,
     /// Note. The start and end values are separated with ; (semicolon)
-    Trapezoid,
-    Strain,
-    Thermal,
+    Trapezoid = 4,
+    Strain = 5,
+    Thermal = 6,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

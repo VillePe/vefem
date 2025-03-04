@@ -55,5 +55,8 @@ pub mod serializing_tests {
             results1.node_results.support_reactions,
             results2.node_results.support_reactions
         );
+
+        // let results_json = serde_json::to_string_pretty(&results2).unwrap();
+        // println!("Result JSON: {}", results_json);
     }
 }

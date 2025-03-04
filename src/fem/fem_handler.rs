@@ -182,7 +182,7 @@ mod tests {
         println!("Node count: {}", calc_model.nodes.len());
         println!(
             "Result displacement row count: {:?}",
-            results.node_results.displacements.nrows()
+            results.node_results.displacements.len()
         );
         println!(
             "Support reaction (0,1): {} kN",

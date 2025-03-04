@@ -1,3 +1,6 @@
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize)]
 pub struct InternalForceResults {
     /// The element number to which the internal forces are linked
     pub element_number: i32,
@@ -7,6 +10,7 @@ pub struct InternalForceResults {
     pub deflections: Vec<InternalForcePoint>
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct InternalForcePoint {
     /// The force type of the internal force
     pub force_type: ForceType,
@@ -22,6 +26,7 @@ pub struct InternalForcePoint {
     pub load_comb_number: i32,
 }
 
+#[derive(Serialize, Deserialize)]
 pub enum ForceType {
     Axial,
     Shear,

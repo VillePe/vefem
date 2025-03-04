@@ -56,6 +56,9 @@ pub fn calculate(
     );
     let reactions = calculate_reactions(&global_stiff_matrix, &displacements, &global_eq_l_matrix);
 
+    let displacements = displacements.column(0).as_slice().to_vec();
+    let reactions = reactions.column(0).as_slice().to_vec();
+
     let node_results = NodeResults::new(displacements, reactions, nodes.len(), &equation_handler);
     let internal_force_results = calc_internal_forces(
         elements,
@@ -91,7 +94,7 @@ fn calc_internal_forces(
         let mut deflections = vec![];
         let mut x = 0.0;
         let mut last = false;
-        while x <= element_length && !last {
+        while x < element_length || last {
             let moment_force_val =
                 internal_forces::calculate_moment_at(x, element, nodes, loads, node_results);
             let axial_force_val =
@@ -136,6 +139,11 @@ fn calc_internal_forces(
             });
 
             x += split_interval;
+
+            // Make sure that last point is exactly at the end of the element
+            if last {
+                break;
+            }
             if x >= element_length {
                 x = element_length;
                 last = true;

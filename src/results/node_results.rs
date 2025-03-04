@@ -1,13 +1,15 @@
 use std::collections::BTreeMap;
 
 use nalgebra::DMatrix;
+use serde::{ser::SerializeSeq, Deserialize, Serialize};
 use vputilslib::equation_handler::EquationHandler;
 
 use crate::structure::{Element, Node};
 
+#[derive(Debug, Serialize, Deserialize)]
 pub struct NodeResults {
-    pub displacements: DMatrix<f64>,
-    pub support_reactions: DMatrix<f64>,
+    pub displacements: Vec<f64>,
+    pub support_reactions: Vec<f64>,
     pub node_count: usize,
     pub dof_count: usize,
     pub equation_handler: EquationHandler,
@@ -20,8 +22,8 @@ impl NodeResults {
     /// * 'node_count' - the number of nodes
     /// * 'equation_handler' - the equation handler. This equation handler is copied to the new instance.
     pub fn new(
-        displacements: DMatrix<f64>,
-        support_reactions: DMatrix<f64>,
+        displacements: Vec<f64>,
+        support_reactions: Vec<f64>,
         node_count: usize,
         equation_handler: &EquationHandler,
     ) -> Self {
@@ -145,10 +147,6 @@ mod tests {
         let local_reactions = results
             .node_results
             .get_elem_local_reactions(&calc_model.elements[0], &calc_model.nodes);
-        println!(
-            "Global reactions: {:.0}",
-            results.node_results.support_reactions
-        );
         println!("Local reactions: {:.0}", local_reactions);
         assert!(relative_eq!(local_reactions[(0, 0)], 0.0, epsilon = 1.0));
         assert!(relative_eq!(local_reactions[(1, 0)], 7500.0, epsilon = 1.0));

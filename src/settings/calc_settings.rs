@@ -7,6 +7,7 @@ pub struct CalculationSettings {
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "$type", content = "value")]
 pub enum CalcSplitInterval {
     /// Splits the calculation into intervals of a fixed length.
     Absolute(f64),

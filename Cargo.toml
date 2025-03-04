@@ -5,12 +5,14 @@ edition = "2021"
 
 [lib]
 name="vefem"
+crate-type = ["lib", "dylib"]
 
 [dependencies]
-vputilslib = { git = "https://github.com/VillePe/rust-vputilslib", branch = "dev" }
+vputilslib = { git = "https://github.com/VillePe/rust-vputilslib" }
 nalgebra = "0.33"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+serde_repr = "0.1.20"
 
 [dev-dependencies]
 approx = "0.5.1"
