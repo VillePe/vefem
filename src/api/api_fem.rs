@@ -1,7 +1,7 @@
 use vputilslib::equation_handler::EquationHandler;
 
 use crate::{
-    fem::{self, *},
+    fem::{self},
     structure::CalculationModel,
 };
 use std::ffi::{c_char, CStr, CString};

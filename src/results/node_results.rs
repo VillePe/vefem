@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 
 use nalgebra::DMatrix;
-use serde::{ser::SerializeSeq, Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 use vputilslib::equation_handler::EquationHandler;
 
 use crate::structure::{Element, Node};

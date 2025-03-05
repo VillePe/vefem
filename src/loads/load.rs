@@ -36,6 +36,8 @@ pub struct Load {
     /// The percentage of the value that is set on the 'off element' when creating the load combinations with
     /// moving loads. Default value is 0 ('off element' has no load)
     pub moving_percent: f64,
+    // Todo add load group type so automatic load combinations can be created
+    // Load groups like permanent loads and live loads of different types need to be handled
 }
 
 impl Load {
