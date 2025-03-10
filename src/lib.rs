@@ -8,6 +8,7 @@ pub mod results;
 pub mod settings;
 pub mod api;
 pub mod profile;
+pub mod reinforcement;
 
 pub fn add(left: u64, right: u64) -> u64 {
     left + right
