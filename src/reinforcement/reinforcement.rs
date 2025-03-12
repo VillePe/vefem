@@ -9,7 +9,7 @@ pub struct ElementReinforcement {
 }
 
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 pub enum ReinforcementData {
     Rebar(RebarData),
     Tendon(TendonData)
@@ -22,7 +22,14 @@ pub trait ReinforcementTrait {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum RebarDistribution {
-    Real{diam: f64, count: isize},
-    Distributed{diam: f64, distr: f64},
-    ByArea{area: f64}
+    /// Even rebar distribution. To calculate the real positions, the profile values need to be known
+    Even{diam: f64, count: isize, cc_left: String, cc_right: String},
+    /// Distributed rebar by a distribution string. The first rebar is the first value of the
+    /// distribution string. Distribution spaces are separated by a space and multipliers can
+    /// be used by using a '*' character (e.g. 30 5*30 60)
+    Distributed{diam: f64, distr: String},
+    /// No real distribution used, only the full area of the reinforcement (not suggested to be used unless testing)
+    ByArea{area: f64},
+    /// Single rebar at a specific position. The offsets are to the center of the rebar
+    Single{diam: f64, off_left: String, off_bot: String}
 }

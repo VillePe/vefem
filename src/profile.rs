@@ -59,11 +59,27 @@ impl Profile {
         }
     }
     
-    pub(crate) fn get_area(&self) -> f64 {
+    pub fn get_area(&self) -> f64 {
         match self {
             Profile::PolygonProfile(p) => p.get_area(),
             Profile::StandardProfile(s) => s.get_area(),
             Profile::CustomProfile(c) => c.get_area(),
+        }
+    }
+
+    pub fn get_width(&self) -> f64 {
+        match self {
+            Profile::PolygonProfile(p) => p.width,
+            Profile::StandardProfile(s) => s.width,
+            Profile::CustomProfile(c) => c.width,
+        }
+    }
+
+    pub fn get_height(&self) -> f64 {
+        match self {
+            Profile::PolygonProfile(p) => p.height,
+            Profile::StandardProfile(s) => s.height,
+            Profile::CustomProfile(c) => c.height,
         }
     }
 }

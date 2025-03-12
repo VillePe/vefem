@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use super::reinforcement::ReinforcementTrait;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 pub struct RebarData {
     pub yield_strength: f64,
     pub elastic_modulus: f64
