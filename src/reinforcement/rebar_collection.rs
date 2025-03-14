@@ -2,9 +2,10 @@
 #![allow(unused_variables)]
 use std::f64::consts::PI;
 
+use nalgebra::coordinates::X;
 use serde::{Deserialize, Serialize};
 use vputilslib::{
-    equation_handler::EquationHandler,
+    equation_handler::{self, EquationHandler},
     geometry2d::polygon::Direction,
 };
 
@@ -69,6 +70,12 @@ impl RebarCollection {
         }
     }
 
+    /// Gathers the single rebars from the rebar collection.
+    /// 
+    /// The parser uses an EquationHandler so the strings can contain the 'd' or 'Ø' (alt + 0216 or U+00D8)
+    /// characters to refer to the diameter value. Parser clones the given equation handler to insert those
+    /// variables into the equation handler if the 'd' and 'Ø' variables are not already reserved 
+    /// (in any case the parser does not modify the original)
     pub fn get_single_rebars(
         &self,
         profile: &Profile,
@@ -109,6 +116,7 @@ impl RebarCollection {
                 cc_left,
                 cc_right,
             } => {
+                let equation_handler = add_diam_to_eq_handler(equation_handler, *diam);
                 let cc_left = equation_handler.calculate_formula(&cc_left).unwrap_or(0.0);
                 let cc_right = equation_handler.calculate_formula(&cc_right).unwrap_or(0.0);
                 // If there is only one, it will be set with left concrete cover
@@ -142,7 +150,9 @@ impl RebarCollection {
             }
             RebarDistribution::Distributed { diam, distr } => {
                 let mut cumulative_x = 0.0;
-                for i in super::utils::parse_distribution_string(*diam, &distr) {
+                let equation_handler = add_diam_to_eq_handler(equation_handler, *diam);
+                let spacings = super::utils::parse_distribution_string(*diam, &distr, &equation_handler);
+                for i in spacings {
                     cumulative_x += i;
                     y = self.concrete_cover + diam / 2.0;
                     (x, y) = get_rebar_location_with_side(cumulative_x, y, &self.side, profile);
@@ -164,10 +174,35 @@ impl RebarCollection {
                 diam,
                 off_left,
                 off_bot,
-            } => todo!(),
+            } => {
+                let equation_handler = add_diam_to_eq_handler(equation_handler, *diam);
+                let x = equation_handler.calculate_formula(&off_left).unwrap_or(0.0);
+                let y = equation_handler.calculate_formula(&off_bot).unwrap_or(0.0);
+                single_rebars.push(CalculationRebar {
+                    area: PI * diam.powi(2) / 4.0,
+                    x,
+                    y,
+                    reinf_data: self.reinf_data.clone(),
+                    offset_start: offset_start,
+                    offset_end: offset_end,
+                });
+            },
         }
         single_rebars
     }
+}
+
+/// Adds the diameter of the rebar to equation handlers variables but checks that the variable is 
+/// not already set so overriding is not happening (d and Ø are not reserved variables)
+/// Returns none if the variable is already set (so the equation handler is not modified)
+fn add_diam_to_eq_handler(equation_handler: &EquationHandler, diam: f64) -> EquationHandler {
+    let mut equation_handler = equation_handler.clone();
+    if !equation_handler.variable_is_set("d") {
+        equation_handler.add_variable("d", diam);
+    } else if !equation_handler.variable_is_set("Ø") {
+        equation_handler.add_variable("Ø", diam);
+    }
+    equation_handler
 }
 
 /// Gets the rebar location based on the side property of the rebar collection. See [RebarCollection::side]

@@ -1,6 +1,8 @@
+mod common;
+
 #[cfg(test)]
 mod reinf_tests {
-    
+    use crate::common::get_inversed_t_profile;
     use vefem::{profile::Profile, reinforcement::{reinforcement::{RebarDistribution, ReinforcementData}, 
     RebarCollection, RebarData, Side}};
     use vputilslib::{equation_handler::EquationHandler, geometry2d::{Polygon, VpPoint}};
@@ -142,17 +144,7 @@ mod reinf_tests {
 
     #[test]
     fn test_get_single_rebars_polygon_inverted_t() {
-        let profile = Profile::new("name".to_string(), Polygon::new(vec![
-            VpPoint::new(0.0, 0.0),
-            VpPoint::new(880.0, 0.0),
-            VpPoint::new(880.0, 250.0),
-            VpPoint::new(680.0, 250.0),
-            VpPoint::new(680.0, 580.0),
-            VpPoint::new(200.0, 580.0),
-            VpPoint::new(200.0, 250.0),
-            VpPoint::new(0.0, 250.0),
-            VpPoint::new(0.0, 0.0),
-        ]));
+        let profile = get_inversed_t_profile();
         let reinf_data = ReinforcementData::Rebar(RebarData {
             yield_strength: 500.0,
             elastic_modulus: 200e3,
@@ -216,17 +208,7 @@ mod reinf_tests {
 
     #[test]
     fn test_get_single_rebars_polygon_inverted_t_distr() {
-        let profile = Profile::new("name".to_string(), Polygon::new(vec![
-            VpPoint::new(0.0, 0.0),
-            VpPoint::new(880.0, 0.0),
-            VpPoint::new(880.0, 250.0),
-            VpPoint::new(680.0, 250.0),
-            VpPoint::new(680.0, 580.0),
-            VpPoint::new(200.0, 580.0),
-            VpPoint::new(200.0, 250.0),
-            VpPoint::new(0.0, 250.0),
-            VpPoint::new(0.0, 0.0),
-        ]));
+        let profile = get_inversed_t_profile();
         let reinf_data = ReinforcementData::Rebar(RebarData {
             yield_strength: 500.0,
             elastic_modulus: 200e3,
@@ -276,5 +258,48 @@ mod reinf_tests {
         assert!((result[3].x - (680.0-220.00)).abs() < 0.01);
         assert!((result[4].x - (680.0-280.00)).abs() < 0.01);
         assert!((result[5].x - (680.0-340.00)).abs() < 0.01);
+    }
+
+    #[test]
+    fn test_get_single_rebars_polygon_inverted_t_single() {
+        let profile = get_inversed_t_profile();
+        let reinf_data = ReinforcementData::Rebar(RebarData {
+            yield_strength: 500.0,
+            elastic_modulus: 200e3,
+        });
+        let offset_start = "0".to_string();
+        let offset_end = "L".to_string();
+        let mut equation_handler = EquationHandler::new();
+        equation_handler.add_variable("L", 4000.0);
+
+        let rebar_coll: RebarCollection = RebarCollection {
+            reinf_data,
+            offset_start: offset_start.clone(),
+            offset_end: offset_end.clone(),
+            concrete_cover: 30.0,
+            side: Side::Polygon { index: 0 },
+            distribution: RebarDistribution::Single { diam: 20.0, off_left: "30+d/2".to_string(), off_bot: "30+d/2".to_string() },
+        };
+        let result = rebar_coll.get_single_rebars(&profile, &equation_handler);
+        for rebar in &result {
+            println!("X: {}, Y: {}", rebar.x, rebar.y);
+        }
+        assert!((result[0].x - 40.00).abs() < 0.01);
+        assert!((result[0].y - 40.00).abs() < 0.01);
+
+        let rebar_coll: RebarCollection = RebarCollection {
+            reinf_data,
+            offset_start: offset_start.clone(),
+            offset_end: offset_end.clone(),
+            concrete_cover: 30.0,
+            side: Side::Polygon { index: 4 }, // On the top
+            distribution: RebarDistribution::Single { diam: 20.0, off_left: "30+d/2".to_string(), off_bot: "30+d/2".to_string() },
+        };
+        let result = rebar_coll.get_single_rebars(&profile, &equation_handler);
+        for rebar in &result {
+            println!("X: {}, Y: {}", rebar.x, rebar.y);
+        }
+        assert!((result[0].x - 40.00).abs() < 0.01);
+        assert!((result[0].y - 40.00).abs() < 0.01);
     }
 }

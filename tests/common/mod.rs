@@ -5,7 +5,7 @@ use std::collections::BTreeMap;
 use vefem::{
     loads::Load, material::{MaterialData, Steel}, profile::Profile, structure::{Element, Node}
 };
-use vputilslib::geometry2d::VpPoint;
+use vputilslib::geometry2d::{Polygon, VpPoint};
 
 pub fn get_structure_fem_matriisit_releases() -> (Vec<Element>, BTreeMap<i32, Node>) {
     let mut nodes: BTreeMap<i32, Node> = BTreeMap::new();
@@ -117,4 +117,18 @@ pub fn get_fem_matriisi_loads() -> Vec<Load> {
     );
     let loads = vec![line_load_1, line_load_2, line_load_3];
     loads
+}
+
+pub fn get_inversed_t_profile() -> Profile {
+    Profile::new("name".to_string(), Polygon::new(vec![
+        VpPoint::new(0.0, 0.0),
+        VpPoint::new(880.0, 0.0),
+        VpPoint::new(880.0, 250.0),
+        VpPoint::new(680.0, 250.0),
+        VpPoint::new(680.0, 580.0),
+        VpPoint::new(200.0, 580.0),
+        VpPoint::new(200.0, 250.0),
+        VpPoint::new(0.0, 250.0),
+        VpPoint::new(0.0, 0.0),
+    ]))
 }
