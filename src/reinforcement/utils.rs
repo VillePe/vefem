@@ -1,14 +1,12 @@
-use vputilslib::equation_handler::{self, EquationHandler};
+use vputilslib::equation_handler::EquationHandler;
 
     /// Parses a distribution string into a vector of spacing values. The string is formatted with
     /// space separated values and can contain values with '*' character (e.g. 5*60). The '*' character
     /// is used to specify the multiplier of multiple spacing values.
     /// 
     /// The function returns a vector of spacing values and can be empty, if no valid values are found.
-pub fn parse_distribution_string(diam: f64, distribution: &str, equation_handler: &EquationHandler) -> Vec<f64> {
+pub fn parse_distribution_string(distribution: &str, equation_handler: &EquationHandler) -> Vec<f64> {
     let mut result: Vec<f64> = Vec::new();
-
-    let equation_handler = EquationHandler::from([("d", diam), ("Ø", diam)]);
     let split = distribution.split(" ").collect::<Vec<&str>>();
     for s in split {
         // If the string contains '*' (e.g. 5*60) split that to multiplier and value and add them
@@ -39,16 +37,16 @@ mod test {
     fn test_parse_distribution_string() {        
         let mut equation_handler = EquationHandler::new();
         equation_handler.add_variable("d", 0.0);
-        assert_eq!(parse_distribution_string(0.0, "5*60", &equation_handler), 
+        assert_eq!(parse_distribution_string("5*60", &equation_handler), 
             vec![60.0, 60.0, 60.0, 60.0, 60.0]
         );
         equation_handler.set_variable("d", 0.0);
-        assert!(parse_distribution_string(0.0, "0 0 0 0", &equation_handler).is_empty());
-        assert_eq!(parse_distribution_string(0.0, "30 5*60 anc*123 30", &equation_handler), 
+        assert!(parse_distribution_string("0 0 0 0", &equation_handler).is_empty());
+        assert_eq!(parse_distribution_string("30 5*60 anc*123 30", &equation_handler), 
             vec![30.0, 60.0, 60.0, 60.0, 60.0, 60.0, 30.0]
         );
         equation_handler.set_variable("d", 25.0);
-        assert_eq!(parse_distribution_string(25.0, "30+d/2 5*60 anc*123 30", &equation_handler), 
+        assert_eq!(parse_distribution_string("30+d/2 5*60 anc*123 30", &equation_handler), 
             vec![42.5, 60.0, 60.0, 60.0, 60.0, 60.0, 30.0]
         );
     }

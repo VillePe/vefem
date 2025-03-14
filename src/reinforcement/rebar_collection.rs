@@ -2,10 +2,9 @@
 #![allow(unused_variables)]
 use std::f64::consts::PI;
 
-use nalgebra::coordinates::X;
 use serde::{Deserialize, Serialize};
 use vputilslib::{
-    equation_handler::{self, EquationHandler},
+    equation_handler::EquationHandler,
     geometry2d::polygon::Direction,
 };
 
@@ -151,7 +150,7 @@ impl RebarCollection {
             RebarDistribution::Distributed { diam, distr } => {
                 let mut cumulative_x = 0.0;
                 let equation_handler = add_diam_to_eq_handler(equation_handler, *diam);
-                let spacings = super::utils::parse_distribution_string(*diam, &distr, &equation_handler);
+                let spacings = super::utils::parse_distribution_string(&distr, &equation_handler);
                 for i in spacings {
                     cumulative_x += i;
                     y = self.concrete_cover + diam / 2.0;
