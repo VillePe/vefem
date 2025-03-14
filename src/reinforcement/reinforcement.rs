@@ -27,9 +27,9 @@ pub enum RebarDistribution {
     /// Distributed rebar by a distribution string. The first rebar is the first value of the
     /// distribution string. Distribution spaces are separated by a space and multipliers can
     /// be used by using a '*' character (e.g. 30 5*30 60)
-    Distributed{diam: f64, distr: String},
-    /// No real distribution used, only the full area of the reinforcement (not suggested to be used unless testing)
-    ByArea{area: f64},
+    Distributed{diam: f64, distr: String},    
     /// Single rebar at a specific position. The offsets are to the center of the rebar
-    Single{diam: f64, off_left: String, off_bot: String}
+    Single{diam: f64, off_left: String, off_bot: String},
+    /// No real distribution used, only the full area of the reinforcement (not suggested to be used unless testing)
+    ByArea{area: f64, mom_of_inertia: f64},
 }

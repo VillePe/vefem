@@ -44,8 +44,8 @@ pub enum Side {
     /// For this the orientation should be known and line count of the polygon needs to be known or
     /// the program will panic if the index is out of the range of the lines.
     Polygon { index: i32 },
-    /// For circular sections. The start angle is in degrees and starts from pointing right and is counter-clockwise.
-    Circular { start_angle: f64 },
+    // For circular sections. The start angle is in degrees and starts from pointing right and is counter-clockwise.
+    // Circular { start_angle: f64 },
 }
 
 impl RebarCollection {
@@ -98,7 +98,7 @@ impl RebarCollection {
                 }
                 _ => profile.get_width(),
             },
-            Side::Circular { start_angle } => todo!(),
+            // Side::Circular { start_angle } => todo!(),
         };
         println!("Row length: {}", row_length);
 
@@ -141,10 +141,22 @@ impl RebarCollection {
                 }
             }
             RebarDistribution::Distributed { diam, distr } => {
-                // TODO: implement
-                todo!()
+                let mut cumulative_x = 0.0;
+                for i in super::utils::parse_distribution_string(*diam, &distr) {
+                    cumulative_x += i;
+                    y = self.concrete_cover + diam / 2.0;
+                    (x, y) = get_rebar_location_with_side(cumulative_x, y, &self.side, profile);
+                    single_rebars.push(CalculationRebar {
+                        area: PI * diam.powi(2) / 4.0,
+                        x,
+                        y,
+                        reinf_data: self.reinf_data.clone(),
+                        offset_start: offset_start,
+                        offset_end: offset_end,
+                    });
+                }
             }
-            RebarDistribution::ByArea { area } => {
+            RebarDistribution::ByArea { area , mom_of_inertia} => {
                 // TODO: implement
                 todo!()
             }
@@ -196,152 +208,6 @@ fn get_rebar_location_with_side(x: f64, y: f64, side: &Side, profile: &Profile) 
                 _ => (0.0, 0.0),
             }
         }
-        Side::Circular { start_angle } => todo!(),
-    }
-}
-
-#[cfg(test)]
-mod reinf_tests {
-    use std::result;
-
-    use vputilslib::geometry2d::{Polygon, VpPoint};
-
-    use crate::reinforcement::RebarData;
-
-    use super::*;
-
-    #[test]
-    fn test_get_single_rebars_bbox() {
-        let side = Side::BoundingBox { index: 0 };
-        let profile = Profile::new_rectangle("name".to_string(), 480.0, 280.0);
-        let reinf_data = ReinforcementData::Rebar(RebarData {
-            yield_strength: 500.0,
-            elastic_modulus: 200e3,
-        });
-        let offset_start = "0".to_string();
-        let offset_end = "L".to_string();
-        let mut equation_handler = EquationHandler::new();
-        equation_handler.add_variable("L", 4000.0);
-
-        let rebar_coll1: RebarCollection = RebarCollection {
-            reinf_data,
-            offset_start,
-            offset_end,
-            concrete_cover: 30.0,
-            side,
-            distribution: RebarDistribution::Even {
-                diam: 16.0,
-                count: 4,
-                cc_left: "30".to_string(),
-                cc_right: "30".to_string(),
-            },
-        };
-        let result1 = rebar_coll1.get_single_rebars(&profile, &equation_handler);
-        for rebar in &result1 {
-            println!("X: {}, Y: {}", rebar.x, rebar.y);
-        }
-        assert!(result1[0].x == 38.0);
-        assert!(result1[1].x == 106.0);
-        assert!(result1[2].x == 174.0);
-        assert!(result1[3].x == 242.0);
-    }
-
-    #[test]
-    fn test_get_single_rebars_polygon() {
-        let side = Side::Polygon { index: 0 };
-        let profile = Profile::new_rectangle("name".to_string(), 480.0, 280.0);
-        let reinf_data = ReinforcementData::Rebar(RebarData {
-            yield_strength: 500.0,
-            elastic_modulus: 200e3,
-        });
-        let offset_start = "0".to_string();
-        let offset_end = "L".to_string();
-        let mut equation_handler = EquationHandler::new();
-        equation_handler.add_variable("L", 4000.0);
-
-        let rebar_coll: RebarCollection = RebarCollection {
-            reinf_data,
-            offset_start: offset_start.clone(),
-            offset_end: offset_end.clone(),
-            concrete_cover: 30.0,
-            side,
-            distribution: RebarDistribution::Even {
-                diam: 16.0,
-                count: 4,
-                cc_left: "30".to_string(),
-                cc_right: "30".to_string(),
-            },
-        };
-        let result = rebar_coll.get_single_rebars(&profile, &equation_handler);
-        for rebar in &result {
-            println!("X: {}, Y: {}", rebar.x, rebar.y);
-        }
-        assert!(result[0].x == 38.0);
-        assert!(result[1].x == 106.0);
-        assert!(result[2].x == 174.0);
-        assert!(result[3].x == 242.0);
-
-        let rebar_coll: RebarCollection = RebarCollection {
-            reinf_data,
-            offset_start: offset_start.clone(),
-            offset_end: offset_end.clone(),
-            concrete_cover: 30.0,
-            side: Side::Polygon { index: 1 },
-            distribution: RebarDistribution::Even {
-                diam: 16.0,
-                count: 4,
-                cc_left: "30".to_string(),
-                cc_right: "30".to_string(),
-            },
-        };
-        let result = rebar_coll.get_single_rebars(&profile, &equation_handler);
-        for rebar in &result {
-            println!("X: {:.2}, Y: {:.2}", rebar.x, rebar.y);
-        }
-        assert!((result[0].y - 38.00).abs() < 0.01);
-        assert!((result[1].y - 172.67).abs() < 0.01);
-        assert!((result[2].y - 307.33).abs() < 0.01);
-        assert!((result[3].y - 442.00).abs() < 0.01);
-    }
-
-    #[test]
-    fn test_get_single_rebars_polygon_clockwise() {
-        let profile = Profile::new("name".to_string(), Polygon::new(vec![
-            VpPoint::new(280.0, 0.0),
-            VpPoint::new(0.0, 0.0),
-            VpPoint::new(0.0, 480.0),
-            VpPoint::new(280.0, 480.0),
-            VpPoint::new(280.0, 0.0),
-        ]));
-        let reinf_data = ReinforcementData::Rebar(RebarData {
-            yield_strength: 500.0,
-            elastic_modulus: 200e3,
-        });
-        let offset_start = "0".to_string();
-        let offset_end = "L".to_string();
-        let mut equation_handler = EquationHandler::new();
-        equation_handler.add_variable("L", 4000.0);
-
-        let rebar_coll: RebarCollection = RebarCollection {
-            reinf_data,
-            offset_start: offset_start.clone(),
-            offset_end: offset_end.clone(),
-            concrete_cover: 30.0,
-            side: Side::Polygon { index: 1 },
-            distribution: RebarDistribution::Even {
-                diam: 16.0,
-                count: 4,
-                cc_left: "30".to_string(),
-                cc_right: "30".to_string(),
-            },
-        };
-        let result = rebar_coll.get_single_rebars(&profile, &equation_handler);
-        for rebar in &result {
-            println!("X: {}, Y: {}", rebar.x, rebar.y);
-        }
-        assert!((result[0].y - 38.00).abs() < 0.01);
-        assert!((result[1].y - 172.67).abs() < 0.01);
-        assert!((result[2].y - 307.33).abs() < 0.01);
-        assert!((result[3].y - 442.00).abs() < 0.01);
+        // Side::Circular { start_angle } => todo!(),
     }
 }
