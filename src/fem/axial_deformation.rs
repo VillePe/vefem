@@ -3,8 +3,7 @@
 use std::collections::BTreeMap;
 
 use crate::{
-    loads::load::{self, CalculationLoad},
-    structure::{Element, Node},
+    loads::load::{self, CalculationLoad}, settings::CalculationSettings, structure::{Element, Node}
 };
 
 use crate::results::NodeResults;
@@ -15,6 +14,7 @@ pub fn calculate_at(
     element: &Element,
     nodes: &BTreeMap<i32, Node>,
     loads: &Vec<CalculationLoad>,
+    settings: &CalculationSettings,
     results: &NodeResults,
 ) -> f64 {
     // See theory files for more information how these values are calculated.
@@ -26,7 +26,7 @@ pub fn calculate_at(
     let local_displacements = results.get_elem_local_displacements(element, nodes);
 
     let e_m = element.get_elastic_modulus();
-    let area = element.profile.get_area();
+    let area = element.profile.get_area(&element.material, settings);
 
     for load in loads {
         // The factor to handle skewed loads

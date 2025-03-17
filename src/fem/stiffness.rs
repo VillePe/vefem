@@ -2,6 +2,7 @@
 
 use crate::fem::matrices::get_element_rotation_matrix;
 use crate::material::MaterialData;
+use crate::settings::{self, CalculationSettings};
 use crate::structure::element::Element;
 use crate::structure::Node;
 use nalgebra::DMatrix;
@@ -11,8 +12,9 @@ use std::collections::BTreeMap;
 pub fn get_element_global_stiffness_matrix(
     e: &Element,
     nodes: &BTreeMap<i32, Node>,
+    settings: &CalculationSettings
 ) -> DMatrix<f64> {
-    let e_stiff_matrix = get_element_stiffness_matrix(&e, nodes);
+    let e_stiff_matrix = get_element_stiffness_matrix(&e, nodes, settings);
     let e_rotation_matrix = get_element_rotation_matrix(&e, nodes);
     let e_rot_matrix_t = e_rotation_matrix.transpose();
     let e_glob_stiff_matrix = e_rot_matrix_t * e_stiff_matrix * e_rotation_matrix;
@@ -21,7 +23,9 @@ pub fn get_element_global_stiffness_matrix(
 
 /// Gets the stiffness matrix of the element in elements local coordinate system.
 /// Do not use this directly in the calculations. Use get_element_global_stiffness_matrix
-pub fn get_element_stiffness_matrix(element: &Element, nodes: &BTreeMap<i32, Node>) -> DMatrix<f64> {
+pub fn get_element_stiffness_matrix(element: &Element, nodes: &BTreeMap<i32, Node>, 
+    settings: &CalculationSettings
+) -> DMatrix<f64> {
     let E = match &element.material {
         MaterialData::Concrete(c) => c.elastic_modulus,
         MaterialData::Steel(s) => s.elastic_modulus,
@@ -31,8 +35,8 @@ pub fn get_element_stiffness_matrix(element: &Element, nodes: &BTreeMap<i32, Nod
         }
     };
     let L = element.get_length(nodes);
-    let A = element.profile.get_area();
-    let I = element.profile.get_major_second_mom_of_area(&element.material);
+    let A = element.profile.get_area(&element.material, settings);
+    let I = element.profile.get_major_second_mom_of_area(&element.material, settings);
     let EA = E * A;
     let EI = E * I;
     DMatrix::from_row_slice(
@@ -82,6 +86,7 @@ pub fn get_element_stiffness_matrix(element: &Element, nodes: &BTreeMap<i32, Nod
 pub fn create_joined_stiffness_matrix(
     elements: &Vec<Element>,
     nodes: &BTreeMap<i32, Node>,
+    settings: &CalculationSettings
 ) -> DMatrix<f64> {
     let supp_count = nodes.len();
     // Increase the joined stiffness matrix size by release count. Releases are set into their
@@ -102,7 +107,7 @@ pub fn create_joined_stiffness_matrix(
     let mut j_normalized: usize;
 
     for elem in elements {
-        let e_glob_stiff_matrix = get_element_global_stiffness_matrix(&elem, nodes);
+        let e_glob_stiff_matrix = get_element_global_stiffness_matrix(&elem, nodes, settings);
         // The index of the start node
         let s = (elem.node_start - 1) as usize;
         // The index of the end node

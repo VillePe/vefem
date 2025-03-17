@@ -10,6 +10,7 @@ mod deflection_tests {
 
     use vefem::fem::deflection;
 
+
     #[test]
     fn t_calculate_deflection_at_pl() {
         let el: Element = Element::new(
@@ -39,6 +40,7 @@ mod deflection_tests {
             calc_settings: CalculationSettings::default(),
             load_combinations: vec![],
         };
+        let calc_settings = CalculationSettings::default();
         let calc_loads = loads::utils::extract_calculation_loads(
             &calc_model.elements,
             &calc_model.nodes,
@@ -51,6 +53,7 @@ mod deflection_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &calc_loads,
+            &CalculationSettings::default(),
             &results,
         );
         println!("Deflection(1000): {} mm", defl);
@@ -60,6 +63,7 @@ mod deflection_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &calc_loads,
+            &calc_settings,
             &results,
         );
         println!("Deflection(2000): {} mm", defl);
@@ -69,6 +73,7 @@ mod deflection_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &calc_loads,
+            &calc_settings,
             &results,
         );
         println!("Deflection(3000): {} mm", defl);
@@ -87,6 +92,7 @@ mod deflection_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &calc_loads,
+            &calc_settings,
             &results,
         );
         println!("Deflection(2000<-45): {} mm", defl);
@@ -105,6 +111,7 @@ mod deflection_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &calc_loads,
+            &calc_settings,
             &results,
         );
         println!("Deflection(2000<45): {} mm", defl);
@@ -123,6 +130,7 @@ mod deflection_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &calc_loads,
+            &calc_settings,
             &results,
         );
         println!("Deflection(horizontal): {} mm", defl);
@@ -164,12 +172,14 @@ mod deflection_tests {
             &calc_model.loads,
             &EquationHandler::new(),
         );
+        let calc_settings = CalculationSettings::default();
         let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
         let defl = deflection::calculate_at(
             0.0,
             &calc_model.elements[0],
             &calc_model.nodes,
             &calc_loads,
+            &calc_settings,
             &results,
         );
         println!("Deflection(L): {} mm", defl);
@@ -197,6 +207,7 @@ mod deflection_tests {
             "10e3".to_string(),
             0.0,
         );
+        let calc_settings = CalculationSettings::default();
         let loads = vec![p_load];
         let calc_model = CalculationModel {
             nodes,
@@ -217,6 +228,7 @@ mod deflection_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &calc_loads,
+            &calc_settings,
             &results,
         );
         println!("Deflection(L): {} mm", defl);
@@ -236,6 +248,7 @@ mod deflection_tests {
             (1, Node::new_free(1, VpPoint::new(0.0, 0.0))),
             (2, Node::new_fixed(2, VpPoint::new(0.0, 4000.0))),
         ]);
+        let calc_settings = CalculationSettings::default();
         let elements = vec![el];
         let p_load = Load::new_rotational_load(
             "RotationalLoad".to_string(),
@@ -263,6 +276,7 @@ mod deflection_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &calc_loads,
+            &calc_settings,
             &results,
         );
         println!("Deflection(L): {} mm", defl);
@@ -282,6 +296,7 @@ mod deflection_tests {
             (1, Node::new_hinged(1, VpPoint::new(0.0, 0.0))),
             (2, Node::new_hinged(2, VpPoint::new(4000.0, 0.0))),
         ]);
+        let calc_settings = CalculationSettings::default();
         let elements = vec![el];
         let r_load = Load::new_rotational_load(
             "RotationalLoad".to_string(),
@@ -309,6 +324,7 @@ mod deflection_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &calc_loads,
+            &calc_settings,
             &results,
         );
         println!("Deflection(1000): {} mm", defl);
@@ -318,6 +334,7 @@ mod deflection_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &calc_loads,
+            &calc_settings,
             &results,
         );
         println!("Deflection(2000): {} mm", defl);
@@ -327,6 +344,7 @@ mod deflection_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &calc_loads,
+            &calc_settings,
             &results,
         );
         println!("Deflection(3000): {} mm", defl);
@@ -342,6 +360,7 @@ mod deflection_tests {
             Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
             MaterialData::Steel(Steel::default()),
         );
+        let calc_settings = CalculationSettings::default();
         let nodes = BTreeMap::from([
             (1, Node::new_hinged(1, VpPoint::new(0.0, 0.0))),
             (2, Node::new_hinged(2, VpPoint::new(4000.0, 0.0))),
@@ -375,6 +394,7 @@ mod deflection_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &calc_loads,
+            &calc_settings,
             &results,
         );
         println!("Deflection(1000): {} mm", defl);
@@ -384,6 +404,7 @@ mod deflection_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &calc_loads,
+            &calc_settings,
             &results,
         );
         println!("Deflection(2000): {} mm", defl);
@@ -393,6 +414,7 @@ mod deflection_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &calc_loads,
+            &calc_settings,
             &results,
         );
         println!("Deflection(3000): {} mm", defl);
@@ -411,6 +433,7 @@ mod deflection_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &calc_loads,
+            &calc_settings,
             &results,
         );
         println!("Deflection(2000<-45): {} mm", defl);
@@ -429,6 +452,7 @@ mod deflection_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &calc_loads,
+            &calc_settings,
             &results,
         );
         println!("Deflection(2000<45): {} mm", defl);
@@ -447,6 +471,7 @@ mod deflection_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &calc_loads,
+            &calc_settings,
             &results,
         );
         println!("Deflection(horizontal): {} mm", defl);
@@ -467,6 +492,7 @@ mod deflection_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &calc_loads,
+            &calc_settings,
             &results,
         );
         println!("Deflection(slice): {} mm", defl);
@@ -486,6 +512,7 @@ mod deflection_tests {
             (1, Node::new_hinged(1, VpPoint::new(0.0, 0.0))),
             (2, Node::new_hinged(2, VpPoint::new(4000.0, 0.0))),
         ]);
+        let calc_settings = CalculationSettings::default();
         let elements = vec![el];
         let l_load = Load::new_triangular_load(
             "TriangularLoad".to_string(),
@@ -515,6 +542,7 @@ mod deflection_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &calc_loads,
+            &calc_settings,
             &results,
         );
         println!("Deflection(1000): {} mm", defl);
@@ -524,6 +552,7 @@ mod deflection_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &calc_loads,
+            &calc_settings,
             &results,
         );
         println!("Deflection(2000): {} mm", defl);
@@ -533,6 +562,7 @@ mod deflection_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &calc_loads,
+            &calc_settings,
             &results,
         );
         println!("Deflection(3000): {} mm", defl);
@@ -551,6 +581,7 @@ mod deflection_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &calc_loads,
+            &calc_settings,
             &results,
         );
         println!("Deflection(2000<-45): {} mm", defl);
@@ -569,6 +600,7 @@ mod deflection_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &calc_loads,
+            &calc_settings,
             &results,
         );
         println!("Deflection(2000<45): {} mm", defl);
@@ -587,6 +619,7 @@ mod deflection_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &calc_loads,
+            &calc_settings,
             &results,
         );
         println!("Deflection(horizontal)): {} mm", defl);
@@ -607,6 +640,7 @@ mod deflection_tests {
             (1, Node::new_hinged(1, VpPoint::new(0.0, 0.0))),
             (2, Node::new_hinged(2, VpPoint::new(4000.0, 0.0))),
         ]);
+        let calc_settings = CalculationSettings::default();
         let elements = vec![el];
         let l_load = Load::new_triangular_load(
             "TriangularLoad".to_string(),
@@ -636,6 +670,7 @@ mod deflection_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &calc_loads,
+            &calc_settings,
             &results,
         );
         println!("Deflection(2000): {} mm", defl);
@@ -645,6 +680,7 @@ mod deflection_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &calc_loads,
+            &calc_settings,
             &results,
         );
         println!("Deflection(3000): {} mm", defl);
@@ -663,6 +699,7 @@ mod deflection_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &calc_loads,
+            &calc_settings,
             &results,
         );
         println!("Deflection(2000<-45): {} mm", defl);
@@ -681,6 +718,7 @@ mod deflection_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &calc_loads,
+            &calc_settings,
             &results,
         );
         println!("Deflection(2000<45): {} mm", defl);
@@ -700,6 +738,7 @@ mod deflection_tests {
             (1, Node::new_hinged(1, VpPoint::new(0.0, 0.0))),
             (2, Node::new_hinged(2, VpPoint::new(4000.0, 0.0))),
         ]);
+        let calc_settings = CalculationSettings::default();
         let elements = vec![el];
         let l_load = Load::new_triangular_load(
             "TriangularLoad".to_string(),
@@ -729,6 +768,7 @@ mod deflection_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &calc_loads,
+            &calc_settings,
             &results,
         );
         println!("Deflection(1000): {} mm", defl);
@@ -738,6 +778,7 @@ mod deflection_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &calc_loads,
+            &calc_settings,
             &results,
         );
         println!("Deflection(2000): {} mm", defl);
@@ -747,6 +788,7 @@ mod deflection_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &calc_loads,
+            &calc_settings,
             &results,
         );
         println!("Deflection(3000): {} mm", defl);
@@ -765,6 +807,7 @@ mod deflection_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &calc_loads,
+            &calc_settings,
             &results,
         );
         println!("Deflection(2000<-45): {} mm", defl);
@@ -783,6 +826,7 @@ mod deflection_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &calc_loads,
+            &calc_settings,
             &results,
         );
         println!("Deflection(2000<45): {} mm", defl);
@@ -801,6 +845,7 @@ mod deflection_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &calc_loads,
+            &calc_settings,
             &results,
         );
         println!("Deflection(horizontal)): {} mm", defl);
@@ -821,6 +866,7 @@ mod deflection_tests {
             (1, Node::new_hinged(1, VpPoint::new(0.0, 0.0))),
             (2, Node::new_hinged(2, VpPoint::new(4000.0, 0.0))),
         ]);
+        let calc_settings = CalculationSettings::default();
         let elements = vec![el];
         let l_load = Load::new_triangular_load(
             "TriangularLoad".to_string(),
@@ -850,6 +896,7 @@ mod deflection_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &calc_loads,
+            &calc_settings,
             &results,
         );
         println!("Deflection(2000): {} mm", defl);
@@ -859,6 +906,7 @@ mod deflection_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &calc_loads,
+            &calc_settings,
             &results,
         );
         println!("Deflection(3000): {} mm", defl);
@@ -877,6 +925,7 @@ mod deflection_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &calc_loads,
+            &calc_settings,
             &results,
         );
         println!("Deflection(2000<-45): {} mm", defl);
@@ -895,9 +944,11 @@ mod deflection_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &calc_loads,
+            &calc_settings,
             &results,
         );
         println!("Deflection(2000<45): {} mm", defl);
         assert_eq!(relative_eq!(defl, 2.058, epsilon = 0.01), true);
     }
 }
+

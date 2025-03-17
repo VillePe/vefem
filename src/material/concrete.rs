@@ -12,6 +12,7 @@ pub struct Concrete {
     /// The characteristic strength of the concrete (f_ck)
     pub char_strength: f64,
     pub reinforcement: reinforcement::ElementReinforcement,
+    pub concrete_calc_type: ConcreteCalcType,
 }
 
 impl Concrete {
@@ -61,6 +62,19 @@ impl StandardConcrete {
     }
 }
 
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
+pub enum ConcreteCalcType {
+    // The reinforcement does not have an effect when calculating the area or the second moment of 
+    // area of the element
+    Plain,
+    // The reinforcement does have an effect when calculating the area and the second moment of 
+    // area of the element. The concrete is considered to be uncracked.
+    WithReinforcement,
+    // The reinforcement does have an effect when calculating the area and the second moment of 
+    // area of the element and the part of concrete that is in tensile is ignored
+    Cracked,
+}
+
 pub fn new_with_char_strength(char_strength: f64) -> Concrete {
     Concrete{ char_strength, elastic_modulus: calc_elastic_modulus(char_strength), ..Default::default() }
 }
@@ -86,7 +100,8 @@ impl Default for Concrete {
         Self { 
             char_strength: 12.0, elastic_modulus: 27e3, 
             thermal_expansion_coefficient: 14.0e-6, 
-            reinforcement: Default::default() 
+            reinforcement: Default::default(),
+            concrete_calc_type: ConcreteCalcType::Plain,
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿use crate::fem::matrices;
 use crate::loads::load::{CalculationLoad, CalculationLoadType};
+use crate::settings::CalculationSettings;
 use crate::structure::{Element, Node};
 use nalgebra::DMatrix;
 use std::collections::BTreeMap;
@@ -8,6 +9,7 @@ pub fn create(
     elements: &Vec<Element>,
     nodes: &BTreeMap<i32, Node>,
     loads: &Vec<CalculationLoad>,
+    settings: &CalculationSettings,
 ) -> DMatrix<f64> {
     let supp_count = nodes.len();
     // Increase the joined stiffness matrix size by release count. Releases are set into their
@@ -25,7 +27,7 @@ pub fn create(
     let mut i_normalized: usize;
 
     for elem in elements {
-        let el_global_eq_loads = get_element_g_eq_loads(&elem, loads, nodes);
+        let el_global_eq_loads = get_element_g_eq_loads(&elem, loads, nodes, settings);
         // The index of the start node
         let s = (elem.node_start - 1) as usize;
         // The index of the end node
@@ -60,6 +62,7 @@ pub fn get_element_g_eq_loads(
     element: &Element,
     loads: &Vec<CalculationLoad>,
     nodes: &BTreeMap<i32, Node>,
+    settings: &CalculationSettings,
 ) -> DMatrix<f64> {
     let dof = 3;
     let mut result_vector = DMatrix::<f64>::zeros(dof * 2, 1);
@@ -97,7 +100,7 @@ pub fn get_element_g_eq_loads(
                 result_vector += element_eql_matrix_gl;
             }
             CalculationLoadType::Strain => {
-                let val = element.get_elastic_modulus() * element.profile.get_area() / el_length
+                let val = element.get_elastic_modulus() * element.profile.get_area(&element.material, settings) / el_length
                     * load.strength;
                 result_vector +=
                     &rot_matrix * DMatrix::from_row_slice(6, 1, &[-val, 0.0, 0.0, val, 0.0, 0.0]);

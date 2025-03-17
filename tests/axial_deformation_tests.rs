@@ -49,6 +49,7 @@ mod axial_deformation_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &cacl_loads,
+            &calc_model.calc_settings,
             &results,
         );
         println!("Strain(1000): {} mm", defl);
@@ -58,6 +59,7 @@ mod axial_deformation_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &cacl_loads,
+            &calc_model.calc_settings,
             &results,
         );
         println!("Strain(2000): {} mm", defl);
@@ -67,6 +69,7 @@ mod axial_deformation_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &cacl_loads,
+            &calc_model.calc_settings,
             &results,
         );
         println!("Strain(3000): {} mm", defl);
@@ -76,6 +79,7 @@ mod axial_deformation_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &cacl_loads,
+            &calc_model.calc_settings,
             &results,
         );
         println!("Strain(4000): {} mm", defl);
@@ -94,6 +98,7 @@ mod axial_deformation_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &cacl_loads,
+            &calc_model.calc_settings,
             &results,
         );
         println!("Strain(2000<-45): {} mm", defl);
@@ -112,6 +117,7 @@ mod axial_deformation_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &cacl_loads,
+            &calc_model.calc_settings,
             &results,
         );
         println!("Strain(2000<45): {} mm", defl);
@@ -160,6 +166,7 @@ mod axial_deformation_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &cacl_loads,
+            &calc_model.calc_settings,
             &results,
         );
         println!("Strain(1000): {} mm", defl);
@@ -169,6 +176,7 @@ mod axial_deformation_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &cacl_loads,
+            &calc_model.calc_settings,
             &results,
         );
         println!("Strain(2000): {} mm", defl);
@@ -178,6 +186,7 @@ mod axial_deformation_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &cacl_loads,
+            &calc_model.calc_settings,
             &results,
         );
         println!("Strain(3000): {} mm", defl);
@@ -196,6 +205,7 @@ mod axial_deformation_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &cacl_loads,
+            &calc_model.calc_settings,
             &results,
         );
         println!("Strain(2000<-45): {} mm", defl);
@@ -214,6 +224,7 @@ mod axial_deformation_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &cacl_loads,
+            &calc_model.calc_settings,
             &results,
         );
         println!("Strain(2000<45): {} mm", defl);
@@ -234,6 +245,7 @@ mod axial_deformation_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &cacl_loads,
+            &calc_model.calc_settings,
             &results,
         );
         println!("Strain(slice): {} mm", defl);
@@ -282,6 +294,7 @@ mod axial_deformation_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &cacl_loads,
+            &calc_model.calc_settings,
             &results,
         );
         println!("Strain(1000): {} mm", defl);
@@ -291,6 +304,7 @@ mod axial_deformation_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &cacl_loads,
+            &calc_model.calc_settings,
             &results,
         );
         println!("Strain(2000): {} mm", defl);
@@ -300,6 +314,7 @@ mod axial_deformation_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &cacl_loads,
+            &calc_model.calc_settings,
             &results,
         );
         println!("Strain(3000): {} mm", defl);
@@ -318,6 +333,7 @@ mod axial_deformation_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &cacl_loads,
+            &calc_model.calc_settings,
             &results,
         );
         println!("Strain(2000<-45): {} mm", defl);
@@ -336,6 +352,7 @@ mod axial_deformation_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &cacl_loads,
+            &calc_model.calc_settings,
             &results,
         );
         println!("Strain(2000<45): {} mm", defl);
@@ -385,6 +402,7 @@ mod axial_deformation_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &cacl_loads,
+            &calc_model.calc_settings,
             &results,
         );
         println!("Strain(2000): {} mm", defl);
@@ -394,6 +412,7 @@ mod axial_deformation_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &cacl_loads,
+            &calc_model.calc_settings,
             &results,
         );
         println!("Strain(3000): {} mm", defl);
@@ -412,6 +431,7 @@ mod axial_deformation_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &cacl_loads,
+            &calc_model.calc_settings,
             &results,
         );
         println!("Strain(2000<-45): {} mm", defl);
@@ -430,6 +450,7 @@ mod axial_deformation_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &cacl_loads,
+            &calc_model.calc_settings,
             &results,
         );
         println!("Strain(2000<45): {} mm", defl);
@@ -465,6 +486,7 @@ mod axial_deformation_tests {
             &loads,
             &EquationHandler::new(),
         );
+        let calc_settings = CalculationSettings::default();
         let mut calc_model = CalculationModel {
             nodes,
             elements,
@@ -478,6 +500,7 @@ mod axial_deformation_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &cacl_loads,
+            &calc_settings,
             &results,
         );
         println!("Strain(1000): {} mm", defl);
@@ -487,6 +510,7 @@ mod axial_deformation_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &cacl_loads,
+            &calc_settings,
             &results,
         );
         println!("Strain(2000): {} mm", defl);
@@ -496,6 +520,7 @@ mod axial_deformation_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &cacl_loads,
+            &calc_settings,
             &results,
         );
         println!("Strain(3000): {} mm", defl);
@@ -514,6 +539,7 @@ mod axial_deformation_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &cacl_loads,
+            &calc_settings,
             &results,
         );
         println!("Strain(2000<-45): {} mm", defl);
@@ -532,6 +558,7 @@ mod axial_deformation_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &cacl_loads,
+            &calc_settings,
             &results,
         );
         println!("Strain(2000<45): {} mm", defl);
@@ -552,6 +579,7 @@ mod axial_deformation_tests {
             (1, Node::new_hinged(1, VpPoint::new(0.0, 0.0))),
             (2, Node::new_hinged(2, VpPoint::new(4000.0, 0.0))),
         ]);
+        let calc_settings = CalculationSettings::default();
         let elements = vec![el];
         let l_load = Load::new_triangular_load(
             "TriangularLoad".to_string(),
@@ -581,6 +609,7 @@ mod axial_deformation_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &cacl_loads,
+            &calc_settings,
             &results,
         );
         println!("Strain(2000): {} mm", defl);
@@ -590,6 +619,7 @@ mod axial_deformation_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &cacl_loads,
+            &calc_settings,
             &results,
         );
         println!("Strain(3000): {} mm", defl);
@@ -608,6 +638,7 @@ mod axial_deformation_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &cacl_loads,
+            &calc_settings,
             &results,
         );
         println!("Strain(2000<-45): {} mm", defl);
@@ -626,6 +657,7 @@ mod axial_deformation_tests {
             &calc_model.elements[0],
             &calc_model.nodes,
             &cacl_loads,
+            &calc_settings,
             &results,
         );
         println!("Strain(2000<45): {} mm", defl);

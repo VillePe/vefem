@@ -45,9 +45,9 @@ pub fn calculate(
     let calculation_loads =
         &loads::utils::extract_calculation_loads(elements, nodes, loads, equation_handler);
 
-    let mut global_stiff_matrix = create_joined_stiffness_matrix(elements, nodes);
+    let mut global_stiff_matrix = create_joined_stiffness_matrix(elements, nodes, calc_settings);
     // The global equivalent loads matrix
-    let global_eq_l_matrix = equivalent_loads::create(elements, nodes, calculation_loads);
+    let global_eq_l_matrix = equivalent_loads::create(elements, nodes, calculation_loads, calc_settings);
     let displacements = calculate_displacements(
         nodes,
         col_height,
@@ -101,9 +101,9 @@ fn calc_internal_forces(
                 internal_forces::calculate_axial_force_at(x, element, nodes, loads, node_results);
             let shear_force_val =
                 internal_forces::calculate_shear_at(x, element, nodes, loads, node_results);
-            let deflection_val = deflection::calculate_at(x, element, nodes, loads, node_results);
+            let deflection_val = deflection::calculate_at(x, element, nodes, loads, calc_settings, node_results);
             let axial_deformation_val =
-                axial_deformation::calculate_at(x, element, nodes, loads, node_results);
+                axial_deformation::calculate_at(x, element, nodes, loads, calc_settings, node_results);
 
             moment_forces.push(InternalForcePoint {
                 force_type: ForceType::Moment,

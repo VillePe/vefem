@@ -8,7 +8,7 @@ pub use profile_standard::StandardProfile;
 use serde::{Deserialize, Serialize};
 use vputilslib::geometry2d::{self, rectangle, Polygon, VpPoint};
 
-use crate::material::MaterialData;
+use crate::{material::MaterialData, settings::CalculationSettings};
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(tag = "$type", content = "data")]
@@ -53,17 +53,17 @@ impl Profile {
         })
     }
     
-    pub fn get_major_second_mom_of_area(&self, material: &MaterialData) -> f64 {
+    pub fn get_major_second_mom_of_area(&self, material: &MaterialData, calc_settings: &CalculationSettings) -> f64 {
         match self {
-            Profile::PolygonProfile(p) => p.get_major_second_mom_of_area(material),
+            Profile::PolygonProfile(p) => p.get_major_second_mom_of_area(material, calc_settings),
             Profile::StandardProfile(s) => s.get_major_second_mom_of_area(),
             Profile::CustomProfile(c) => c.get_major_second_mom_of_area(),
         }
     }
     
-    pub fn get_area(&self) -> f64 {
+    pub fn get_area(&self, material: &MaterialData, calc_settings: &CalculationSettings) -> f64 {
         match self {
-            Profile::PolygonProfile(p) => p.get_area(),
+            Profile::PolygonProfile(p) => p.get_area(material, calc_settings),
             Profile::StandardProfile(s) => s.get_area(),
             Profile::CustomProfile(c) => c.get_area(),
         }
