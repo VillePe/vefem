@@ -26,7 +26,7 @@ pub fn calculate_at(
     let local_displacements = results.get_elem_local_displacements(element, nodes);
 
     let e_m = element.get_elastic_modulus();
-    let s_mom_area = element.profile.get_major_second_mom_of_area();
+    let s_mom_area = element.profile.get_major_second_mom_of_area(&element.material);
 
     for load in loads {
         // The factor to handle skewed loads

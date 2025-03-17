@@ -4,6 +4,8 @@ use vputilslib::geometry2d;
 use vputilslib::geometry2d::rectangle;
 use vputilslib::geometry2d::{Polygon, VpPoint};
 
+use crate::material::MaterialData;
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PolygonProfile {
     /// Name for the profile. If profile type is set to StandardProfile, the values are read from profile
@@ -75,9 +77,16 @@ impl PolygonProfile {
     /// (mm^4).
     /// Returns the absolute value, so the order of points can be clockwise or counter clockwise.
     /// For more info see <https://en.wikipedia.org/wiki/Second_moment_of_area>
-    pub fn get_major_second_mom_of_area(&self) -> f64 {
+    pub fn get_major_second_mom_of_area(&self, material: &MaterialData) -> f64 {
         // Only the polygon type is calculated. Other types have constant values.
-        self.calculate_major_second_mom_of_area()
+        match material {
+            MaterialData::Concrete(concrete) => {
+                self.calculate_major_second_mom_of_area()
+            },
+            _ => {
+                self.calculate_major_second_mom_of_area()
+            }
+        }              
     }
 
     /// Calculates the second moment of area with the polygon of the profile. Value in millimeters
@@ -133,14 +142,14 @@ impl Default for PolygonProfile {
 #[cfg(test)]
 mod tests {
     use vputilslib::geometry2d::VpPoint;
-    use crate::profile::Profile;
+    use crate::{material::Steel, profile::Profile};
 
     use super::*;
 
     #[test]
     fn major_second_mom_of_area() {
         let p1: Profile = Profile::PolygonProfile(PolygonProfile::new_rectangle("R100x100".to_string(), 100.0, 100.0));
-        let result = p1.get_major_second_mom_of_area();
+        let result = p1.get_major_second_mom_of_area(&MaterialData::default());
         println!("P1 major_second_mom_of_area = {}", result);
         assert!((result - 8333333.0).abs() < 1.0);
 
@@ -152,7 +161,7 @@ mod tests {
             VpPoint::new(100.0, 0.0),
         ];
         let p2 = Profile::new("R100x100".to_string(), Polygon::new(polygon_points2));
-        let result = p2.get_major_second_mom_of_area();
+        let result = p2.get_major_second_mom_of_area(&MaterialData::default());
         println!("P2 major_second_mom_of_area = {}", result);
         assert!((result - 33333333.33).abs() < 1.0);
 
@@ -164,7 +173,7 @@ mod tests {
             VpPoint::new(100.0, 0.0),
         ];
         let p2 = Profile::new("R100x100".to_string(), Polygon::new(polygon_points2_ccw));
-        let result = p2.get_major_second_mom_of_area();
+        let result = p2.get_major_second_mom_of_area(&MaterialData::default());
         println!("P2 ccw major_second_mom_of_area = {}", result);
         assert!((result - 33333333.33).abs() < 1.0);
 
@@ -176,12 +185,12 @@ mod tests {
             VpPoint::new(0.0, 0.0),
         ];
         let p3 = Profile::new("R200x100".to_string(), Polygon::new(polygon_points3));
-        let result = p3.get_major_second_mom_of_area();
+        let result = p3.get_major_second_mom_of_area(&MaterialData::default());
         println!("P3 ccw major_second_mom_of_area = {}", result);
         assert!((result - 66666666.666666666).abs() < 1.0);
 
         let p4 = Profile::new_rectangle("R200x100".to_string(), 200.0, 100.0);
-        let result = p4.get_major_second_mom_of_area();
+        let result = p4.get_major_second_mom_of_area(&MaterialData::default());
         println!("P4 major_second_mom_of_area = {}", result);
         assert!((result - 66666666.666666666).abs() < 1.0);
     }

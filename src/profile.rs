@@ -8,6 +8,8 @@ pub use profile_standard::StandardProfile;
 use serde::{Deserialize, Serialize};
 use vputilslib::geometry2d::{self, rectangle, Polygon, VpPoint};
 
+use crate::material::MaterialData;
+
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(tag = "$type", content = "data")]
 pub enum Profile {
@@ -51,9 +53,9 @@ impl Profile {
         })
     }
     
-    pub fn get_major_second_mom_of_area(&self) -> f64 {
+    pub fn get_major_second_mom_of_area(&self, material: &MaterialData) -> f64 {
         match self {
-            Profile::PolygonProfile(p) => p.get_major_second_mom_of_area(),
+            Profile::PolygonProfile(p) => p.get_major_second_mom_of_area(material),
             Profile::StandardProfile(s) => s.get_major_second_mom_of_area(),
             Profile::CustomProfile(c) => c.get_major_second_mom_of_area(),
         }

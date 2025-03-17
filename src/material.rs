@@ -25,6 +25,12 @@ impl MaterialData {
     }
 }
 
+impl Default for MaterialData {
+    fn default() -> Self {
+        MaterialData::Steel(Steel::default())
+    }
+}
+
 pub fn get_elastic_modulus(material_type: &dyn MaterialTrait) -> f64 {
     material_type.get_elastic_modulus()
 }
