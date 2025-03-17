@@ -1,6 +1,8 @@
 #![allow(dead_code)]
 
 use serde::{Deserialize, Serialize};
+use crate::reinforcement;
+
 use super::MaterialTrait;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -8,7 +10,8 @@ pub struct Concrete {
     pub elastic_modulus: f64,
     pub thermal_expansion_coefficient: f64,
     /// The characteristic strength of the concrete (f_ck)
-    pub char_strength: f64
+    pub char_strength: f64,
+    pub reinforcement: reinforcement::ElementReinforcement,
 }
 
 impl Concrete {
@@ -80,7 +83,11 @@ impl Default for Concrete {
     fn default() -> Self {
         // Default thermal coefficient got from 
         // https://www.engineeringtoolbox.com/linear-expansion-coefficients-d_95.html
-        Self { char_strength: 12.0, elastic_modulus: 27e3, thermal_expansion_coefficient: 14.0e-6 }
+        Self { 
+            char_strength: 12.0, elastic_modulus: 27e3, 
+            thermal_expansion_coefficient: 14.0e-6, 
+            reinforcement: Default::default() 
+        }
     }
 }
 

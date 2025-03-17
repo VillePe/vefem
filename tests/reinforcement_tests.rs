@@ -3,7 +3,7 @@ mod common;
 #[cfg(test)]
 mod reinf_tests {
     use crate::common::get_inversed_t_profile;
-    use vefem::{profile::Profile, reinforcement::{reinforcement::{RebarDistribution, ReinforcementData}, 
+    use vefem::{profile::Profile, reinforcement::{RebarDistribution, ReinforcementData, 
     RebarCollection, RebarData, Side}};
     use vputilslib::{equation_handler::EquationHandler, geometry2d::{Polygon, VpPoint}};
 

@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use vputilslib::geometry2d::{Polygon, VpPoint};
 
-use super::{reinforcement::RebarDistribution, reinforcement::ReinforcementData};
+use super::{RebarDistribution, ReinforcementData};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ShearRebarGroup {

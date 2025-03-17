@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use super::reinforcement::ReinforcementTrait;
+use super::ReinforcementTrait;
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 pub struct RebarData {

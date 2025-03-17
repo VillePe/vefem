@@ -11,7 +11,7 @@ use vputilslib::{
 use crate::profile::Profile;
 
 use super::{
-    reinforcement::{RebarDistribution, ReinforcementData},
+    RebarDistribution, ReinforcementData,
     CalculationRebar,
 };
 

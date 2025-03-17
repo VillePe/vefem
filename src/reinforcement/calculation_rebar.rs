@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use super::reinforcement::ReinforcementData;
+use super::ReinforcementData;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CalculationRebar {
