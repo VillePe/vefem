@@ -4,6 +4,7 @@ mod timber;
 
 pub use concrete::Concrete;
 pub use concrete::ConcreteCalcType;
+pub use concrete::StandardConcrete;
 use serde::{Deserialize, Serialize};
 pub use steel::Steel;
 pub use timber::Timber;

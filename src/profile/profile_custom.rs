@@ -4,25 +4,29 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CustomProfile {
-    /// Name for the profile. If profile type is set to StandardProfile, the values are read from profile
+    /// Name for the profile. If profile type is set to CustomProfile, the values are read from profile
     /// database with the name
     pub name: String,
     /// The height of the bounding box of the profile
     pub height: f64,
     /// The width of the bounding box of the profile
     pub width: f64,
-    /// Custom area for StandardProfile or Custom profile types
+    /// Custom area for CustomProfile or Custom profile types
     pub custom_area: f64,
-    /// Custom major second moment of area for StandardProfile or Custom profile types
+    /// Custom major second moment of area for CustomProfile or Custom profile types
     pub custom_major_sec_mom_of_area: f64,
-    /// Custom minor second moment of area for StandardProfile or Custom profile types
+    /// Custom minor second moment of area for CustomProfile or Custom profile types
     pub custom_minor_sec_mom_of_area: f64,
-    /// Custom weight for StandardProfile or Custom profile types
+    /// Custom weight for CustomProfile or Custom profile types
     pub custom_weight_per_meter: f64,
-    /// Custom torsional constant for StandardProfile or Custom profile types
+    /// Custom torsional constant for CustomProfile or Custom profile types
     pub custom_torsional_constant: f64,
-    /// Custom warping constant for StandardProfile or Custom profile types
+    /// Custom warping constant for CustomProfile or Custom profile types
     pub custom_warping_constant: f64,
+    /// Custom X-value of the center of gravity for CustomProfile or Custom profile types
+    pub center_of_gravity_x: f64,
+    /// Custom Y-value of thecenter of gravity for CustomProfile or Custom profile types
+    pub center_of_gravity_y: f64,
 }
 
 impl CustomProfile {
@@ -53,6 +57,8 @@ impl Default for CustomProfile {
             custom_weight_per_meter: 0.0,
             custom_torsional_constant: 0.0,
             custom_warping_constant: 0.0,
+            center_of_gravity_x: 0.0,
+            center_of_gravity_y: 0.0
         }
     }
 }

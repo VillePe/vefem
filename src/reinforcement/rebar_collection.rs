@@ -27,7 +27,7 @@ pub struct RebarCollection {
     /// The concrete cover for the rebar measured from side property to 'Y' direction, where 'X'
     /// direction is controlled by the side (from left to right). For example, when side is set to
     /// 0, then the concrete cover is measured from bottom to top.
-    pub concrete_cover: f64,
+    pub concrete_cover: String,
     /// Controls where the rebar direction is
     pub side: Side,
 }
@@ -57,7 +57,7 @@ impl RebarCollection {
     pub fn new_bot_full(
         reinf_data: ReinforcementData,
         distribution: RebarDistribution,
-        cc: f64,
+        cc: String,
     ) -> Self {
         RebarCollection {
             reinf_data,
@@ -118,10 +118,11 @@ impl RebarCollection {
                 let equation_handler = add_diam_to_eq_handler(equation_handler, *diam);
                 let cc_left = equation_handler.calculate_formula(&cc_left).unwrap_or(0.0);
                 let cc_right = equation_handler.calculate_formula(&cc_right).unwrap_or(0.0);
+                let cc_bot = equation_handler.calculate_formula(&self.concrete_cover).unwrap_or(0.0);
                 // If there is only one, it will be set with left concrete cover
                 if *count == 1 {
                     x = cc_left + diam / 2.0;
-                    y = self.concrete_cover + diam / 2.0;
+                    y = cc_bot + diam / 2.0;
                     (x, y) = get_rebar_location_with_side(x, y, &self.side, profile);
                     single_rebars.push(CalculationRebar {
                         area: PI * diam.powi(2) / 4.0,
@@ -135,7 +136,7 @@ impl RebarCollection {
                 let spacing = (row_length - cc_right - cc_left - *diam) / (*count - 1) as f64;
                 for i in 0..*count {
                     x = cc_left + diam / 2.0 + spacing * (i as f64);
-                    y = self.concrete_cover + diam / 2.0;
+                    y = cc_bot + diam / 2.0;
                     (x, y) = get_rebar_location_with_side(x, y, &self.side, profile);
                     single_rebars.push(CalculationRebar {
                         area: PI * diam.powi(2) / 4.0,
@@ -151,9 +152,10 @@ impl RebarCollection {
                 let mut cumulative_x = 0.0;
                 let equation_handler = add_diam_to_eq_handler(equation_handler, *diam);
                 let spacings = super::utils::parse_distribution_string(&distr, &equation_handler);
+                let cc_bot = equation_handler.calculate_formula(&self.concrete_cover).unwrap_or(0.0);
                 for i in spacings {
                     cumulative_x += i;
-                    y = self.concrete_cover + diam / 2.0;
+                    y = cc_bot + diam / 2.0;
                     (x, y) = get_rebar_location_with_side(cumulative_x, y, &self.side, profile);
                     single_rebars.push(CalculationRebar {
                         area: PI * diam.powi(2) / 4.0,

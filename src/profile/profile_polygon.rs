@@ -4,7 +4,7 @@ use vputilslib::geometry2d;
 use vputilslib::geometry2d::rectangle;
 use vputilslib::geometry2d::{Polygon, VpPoint};
 
-use crate::material::{Concrete, MaterialData};
+use crate::material::MaterialData;
 use crate::settings::CalculationSettings;
 
 use super::second_moment_of_area;

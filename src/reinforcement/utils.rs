@@ -1,5 +1,7 @@
 use vputilslib::equation_handler::EquationHandler;
 
+use crate::{material::Concrete, profile::Profile};
+
     /// Parses a distribution string into a vector of spacing values. The string is formatted with
     /// space separated values and can contain values with '*' character (e.g. 5*60). The '*' character
     /// is used to specify the multiplier of multiple spacing values.
@@ -29,8 +31,44 @@ pub fn parse_distribution_string(distribution: &str, equation_handler: &Equation
     result
 }
 
+/// Calculates the weighted elastic centroid of a profile by the elastic modulus difference
+/// of the rebar and concrete.
+/// TODO WIP
+pub fn elastic_centroid(profile: &Profile, concrete: &Concrete) -> (f64, f64) {
+    match profile {
+        Profile::PolygonProfile(polygon_profile) => {
+            let ec = concrete.elastic_modulus;
+            let mut total_area = 0.0;
+            let mut result_x = 0.0;
+            let mut result_y = 0.0;
+            let centroid_concrete = vputilslib::geometry2d::centroid_from_polygon(&polygon_profile.polygon);
+            let area_concrete = vputilslib::geometry2d::calculate_area(&polygon_profile.polygon);
+            total_area += area_concrete;
+            result_x += centroid_concrete.x * area_concrete;
+            result_y += centroid_concrete.y * area_concrete;
+            for r in &concrete.reinforcement.main_rebars {
+                for s in r.get_single_rebars(profile, &EquationHandler::new()) {     
+                    let es = s.reinf_data.get_elastic_modulus();               
+                    // the -1 in '-1 + es / ec' is to take into account the area that the rebar 
+                    // 'takes' from concrete
+                    let s_area = s.area * (-1.0 + es / ec);
+                    result_x += s.x * s_area;
+                    result_y += s.y * s_area;
+                    total_area += s_area;
+                }
+            }
+
+            (result_x / total_area, result_y / total_area)
+        },
+        Profile::StandardProfile(standard_profile) => (standard_profile.center_of_gravity_x, standard_profile.center_of_gravity_y),
+        Profile::CustomProfile(custom_profile) => (custom_profile.center_of_gravity_x, custom_profile.center_of_gravity_y),
+    }
+}
+
 #[cfg(test)]
 mod test {
+    use crate::{material::StandardConcrete, reinforcement::{RebarCollection, RebarData, RebarDistribution, ReinforcementData}};
+
     use super::*;
 
     #[test]
@@ -49,5 +87,23 @@ mod test {
         assert_eq!(parse_distribution_string("30+d/2 5*60 anc*123 30", &equation_handler), 
             vec![42.5, 60.0, 60.0, 60.0, 60.0, 60.0, 30.0]
         );
+    }
+
+    #[test]
+    fn test_elastic_centroid() {
+        let profile = Profile::new_rectangle("name".to_string(), 580.0, 380.0);
+        let mut concrete = Concrete::standard(StandardConcrete::C30_37);
+        concrete.reinforcement.main_rebars.push(RebarCollection::new_bot_full(
+            ReinforcementData::Rebar(RebarData::new_b500b()), 
+            RebarDistribution::Even { diam: 25.0, count: 6, 
+                cc_left: "30.0".to_string(), 
+                cc_right: "30.0".to_string() }, 
+            "30.0".to_string())
+        );
+        let (x, y) = elastic_centroid(&profile, &concrete);
+        println!("X: {}, Y: {}", x, y);
+        assert!((x-380.0/2.0).abs() < 0.01);
+        assert!((y-274.235).abs() < 0.01);
+
     }
 }

@@ -24,7 +24,7 @@ mod reinf_tests {
             reinf_data,
             offset_start,
             offset_end,
-            concrete_cover: 30.0,
+            concrete_cover: "30.0".to_string(),
             side,
             distribution: RebarDistribution::Even {
                 diam: 16.0,
@@ -60,7 +60,7 @@ mod reinf_tests {
             reinf_data,
             offset_start: offset_start.clone(),
             offset_end: offset_end.clone(),
-            concrete_cover: 30.0,
+            concrete_cover: "30.0".to_string(),
             side,
             distribution: RebarDistribution::Even {
                 diam: 16.0,
@@ -82,7 +82,7 @@ mod reinf_tests {
             reinf_data,
             offset_start: offset_start.clone(),
             offset_end: offset_end.clone(),
-            concrete_cover: 30.0,
+            concrete_cover: "30.0".to_string(),
             side: Side::Polygon { index: 1 },
             distribution: RebarDistribution::Even {
                 diam: 16.0,
@@ -123,7 +123,7 @@ mod reinf_tests {
             reinf_data,
             offset_start: offset_start.clone(),
             offset_end: offset_end.clone(),
-            concrete_cover: 30.0,
+            concrete_cover: "30.0".to_string(),
             side: Side::Polygon { index: 1 },
             distribution: RebarDistribution::Even {
                 diam: 16.0,
@@ -158,7 +158,7 @@ mod reinf_tests {
             reinf_data,
             offset_start: offset_start.clone(),
             offset_end: offset_end.clone(),
-            concrete_cover: 30.0,
+            concrete_cover: "30.0".to_string(),
             side: Side::Polygon { index: 0 },
             distribution: RebarDistribution::Even {
                 diam: 25.0,
@@ -182,7 +182,7 @@ mod reinf_tests {
             reinf_data,
             offset_start: offset_start.clone(),
             offset_end: offset_end.clone(),
-            concrete_cover: 30.0,
+            concrete_cover: "30.0".to_string(),
             side: Side::Polygon { index: 4 }, // On the top
             distribution: RebarDistribution::Even {
                 diam: 25.0,
@@ -222,7 +222,7 @@ mod reinf_tests {
             reinf_data,
             offset_start: offset_start.clone(),
             offset_end: offset_end.clone(),
-            concrete_cover: 30.0,
+            concrete_cover: "30.0".to_string(),
             side: Side::Polygon { index: 0 },
             distribution: RebarDistribution::Distributed { diam: 20.0, distr: "30+d/2 60 60 60 60 60".to_string() },
         };
@@ -241,7 +241,7 @@ mod reinf_tests {
             reinf_data,
             offset_start: offset_start.clone(),
             offset_end: offset_end.clone(),
-            concrete_cover: 30.0,
+            concrete_cover: "30.0".to_string(),
             side: Side::Polygon { index: 4 }, // On the top
             distribution: RebarDistribution::Distributed { diam: 20.0, distr: "30+d/2 60 60 60 60 60".to_string() },
         };
@@ -276,7 +276,7 @@ mod reinf_tests {
             reinf_data,
             offset_start: offset_start.clone(),
             offset_end: offset_end.clone(),
-            concrete_cover: 30.0,
+            concrete_cover: "30.0".to_string(),
             side: Side::Polygon { index: 0 },
             distribution: RebarDistribution::Single { diam: 20.0, off_left: "30+d/2".to_string(), off_bot: "30+d/2".to_string() },
         };
@@ -291,7 +291,7 @@ mod reinf_tests {
             reinf_data,
             offset_start: offset_start.clone(),
             offset_end: offset_end.clone(),
-            concrete_cover: 30.0,
+            concrete_cover: "30.0".to_string(),
             side: Side::Polygon { index: 4 }, // On the top
             distribution: RebarDistribution::Single { diam: 20.0, off_left: "30+d/2".to_string(), off_bot: "30+d/2".to_string() },
         };

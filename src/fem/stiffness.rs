@@ -2,7 +2,7 @@
 
 use crate::fem::matrices::get_element_rotation_matrix;
 use crate::material::MaterialData;
-use crate::settings::{self, CalculationSettings};
+use crate::settings::CalculationSettings;
 use crate::structure::element::Element;
 use crate::structure::Node;
 use nalgebra::DMatrix;

@@ -1,6 +1,6 @@
 /target
 theory/~$FEM matriisit.xlsx
-theory/TestFrame.afdesign~lock~
+theory/*~lock~*
 Cargo.lock
 /csharp
 /.idea

@@ -40,6 +40,10 @@ pub struct StandardProfile {
     pub custom_torsional_constant: f64,
     /// Custom warping constant for StandardProfile or Custom profile types
     pub custom_warping_constant: f64,
+    /// Custom X-value of the center of gravity for StandardProfile or Custom profile types
+    pub center_of_gravity_x: f64,
+    /// Custom Y-value of thecenter of gravity for StandardProfile or Custom profile types
+    pub center_of_gravity_y: f64,
 }
 
 impl StandardProfile {
@@ -72,6 +76,8 @@ impl Default for StandardProfile {
             custom_weight_per_meter: 0.0,
             custom_torsional_constant: 0.0,
             custom_warping_constant: 0.0,
+            center_of_gravity_x: 0.0,
+            center_of_gravity_y: 0.0
         }
     }
 }

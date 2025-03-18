@@ -83,7 +83,7 @@ pub fn new_with_char_strength(char_strength: f64) -> Concrete {
 /// * `char_strength` - The characteristic strength of the concrete (f_ck, MPa)
 pub fn calc_elastic_modulus(char_strength: f64) -> f64 {
     let fcm = calc_mean_compressive_strength(char_strength);    
-    22.0 * (fcm / 10.0).powf(0.3)
+    22e3 * (fcm / 10.0).powf(0.3)
 }
 
 /// Calculates the mean compressive strength of concrete by EN 1992-1-1 (fcm, MPa)

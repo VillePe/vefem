@@ -57,6 +57,7 @@ use super::PolygonProfile;
         calc_settings: &CalculationSettings,
     ) -> f64 {
         let smoa_for_polygon = smoa_from_polygon(profile);
+        
 
         smoa_for_polygon
     }
