@@ -3,8 +3,7 @@ mod common;
 #[cfg(test)]
 mod reinf_tests {
     use crate::common::get_inversed_t_profile;
-    use vefem::{profile::Profile, reinforcement::{RebarDistribution, ReinforcementData, 
-    RebarCollection, RebarData, Side}};
+    use vefem::{profile::Profile, reinforcement::{RebarCollection, RebarData, RebarDistribution, ReinforcementData, Side}};
     use vputilslib::{equation_handler::EquationHandler, geometry2d::{Polygon, VpPoint}};
 
     #[test]
@@ -33,7 +32,7 @@ mod reinf_tests {
                 cc_right: "30".to_string(),
             },
         };
-        let result1 = rebar_coll1.get_single_rebars(&profile, &equation_handler);
+        let result1 = rebar_coll1.get_calculation_rebars(&profile.get_polygon_profile(), &equation_handler);
         for rebar in &result1 {
             println!("X: {}, Y: {}", rebar.x, rebar.y);
         }
@@ -69,7 +68,7 @@ mod reinf_tests {
                 cc_right: "30".to_string(),
             },
         };
-        let result = rebar_coll.get_single_rebars(&profile, &equation_handler);
+        let result = rebar_coll.get_calculation_rebars(&profile.get_polygon_profile(), &equation_handler);
         for rebar in &result {
             println!("X: {}, Y: {}", rebar.x, rebar.y);
         }
@@ -91,7 +90,7 @@ mod reinf_tests {
                 cc_right: "30".to_string(),
             },
         };
-        let result = rebar_coll.get_single_rebars(&profile, &equation_handler);
+        let result = rebar_coll.get_calculation_rebars(&profile.get_polygon_profile(), &equation_handler);
         for rebar in &result {
             println!("X: {:.2}, Y: {:.2}", rebar.x, rebar.y);
         }
@@ -132,7 +131,7 @@ mod reinf_tests {
                 cc_right: "30".to_string(),
             },
         };
-        let result = rebar_coll.get_single_rebars(&profile, &equation_handler);
+        let result = rebar_coll.get_calculation_rebars(&profile.get_polygon_profile(), &equation_handler);
         for rebar in &result {
             println!("X: {}, Y: {}", rebar.x, rebar.y);
         }
@@ -167,7 +166,7 @@ mod reinf_tests {
                 cc_right: "30".to_string(),
             },
         };
-        let result = rebar_coll.get_single_rebars(&profile, &equation_handler);
+        let result = rebar_coll.get_calculation_rebars(&profile.get_polygon_profile(), &equation_handler);
         for rebar in &result {
             println!("X: {}, Y: {}", rebar.x, rebar.y);
         }
@@ -191,7 +190,7 @@ mod reinf_tests {
                 cc_right: "30".to_string(),
             },
         };
-        let result = rebar_coll.get_single_rebars(&profile, &equation_handler);
+        let result = rebar_coll.get_calculation_rebars(&profile.get_polygon_profile(), &equation_handler);
         for rebar in &result {
             println!("X: {}, Y: {}", rebar.x, rebar.y);
         }
@@ -226,7 +225,7 @@ mod reinf_tests {
             side: Side::Polygon { index: 0 },
             distribution: RebarDistribution::Distributed { diam: 20.0, distr: "30+d/2 60 60 60 60 60".to_string() },
         };
-        let result = rebar_coll.get_single_rebars(&profile, &equation_handler);
+        let result = rebar_coll.get_calculation_rebars(&profile.get_polygon_profile(), &equation_handler);
         for rebar in &result {
             println!("X: {}, Y: {}", rebar.x, rebar.y);
         }
@@ -245,7 +244,7 @@ mod reinf_tests {
             side: Side::Polygon { index: 4 }, // On the top
             distribution: RebarDistribution::Distributed { diam: 20.0, distr: "30+d/2 60 60 60 60 60".to_string() },
         };
-        let result = rebar_coll.get_single_rebars(&profile, &equation_handler);
+        let result = rebar_coll.get_calculation_rebars(&profile.get_polygon_profile(), &equation_handler);
         for rebar in &result {
             println!("X: {}, Y: {}", rebar.x, rebar.y);
         }
@@ -280,7 +279,7 @@ mod reinf_tests {
             side: Side::Polygon { index: 0 },
             distribution: RebarDistribution::Single { diam: 20.0, off_left: "30+d/2".to_string(), off_bot: "30+d/2".to_string() },
         };
-        let result = rebar_coll.get_single_rebars(&profile, &equation_handler);
+        let result = rebar_coll.get_calculation_rebars(&profile.get_polygon_profile(), &equation_handler);
         for rebar in &result {
             println!("X: {}, Y: {}", rebar.x, rebar.y);
         }
@@ -295,7 +294,7 @@ mod reinf_tests {
             side: Side::Polygon { index: 4 }, // On the top
             distribution: RebarDistribution::Single { diam: 20.0, off_left: "30+d/2".to_string(), off_bot: "30+d/2".to_string() },
         };
-        let result = rebar_coll.get_single_rebars(&profile, &equation_handler);
+        let result = rebar_coll.get_calculation_rebars(&profile.get_polygon_profile(), &equation_handler);
         for rebar in &result {
             println!("X: {}, Y: {}", rebar.x, rebar.y);
         }

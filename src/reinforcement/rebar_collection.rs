@@ -8,7 +8,7 @@ use vputilslib::{
     geometry2d::polygon::Direction,
 };
 
-use crate::profile::Profile;
+use crate::profile::PolygonProfile;
 
 use super::{
     RebarDistribution, ReinforcementData,
@@ -69,128 +69,136 @@ impl RebarCollection {
         }
     }
 
-    /// Gathers the single rebars from the rebar collection.
-    /// 
-    /// The parser uses an EquationHandler so the strings can contain the 'd' or 'Ø' (alt + 0216 or U+00D8)
-    /// characters to refer to the diameter value. Parser clones the given equation handler to insert those
-    /// variables into the equation handler if the 'd' and 'Ø' variables are not already reserved 
-    /// (in any case the parser does not modify the original)
-    pub fn get_single_rebars(
-        &self,
-        profile: &Profile,
-        equation_handler: &EquationHandler,
-    ) -> Vec<CalculationRebar> {
-        let mut single_rebars: Vec<CalculationRebar> = Vec::new();
-        let offset_start = equation_handler
-            .calculate_formula(&self.offset_start)
-            .unwrap_or(0.0);
-        let offset_end = equation_handler
-            .calculate_formula(&self.offset_end)
-            .unwrap_or(0.0);
-        let mut x = 0.0;
-        let mut y = 0.0;
+    pub fn get_row_length(&self, profile: &PolygonProfile) -> f64 {
         let row_length = match &self.side {
             Side::BoundingBox { index } => match index {
-                0 => profile.get_width(),
-                1 => profile.get_height(),
-                2 => profile.get_width(),
-                3 => profile.get_height(),
+                0 => profile.width,
+                1 => profile.height,
+                2 => profile.width,
+                3 => profile.height,
                 _ => panic!(),
             },
-            Side::Polygon { index } => match profile {
-                Profile::PolygonProfile(polygon_profile) => {
-                    let (p1, p2) = polygon_profile.polygon.get_line_or_last(*index);
-                    vputilslib::geometry2d::calc_length_between_points(&p1, &p2)
-                }
-                _ => profile.get_width(),
+            Side::Polygon { index } => {
+                let (p1, p2) = profile.polygon.get_line_or_last(*index);
+                vputilslib::geometry2d::calc_length_between_points(&p1, &p2)
             },
             // Side::Circular { start_angle } => todo!(),
         };
         println!("Row length: {}", row_length);
+        row_length
+    }
 
-        match &self.distribution {
-            RebarDistribution::Even {
-                diam,
-                count,
-                cc_left,
-                cc_right,
-            } => {
-                let equation_handler = add_diam_to_eq_handler(equation_handler, *diam);
-                let cc_left = equation_handler.calculate_formula(&cc_left).unwrap_or(0.0);
-                let cc_right = equation_handler.calculate_formula(&cc_right).unwrap_or(0.0);
-                let cc_bot = equation_handler.calculate_formula(&self.concrete_cover).unwrap_or(0.0);
-                // If there is only one, it will be set with left concrete cover
-                if *count == 1 {
-                    x = cc_left + diam / 2.0;
-                    y = cc_bot + diam / 2.0;
-                    (x, y) = get_rebar_location_with_side(x, y, &self.side, profile);
-                    single_rebars.push(CalculationRebar {
-                        area: PI * diam.powi(2) / 4.0,
-                        x,
-                        y,
-                        reinf_data: self.reinf_data.clone(),
-                        offset_start: offset_start,
-                        offset_end: offset_end,
-                    });
-                };
-                let spacing = (row_length - cc_right - cc_left - *diam) / (*count - 1) as f64;
-                for i in 0..*count {
-                    x = cc_left + diam / 2.0 + spacing * (i as f64);
-                    y = cc_bot + diam / 2.0;
-                    (x, y) = get_rebar_location_with_side(x, y, &self.side, profile);
-                    single_rebars.push(CalculationRebar {
-                        area: PI * diam.powi(2) / 4.0,
-                        x,
-                        y,
-                        reinf_data: self.reinf_data.clone(),
-                        offset_start: offset_start,
-                        offset_end: offset_end,
-                    });
-                }
-            }
-            RebarDistribution::Distributed { diam, distr } => {
-                let mut cumulative_x = 0.0;
-                let equation_handler = add_diam_to_eq_handler(equation_handler, *diam);
-                let spacings = super::utils::parse_distribution_string(&distr, &equation_handler);
-                let cc_bot = equation_handler.calculate_formula(&self.concrete_cover).unwrap_or(0.0);
-                for i in spacings {
-                    cumulative_x += i;
-                    y = cc_bot + diam / 2.0;
-                    (x, y) = get_rebar_location_with_side(cumulative_x, y, &self.side, profile);
-                    single_rebars.push(CalculationRebar {
-                        area: PI * diam.powi(2) / 4.0,
-                        x,
-                        y,
-                        reinf_data: self.reinf_data.clone(),
-                        offset_start: offset_start,
-                        offset_end: offset_end,
-                    });
-                }
-            }
-            RebarDistribution::ByArea { area , mom_of_inertia} => {
-                // TODO: implement
-                todo!()
-            }
-            RebarDistribution::Single {
-                diam,
-                off_left,
-                off_bot,
-            } => {
-                let equation_handler = add_diam_to_eq_handler(equation_handler, *diam);
-                let x = equation_handler.calculate_formula(&off_left).unwrap_or(0.0);
-                let y = equation_handler.calculate_formula(&off_bot).unwrap_or(0.0);
-                single_rebars.push(CalculationRebar {
+    pub fn get_calculation_rebars(
+        &self, 
+        profile: &PolygonProfile, 
+        equation_handler: &EquationHandler
+    ) -> Vec<CalculationRebar> {
+        let row_length = self.get_row_length(profile);
+        get_calculation_rebars(self, profile, row_length, equation_handler)
+    }
+}
+
+/// Gathers the single rebars from the rebar collection.
+/// 
+/// The parser uses an EquationHandler so the strings can contain the 'd' or 'Ø' (alt + 0216 or U+00D8)
+/// characters to refer to the diameter value. Parser clones the given equation handler to insert those
+/// variables into the equation handler if the 'd' and 'Ø' variables are not already reserved 
+/// (in any case the parser does not modify the original)
+pub fn get_calculation_rebars(rebar_collection: &RebarCollection, profile: &PolygonProfile, 
+    row_length: f64, 
+    equation_handler: &EquationHandler
+) -> Vec<CalculationRebar> {
+    let mut calc_rebars: Vec<CalculationRebar> = Vec::new();
+    let mut x = 0.0;
+    let mut y = 0.0;
+    let offset_start = equation_handler
+        .calculate_formula(&rebar_collection.offset_start)
+        .unwrap_or(0.0);
+    let offset_end = equation_handler
+        .calculate_formula(&rebar_collection.offset_end)
+        .unwrap_or(0.0);
+    match &rebar_collection.distribution {
+        RebarDistribution::Even {
+            diam,
+            count,
+            cc_left,
+            cc_right,
+        } => {
+            let equation_handler = add_diam_to_eq_handler(equation_handler, *diam);
+            let cc_left = equation_handler.calculate_formula(&cc_left).unwrap_or(0.0);
+            let cc_right = equation_handler.calculate_formula(&cc_right).unwrap_or(0.0);
+            let cc_bot = equation_handler.calculate_formula(&rebar_collection.concrete_cover).unwrap_or(0.0);
+            // If there is only one, it will be set with left concrete cover
+            if *count == 1 {
+                x = cc_left + diam / 2.0;
+                y = cc_bot + diam / 2.0;
+                (x, y) = get_rebar_location_with_side(x, y, &rebar_collection.side, profile);
+                calc_rebars.push(CalculationRebar {
                     area: PI * diam.powi(2) / 4.0,
                     x,
                     y,
-                    reinf_data: self.reinf_data.clone(),
+                    reinf_data: rebar_collection.reinf_data.clone(),
                     offset_start: offset_start,
                     offset_end: offset_end,
                 });
-            },
+            };
+            let spacing = (row_length - cc_right - cc_left - *diam) / (*count - 1) as f64;
+            for i in 0..*count {
+                x = cc_left + diam / 2.0 + spacing * (i as f64);
+                y = cc_bot + diam / 2.0;
+                (x, y) = get_rebar_location_with_side(x, y, &rebar_collection.side, profile);
+                calc_rebars.push(CalculationRebar {
+                    area: PI * diam.powi(2) / 4.0,
+                    x,
+                    y,
+                    reinf_data: rebar_collection.reinf_data.clone(),
+                    offset_start: offset_start,
+                    offset_end: offset_end,
+                });
+            }
         }
-        single_rebars
+        RebarDistribution::Distributed { diam, distr } => {
+            let mut cumulative_x = 0.0;
+            let equation_handler = add_diam_to_eq_handler(equation_handler, *diam);
+            let spacings = super::utils::parse_distribution_string(&distr, &equation_handler);
+            let cc_bot = equation_handler.calculate_formula(&rebar_collection.concrete_cover).unwrap_or(0.0);
+            for i in spacings {
+                cumulative_x += i;
+                y = cc_bot + diam / 2.0;
+                (x, y) = get_rebar_location_with_side(cumulative_x, y, &rebar_collection.side, profile);
+                calc_rebars.push(CalculationRebar {
+                    area: PI * diam.powi(2) / 4.0,
+                    x,
+                    y,
+                    reinf_data: rebar_collection.reinf_data.clone(),
+                    offset_start: offset_start,
+                    offset_end: offset_end,
+                });
+            }
+        }
+        RebarDistribution::ByArea { area , mom_of_inertia} => {
+            // TODO: implement
+            todo!()
+        }
+        RebarDistribution::Single {
+            diam,
+            off_left,
+            off_bot,
+        } => {
+            let equation_handler = add_diam_to_eq_handler(equation_handler, *diam);
+            let x = equation_handler.calculate_formula(&off_left).unwrap_or(0.0);
+            let y = equation_handler.calculate_formula(&off_bot).unwrap_or(0.0);
+            calc_rebars.push(CalculationRebar {
+                area: PI * diam.powi(2) / 4.0,
+                x,
+                y,
+                reinf_data: rebar_collection.reinf_data.clone(),
+                offset_start: offset_start,
+                offset_end: offset_end,
+            });
+        },
     }
+    calc_rebars
 }
 
 /// Adds the diameter of the rebar to equation handlers variables but checks that the variable is 
@@ -213,9 +221,9 @@ fn add_diam_to_eq_handler(equation_handler: &EquationHandler, diam: f64) -> Equa
 /// * `side` - The side of the rebar
 /// * `index` - The index of the rebar for Side::Polygon.
 /// * `profile` - The profile of the element
-fn get_rebar_location_with_side(x: f64, y: f64, side: &Side, profile: &Profile) -> (f64, f64) {
-    let mid_w = profile.get_width() / 2.0;
-    let mid_h = profile.get_height() / 2.0;
+fn get_rebar_location_with_side(x: f64, y: f64, side: &Side, profile: &PolygonProfile) -> (f64, f64) {
+    let mid_w = profile.width / 2.0;
+    let mid_h = profile.height / 2.0;
     match side {
         Side::BoundingBox { index } => match index {
             0 => (x, y),
@@ -225,24 +233,19 @@ fn get_rebar_location_with_side(x: f64, y: f64, side: &Side, profile: &Profile) 
             _ => panic!(),
         },
         Side::Polygon { index } => {
-            match profile {
-                Profile::PolygonProfile(polygon_profile) => {
-                    let polygon = &polygon_profile.polygon;
-                    let (p1, p2) = polygon.get_line_or_last(*index);
-                    let rotate_angle = vputilslib::geometry2d::get_angle_from_points(p1, p2);
-                    let mut yoffset = 0.0;
-                    // If the polygon is clockwise, the y value needs to be inversed
-                    if polygon.get_direction() == Direction::Clockwise { yoffset = -y * 2.0; }
-                    // Rotate the point around (0,0)
-                    let (mut rx, mut ry) =
-                        vputilslib::geometry2d::rotate(0.0, 0.0, x, y+yoffset, rotate_angle);
-                    // Move the rotated point with move vector from (0,0) to p1
-                    rx += p1.x;
-                    ry += p1.y;
-                    (rx, ry)
-                }
-                _ => (0.0, 0.0),
-            }
+            let polygon = &profile.polygon;
+            let (p1, p2) = polygon.get_line_or_last(*index);
+            let rotate_angle = vputilslib::geometry2d::get_angle_from_points(p1, p2);
+            let mut yoffset = 0.0;
+            // If the polygon is clockwise, the y value needs to be inversed
+            if polygon.get_direction() == Direction::Clockwise { yoffset = -y * 2.0; }
+            // Rotate the point around (0,0)
+            let (mut rx, mut ry) =
+                vputilslib::geometry2d::rotate(0.0, 0.0, x, y+yoffset, rotate_angle);
+            // Move the rotated point with move vector from (0,0) to p1
+            rx += p1.x;
+            ry += p1.y;
+            (rx, ry)
         }
         // Side::Circular { start_angle } => todo!(),
     }

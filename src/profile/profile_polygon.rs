@@ -1,13 +1,14 @@
 #![allow(dead_code)]
 use serde::{Deserialize, Serialize};
+use vputilslib::equation_handler::EquationHandler;
 use vputilslib::geometry2d;
 use vputilslib::geometry2d::rectangle;
 use vputilslib::geometry2d::{Polygon, VpPoint};
 
-use crate::material::MaterialData;
+use crate::material::{Concrete, MaterialData};
 use crate::settings::CalculationSettings;
 
-use super::second_moment_of_area;
+use super::{second_moment_of_area, Profile};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PolygonProfile {
@@ -70,15 +71,27 @@ impl PolygonProfile {
     }
 
     /// Gets the area of the profile in square millimeters (mm²)
-    pub fn get_area(&self, material: &MaterialData, calc_settings: &CalculationSettings) -> f64 {
+    pub fn get_area(&self, material: &MaterialData, _calc_settings: &CalculationSettings) -> f64 {
         // Only the polygon type is calculated. Other types have constant values.
         match material {
             MaterialData::Concrete(concrete) => {
-                // TODO
-                geometry2d::calculate_area(&self.polygon)
+                self.get_area_conc_section(concrete, _calc_settings)
             }
             _ => geometry2d::calculate_area(&self.polygon),
         }
+    }
+
+    /// Gets the area of the profile in square millimeters (mm²)
+    pub fn get_area_conc_section(&self, concrete: &Concrete, _calc_settings: &CalculationSettings) -> f64 {
+        // Only the polygon type is calculated. Other types have constant values.
+        let mut area = geometry2d::calculate_area(&self.polygon);
+        for r in &concrete.reinforcement.main_rebars {
+            for s in r.get_calculation_rebars(self, &EquationHandler::new()) {
+                let reduced_area = s.area * (s.reinf_data.get_elastic_modulus() / concrete.elastic_modulus - 1.0); // Note that the 'hole' is taken into account
+                area += reduced_area;                        
+            }
+        }
+        area
     }
 
     /// Calculates the second moment of area with the polygon of the profile. Value in millimeters
@@ -96,7 +109,7 @@ impl PolygonProfile {
                 // TODO
                 second_moment_of_area::smoa_with_reinf(self, concrete, calc_settings)
             }
-            _ => second_moment_of_area::smoa_from_polygon(self),
+            _ => second_moment_of_area::smoa_from_polygon(&self.polygon),
         }
     }
 
@@ -120,6 +133,16 @@ impl Default for PolygonProfile {
             height: 0.0,
             width: 0.0,
             polygon: Polygon::new(vec![]),
+        }
+    }
+}
+
+impl TryFrom<Profile> for PolygonProfile {
+    type Error = &'static str;
+    fn try_from(value: Profile) -> Result<Self, Self::Error> {
+        match value {
+            Profile::PolygonProfile(p) => Result::Ok(p),
+            _ => Result::Err("Wrong profile type!"),
         }
     }
 }

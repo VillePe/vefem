@@ -25,6 +25,10 @@ impl MaterialData {
             MaterialData::Steel(s) => s,
         }
     }
+
+    pub fn get_elastic_modulus(&self) -> f64 {
+        self.value().get_elastic_modulus()
+    }
 }
 
 impl Default for MaterialData {

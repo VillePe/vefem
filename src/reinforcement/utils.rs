@@ -1,6 +1,6 @@
-use vputilslib::equation_handler::EquationHandler;
+use vputilslib::{equation_handler::EquationHandler, geometry2d};
 
-use crate::{material::Concrete, profile::Profile};
+use crate::{material::Concrete, profile::PolygonProfile, settings::CalculationSettings};
 
     /// Parses a distribution string into a vector of spacing values. The string is formatted with
     /// space separated values and can contain values with '*' character (e.g. 5*60). The '*' character
@@ -31,43 +31,38 @@ pub fn parse_distribution_string(distribution: &str, equation_handler: &Equation
     result
 }
 
+
 /// Calculates the weighted elastic centroid of a profile by the elastic modulus difference
 /// of the rebar and concrete.
-/// TODO WIP
-pub fn elastic_centroid(profile: &Profile, concrete: &Concrete) -> (f64, f64) {
-    match profile {
-        Profile::PolygonProfile(polygon_profile) => {
-            let ec = concrete.elastic_modulus;
-            let mut total_area = 0.0;
-            let mut result_x = 0.0;
-            let mut result_y = 0.0;
-            let centroid_concrete = vputilslib::geometry2d::centroid_from_polygon(&polygon_profile.polygon);
-            let area_concrete = vputilslib::geometry2d::calculate_area(&polygon_profile.polygon);
-            total_area += area_concrete;
-            result_x += centroid_concrete.x * area_concrete;
-            result_y += centroid_concrete.y * area_concrete;
-            for r in &concrete.reinforcement.main_rebars {
-                for s in r.get_single_rebars(profile, &EquationHandler::new()) {     
-                    let es = s.reinf_data.get_elastic_modulus();               
-                    // the -1 in '-1 + es / ec' is to take into account the area that the rebar 
-                    // 'takes' from concrete
-                    let s_area = s.area * (-1.0 + es / ec);
-                    result_x += s.x * s_area;
-                    result_y += s.y * s_area;
-                    total_area += s_area;
-                }
-            }
-
-            (result_x / total_area, result_y / total_area)
-        },
-        Profile::StandardProfile(standard_profile) => (standard_profile.center_of_gravity_x, standard_profile.center_of_gravity_y),
-        Profile::CustomProfile(custom_profile) => (custom_profile.center_of_gravity_x, custom_profile.center_of_gravity_y),
+pub fn elastic_centroid(profile: &PolygonProfile, concrete: &Concrete, _calc_settings: &CalculationSettings) -> (f64, f64) {
+    let ec = concrete.elastic_modulus;
+    let mut total_area = 0.0;
+    let mut result_x = 0.0;
+    let mut result_y = 0.0;
+    let centroid_concrete = vputilslib::geometry2d::centroid_from_polygon(&profile.polygon);
+    let area_concrete = geometry2d::calculate_area(&profile.polygon);
+    total_area += area_concrete;
+    result_x += centroid_concrete.x * area_concrete;
+    result_y += centroid_concrete.y * area_concrete;
+    for r in &concrete.reinforcement.main_rebars {
+        for s in r.get_calculation_rebars(profile, &EquationHandler::new()) {     
+            let es = s.reinf_data.get_elastic_modulus();               
+            // the -1 in '-1 + es / ec' is to take into account the area that the rebar 
+            // 'takes' from concrete
+            let s_area = s.area * (-1.0 + es / ec);
+            result_x += s.x * s_area;
+            result_y += s.y * s_area;
+            total_area += s_area;
+        }
     }
+    
+
+    (result_x / total_area, result_y / total_area)
 }
 
 #[cfg(test)]
 mod test {
-    use crate::{material::StandardConcrete, reinforcement::{RebarCollection, RebarData, RebarDistribution, ReinforcementData}};
+    use crate::{material::StandardConcrete, profile::Profile, reinforcement::{RebarCollection, RebarData, RebarDistribution, ReinforcementData}};
 
     use super::*;
 
@@ -100,10 +95,15 @@ mod test {
                 cc_right: "30.0".to_string() }, 
             "30.0".to_string())
         );
-        let (x, y) = elastic_centroid(&profile, &concrete);
-        println!("X: {}, Y: {}", x, y);
-        assert!((x-380.0/2.0).abs() < 0.01);
-        assert!((y-274.235).abs() < 0.01);
-
+        match profile {
+            Profile::PolygonProfile(polygon_profile) =>  {
+                let (x, y) = elastic_centroid(&polygon_profile, &concrete, &CalculationSettings::default());
+                println!("X: {}, Y: {}", x, y);
+                assert!((x-380.0/2.0).abs() < 0.01);
+                assert!((y-274.235).abs() < 0.01);
+            },
+            Profile::StandardProfile(_) => panic!("Should be a polygon profile"),
+            Profile::CustomProfile(_) => panic!("Should be a polygon profile"),
+        }
     }
 }

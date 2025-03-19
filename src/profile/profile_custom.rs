@@ -2,6 +2,8 @@
 
 use serde::{Deserialize, Serialize};
 
+use super::Profile;
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CustomProfile {
     /// Name for the profile. If profile type is set to CustomProfile, the values are read from profile
@@ -59,6 +61,16 @@ impl Default for CustomProfile {
             custom_warping_constant: 0.0,
             center_of_gravity_x: 0.0,
             center_of_gravity_y: 0.0
+        }
+    }
+}
+
+impl TryFrom<Profile> for CustomProfile {
+    type Error = &'static str;
+    fn try_from(value: Profile) -> Result<Self, Self::Error> {
+        match value {
+            Profile::CustomProfile(p) => Result::Ok(p),
+            _ => Result::Err("Wrong profile type!"),
         }
     }
 }

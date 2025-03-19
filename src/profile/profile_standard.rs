@@ -2,6 +2,8 @@
 use serde::{Deserialize, Serialize};
 use vputilslib::geometry2d::Polygon;
 
+use super::Profile;
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct StandardProfile {
     /// Name for the profile. If profile type is set to StandardProfile, the values are read from profile
@@ -78,6 +80,16 @@ impl Default for StandardProfile {
             custom_warping_constant: 0.0,
             center_of_gravity_x: 0.0,
             center_of_gravity_y: 0.0
+        }
+    }
+}
+
+impl TryFrom<Profile> for StandardProfile {
+    type Error = &'static str;
+    fn try_from(value: Profile) -> Result<Self, Self::Error> {
+        match value {
+            Profile::StandardProfile(p) => Result::Ok(p),
+            _ => Result::Err("Wrong profile type!"),
         }
     }
 }

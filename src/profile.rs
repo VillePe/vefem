@@ -24,7 +24,7 @@ pub enum Profile {
 }
 impl Profile {
 
-    /// Creates new profile with the given polygon. Calculates the height and width from
+    /// Creates new (Polygon) profile with the given polygon. Calculates the height and width from
     /// the bounding box of the polygon
     pub fn new(name: String, polygon: Polygon) -> Self {
         // the bounding box
@@ -38,7 +38,7 @@ impl Profile {
         })
     }
     
-    /// Creates new rectangular profile
+    /// Creates new rectangular (Polygon) profile
     pub fn new_rectangle(name: String, height: f64, width: f64) -> Self {
         Profile::PolygonProfile(PolygonProfile {
             name,
@@ -55,6 +55,12 @@ impl Profile {
         })
     }
     
+    /// Gets the second moment of area about the major axis for given profile. For polygon profile
+    /// type, the second moment of area is calculated with the polygon of the profile. If the material
+    /// is concrete and reinforcement is provided, it is taken into account in polygon type profiles.
+    /// 
+    /// For standard and custom profiles, the values are taken from the profile properties. Note that
+    /// for these types of profiles, reinforcement does not have any effect.
     pub fn get_major_second_mom_of_area(&self, material: &MaterialData, calc_settings: &CalculationSettings) -> f64 {
         match self {
             Profile::PolygonProfile(p) => p.get_major_second_mom_of_area(material, calc_settings),
@@ -63,6 +69,7 @@ impl Profile {
         }
     }
     
+    /// Gets the area of the profile in square millimeters (mm²)
     pub fn get_area(&self, material: &MaterialData, calc_settings: &CalculationSettings) -> f64 {
         match self {
             Profile::PolygonProfile(p) => p.get_area(material, calc_settings),
@@ -71,6 +78,7 @@ impl Profile {
         }
     }
 
+    /// Gets the width of the profile
     pub fn get_width(&self) -> f64 {
         match self {
             Profile::PolygonProfile(p) => p.width,
@@ -79,11 +87,20 @@ impl Profile {
         }
     }
 
+    /// Gets the height of the profile
     pub fn get_height(&self) -> f64 {
         match self {
             Profile::PolygonProfile(p) => p.height,
             Profile::StandardProfile(s) => s.height,
             Profile::CustomProfile(c) => c.height,
+        }
+    }
+
+    /// Gets the polygon profile from the enum. Panics if the profile is not a polygon profile
+    pub fn get_polygon_profile (&self) -> &PolygonProfile {
+        match self {
+            Profile::PolygonProfile(p) => p,
+            _ => panic!(),
         }
     }
 }
