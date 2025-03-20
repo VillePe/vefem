@@ -38,14 +38,19 @@ pub fn smoa_from_polygon(polygon: &Polygon) -> f64 {
     sum.abs() / 12.0
 }
 
+/// Calculates the second moment of area for a circle with given radius
 pub fn smoa_radius(radius: f64) -> f64 {
     std::f64::consts::PI * radius.powi(4) / 4.0
 }
 
+/// Calculates the second moment of area for a circle with given diameter
 pub fn smoa_diameter(diameter: f64) -> f64 {
     smoa_radius(diameter / 2.0)
 }
 
+/// Calculates the second moment of area with the polygon of the profile and reinforcement.
+/// Notice that the [crate::material::ConcreteCalcType] property of the concrete needs to be set to 
+/// 'WithReinforcement' or 'Cracked' for the reinforcement to have an effect.
 pub fn smoa_with_reinf(
     profile: &PolygonProfile,
     conc: &Concrete,
@@ -82,9 +87,10 @@ fn smoa_with_reinf_internal_uncracked(
     for r in &concrete.reinforcement.main_rebars {
         for s in r.get_calculation_rebars(profile, &EquationHandler::new()) {
             let es = s.reinf_data.get_elastic_modulus();
-            let reduced_area = s.area * (es / ec - 1.0); // Note that the 'hole' is taken into account
-                                                         // Can't just multiply the diameter by es/ec because area calculation from diameter is not linear
-                                                         // That is why next equation is used to get the diameter: A = pi*d^2/4 => sqrt(4*A / pi)
+            let reduced_area = s.area * (es / ec - 1.0);
+            // Note that the 'hole' is taken into account
+            // Can't just multiply the diameter by es/ec because area calculation from diameter is not linear
+            // That is why next equation is used to get the diameter: A = pi*d^2/4 => sqrt(4*A / pi)
             let diam_from_red_area = (4.0 * reduced_area / std::f64::consts::PI).sqrt();
 
             cumulative_smoa +=
@@ -105,8 +111,8 @@ fn smoa_with_reinf_internal_cracked(
 ) -> f64 {
     let smoa_for_polygon = smoa_from_polygon(&profile.polygon);
 
-    // Try to find the neutral axis by iterating the neutral axis offset from top and comparing the 
-    // elastic area of compression and tension sides. The sum of both sides should be as close to 
+    // Try to find the neutral axis by iterating the neutral axis offset from top and comparing the
+    // elastic area of compression and tension sides. The sum of both sides should be as close to
     // each other as possible. Notice that the concrete on the tension side is ignored (assumed to
     // be cracked).
 
@@ -114,7 +120,7 @@ fn smoa_with_reinf_internal_cracked(
     // the value on the tension side because the neutral axis is almost at the top of the section.
     // The neutral axis is found when the value goes 'over the line' and the sum of the elastic areas
     // is below zero. The value on the compression side is set to negative values and the value on
-    // the tension side is positive. 
+    // the tension side is positive.
 
     // If there are is no reinforcement in the concrete, the neutral axis is the centroid of the polygon.
 
@@ -166,9 +172,15 @@ mod tests {
         );
         println!("Smoa: {}", smoa);
         println!("Assert: {}", 58.13e12 / 25e3);
-        println!("Without rebar: {}", 300e0*450f64.powi(3)/12e0);
-        println!("Difference: {:.2}%", 100.0*(1.0 - smoa / (58.13e12 / 25e3)));
-        println!("Difference with no rebar: {:.2}%", 100.0*(1.0 - smoa / (300e0*450f64.powi(3)/12e0)));
+        println!("Without rebar: {}", 300e0 * 450f64.powi(3) / 12e0);
+        println!(
+            "Difference: {:.2}%",
+            100.0 * (1.0 - smoa / (58.13e12 / 25e3))
+        );
+        println!(
+            "Difference with no rebar: {:.2}%",
+            100.0 * (1.0 - smoa / (300e0 * 450f64.powi(3) / 12e0))
+        );
         assert!((smoa - (58.13e12 / 25e3)).abs() < 1e7);
     }
 }

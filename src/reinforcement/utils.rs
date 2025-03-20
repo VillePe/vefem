@@ -61,7 +61,7 @@ pub fn elastic_centroid(profile: &PolygonProfile, concrete: &Concrete, _calc_set
 
 #[cfg(test)]
 mod test {
-    use crate::{material::StandardConcrete, profile::Profile, reinforcement::{ElementReinforcement, RebarCollection, RebarData, RebarDistribution, ReinforcementData}};
+    use crate::{material::StandardConcrete, profile::Profile, reinforcement::{RebarCollection, RebarData, RebarDistribution, ReinforcementData}};
 
     use super::*;
 
