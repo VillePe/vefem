@@ -1,11 +1,11 @@
 use serde::{Deserialize, Serialize};
 use vputilslib::geometry2d::{Polygon, VpPoint};
 
-use super::{RebarDistribution, ReinforcementData};
+use super::{RebarData, RebarDistribution};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ShearRebarGroup {
-    pub reinf_data: ReinforcementData,
+    pub reinf_data: RebarData,
     pub distribution: RebarDistribution,
     pub offset_start: String,
     pub offset_end: String,
@@ -14,7 +14,7 @@ pub struct ShearRebarGroup {
 
 impl ShearRebarGroup {
 
-    pub fn new_full(reinf_data: ReinforcementData, distribution: RebarDistribution, shape: Polygon) -> Self {
+    pub fn new_full(reinf_data: RebarData, distribution: RebarDistribution, shape: Polygon) -> Self {
         ShearRebarGroup {
             reinf_data,
             distribution,
