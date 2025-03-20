@@ -7,7 +7,7 @@ use vputilslib::geometry2d::{Polygon, VpPoint};
 use crate::material::MaterialData;
 use crate::settings::CalculationSettings;
 
-use super::{area, second_moment_of_area, Profile};
+use super::{area, smoa, Profile};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PolygonProfile {
@@ -93,9 +93,9 @@ impl PolygonProfile {
         match material {
             MaterialData::Concrete(concrete) => {
                 // TODO
-                second_moment_of_area::smoa_with_reinf(self, concrete, calc_settings)
+                smoa::smoa_with_reinf(self, concrete, calc_settings)
             }
-            _ => second_moment_of_area::smoa_from_polygon(&self.polygon),
+            _ => smoa::smoa_from_polygon(&self.polygon),
         }
     }
 

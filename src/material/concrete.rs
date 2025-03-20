@@ -101,7 +101,7 @@ impl Default for Concrete {
             char_strength: 12.0, elastic_modulus: 27e3, 
             thermal_expansion_coefficient: 14.0e-6, 
             reinforcement: Default::default(),
-            concrete_calc_type: ConcreteCalcType::Plain,
+            concrete_calc_type: ConcreteCalcType::WithReinforcement,
         }
     }
 }

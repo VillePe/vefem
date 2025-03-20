@@ -1,7 +1,7 @@
 pub mod profile_custom;
 pub mod profile_polygon;
 pub mod profile_standard;
-pub mod second_moment_of_area;
+pub mod smoa;
 pub mod area;
 
 pub use profile_custom::CustomProfile;
