@@ -141,21 +141,22 @@ pub fn get_calculation_rebars(rebar_collection: &RebarCollection, profile: &Poly
                     offset_start: offset_start,
                     offset_end: offset_end,
                 });
-            };
-            let spacing = (row_length - cc_right - cc_left - *diam) / (*count - 1) as f64;
-            for i in 0..*count {
-                x = cc_left + diam / 2.0 + spacing * (i as f64);
-                y = cc_bot + diam / 2.0;
-                (x, y) = get_rebar_location_with_side(x, y, &rebar_collection.side, profile);
-                calc_rebars.push(CalculationRebar {
-                    area: PI * diam.powi(2) / 4.0,
-                    x,
-                    y,
-                    reinf_data: rebar_collection.reinf_data.clone(),
-                    offset_start: offset_start,
-                    offset_end: offset_end,
-                });
-            }
+            } else {
+                let spacing = (row_length - cc_right - cc_left - *diam) / (*count - 1) as f64;
+                for i in 0..*count {
+                    x = cc_left + diam / 2.0 + spacing * (i as f64);
+                    y = cc_bot + diam / 2.0;
+                    (x, y) = get_rebar_location_with_side(x, y, &rebar_collection.side, profile);
+                    calc_rebars.push(CalculationRebar {
+                        area: PI * diam.powi(2) / 4.0,
+                        x,
+                        y,
+                        reinf_data: rebar_collection.reinf_data.clone(),
+                        offset_start: offset_start,
+                        offset_end: offset_end,
+                    });
+                }
+            }            
         }
         RebarDistribution::Distributed { diam, distr } => {
             let mut cumulative_x = 0.0;

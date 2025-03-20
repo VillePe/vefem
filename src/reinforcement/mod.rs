@@ -55,7 +55,8 @@ impl Default for ElementReinforcement {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum RebarDistribution {
-    /// Even rebar distribution. To calculate the real positions, the profile values need to be known
+    /// Even rebar distribution. To calculate the real positions, the profile values need to be known.
+    /// If there is only one rebar, the rebar will be placed with cc_left only and ignoring the cc_right.
     Even{diam: f64, count: isize, cc_left: String, cc_right: String},
     /// Distributed rebar by a distribution string. The first rebar is the first value of the
     /// distribution string. Distribution spaces are separated by a space and multipliers can

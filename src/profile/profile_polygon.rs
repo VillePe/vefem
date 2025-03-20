@@ -1,14 +1,13 @@
 #![allow(dead_code)]
 use serde::{Deserialize, Serialize};
-use vputilslib::equation_handler::EquationHandler;
 use vputilslib::geometry2d;
 use vputilslib::geometry2d::rectangle;
 use vputilslib::geometry2d::{Polygon, VpPoint};
 
-use crate::material::{Concrete, MaterialData};
+use crate::material::MaterialData;
 use crate::settings::CalculationSettings;
 
-use super::{second_moment_of_area, Profile};
+use super::{area, second_moment_of_area, Profile};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PolygonProfile {
@@ -75,23 +74,10 @@ impl PolygonProfile {
         // Only the polygon type is calculated. Other types have constant values.
         match material {
             MaterialData::Concrete(concrete) => {
-                self.get_area_conc_section(concrete, _calc_settings)
+                area::get_area_conc_section(self, concrete, _calc_settings)
             }
             _ => geometry2d::calculate_area(&self.polygon),
         }
-    }
-
-    /// Gets the area of the profile in square millimeters (mm²)
-    pub fn get_area_conc_section(&self, concrete: &Concrete, _calc_settings: &CalculationSettings) -> f64 {
-        // Only the polygon type is calculated. Other types have constant values.
-        let mut area = geometry2d::calculate_area(&self.polygon);
-        for r in &concrete.reinforcement.main_rebars {
-            for s in r.get_calculation_rebars(self, &EquationHandler::new()) {
-                let reduced_area = s.area * (s.reinf_data.get_elastic_modulus() / concrete.elastic_modulus - 1.0); // Note that the 'hole' is taken into account
-                area += reduced_area;                        
-            }
-        }
-        area
     }
 
     /// Calculates the second moment of area with the polygon of the profile. Value in millimeters

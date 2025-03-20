@@ -54,15 +54,14 @@ pub fn elastic_centroid(profile: &PolygonProfile, concrete: &Concrete, _calc_set
             result_y += s.y * s_area;
             total_area += s_area;
         }
-    }
-    
+    }    
 
     (result_x / total_area, result_y / total_area)
 }
 
 #[cfg(test)]
 mod test {
-    use crate::{material::StandardConcrete, profile::Profile, reinforcement::{RebarCollection, RebarData, RebarDistribution, ReinforcementData}};
+    use crate::{material::StandardConcrete, profile::Profile, reinforcement::{ElementReinforcement, RebarCollection, RebarData, RebarDistribution, ReinforcementData}};
 
     use super::*;
 
@@ -105,5 +104,27 @@ mod test {
             Profile::StandardProfile(_) => panic!("Should be a polygon profile"),
             Profile::CustomProfile(_) => panic!("Should be a polygon profile"),
         }
+    }
+
+    #[test]
+    fn test_elastic_centroid_rm() {
+        // The example is from book Rakenteiden mekaniikka, Tapio Salmi, Kai Kuula, 2012
+        let profile = Profile::new_rectangle("name".to_string(), 450.0, 300.0);
+        let mut concrete = Concrete{
+            elastic_modulus: 25e3,
+            char_strength: 1.0,
+            ..Default::default()
+            };
+        concrete.reinforcement.main_rebars.push(RebarCollection::new_bot_full(
+            ReinforcementData::Rebar(RebarData::new(500.0, 210e3)), 
+            RebarDistribution::Even { diam: 15.0, count: 1, 
+                cc_left: "300/2-15/2".to_string(), 
+                cc_right: "0".to_string() }, 
+            "50-15/2".to_string())
+        );
+        let (x, y) = elastic_centroid(&profile.get_polygon_profile(), &concrete, &CalculationSettings::default());
+        println!("X: {}, Y: {}", x, y);
+        assert!((x-300.0/2.0).abs() < 0.01);
+        assert!((y-223.0).abs() < 0.50);
     }
 }
