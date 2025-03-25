@@ -33,6 +33,7 @@ pub struct RebarCollection {
 }
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize)]
+#[serde(tag = "$type")]
 pub enum Side {
     /// The index argument controls where the rebar is placed.
     /// - 0 = bottom of the bounding box,
@@ -119,20 +120,76 @@ pub fn get_calculation_rebars(rebar_collection: &RebarCollection, profile: &Poly
         .unwrap_or(0.0);
     match &rebar_collection.distribution {
         RebarDistribution::Even {
-            diam,
-            count,
-            cc_left,
-            cc_right,
-        } => {
-            let equation_handler = add_diam_to_eq_handler(equation_handler, *diam);
-            let cc_left = equation_handler.calculate_formula(&cc_left).unwrap_or(0.0);
-            let cc_right = equation_handler.calculate_formula(&cc_right).unwrap_or(0.0);
-            let cc_bot = equation_handler.calculate_formula(&rebar_collection.concrete_cover).unwrap_or(0.0);
-            // If there is only one, it will be set with left concrete cover
-            if *count == 1 {
-                x = cc_left + diam / 2.0;
-                y = cc_bot + diam / 2.0;
-                (x, y) = get_rebar_location_with_side(x, y, &rebar_collection.side, profile);
+                        diam,
+                        count,
+                        cc_start,
+                        cc_end,
+            } => {
+                let equation_handler = add_diam_to_eq_handler(equation_handler, *diam);
+                let cc_left = equation_handler.calculate_formula(&cc_start).unwrap_or(0.0);
+                let cc_right = equation_handler.calculate_formula(&cc_end).unwrap_or(0.0);
+                let cc_bot = equation_handler.calculate_formula(&rebar_collection.concrete_cover).unwrap_or(0.0);
+                // If there is only one, it will be set with left concrete cover
+                if *count == 1 {
+                    x = cc_left + diam / 2.0;
+                    y = cc_bot + diam / 2.0;
+                    (x, y) = get_rebar_location_with_side(x, y, &rebar_collection.side, profile);
+                    calc_rebars.push(CalculationRebar {
+                        area: PI * diam.powi(2) / 4.0,
+                        x,
+                        y,
+                        reinf_data: rebar_collection.reinf_data.clone(),
+                        offset_start: offset_start,
+                        offset_end: offset_end,
+                    });
+                } else {
+                    let spacing = (row_length - cc_right - cc_left - *diam) / (*count - 1) as f64;
+                    for i in 0..*count {
+                        x = cc_left + diam / 2.0 + spacing * (i as f64);
+                        y = cc_bot + diam / 2.0;
+                        (x, y) = get_rebar_location_with_side(x, y, &rebar_collection.side, profile);
+                        calc_rebars.push(CalculationRebar {
+                            area: PI * diam.powi(2) / 4.0,
+                            x,
+                            y,
+                            reinf_data: rebar_collection.reinf_data.clone(),
+                            offset_start: offset_start,
+                            offset_end: offset_end,
+                        });
+                    }
+                }            
+            }
+        RebarDistribution::Distributed { diam, distr } => {
+                let mut cumulative_x = 0.0;
+                let equation_handler = add_diam_to_eq_handler(equation_handler, *diam);
+                let spacings = super::utils::parse_distribution_string(&distr, &equation_handler);
+                let cc_bot = equation_handler.calculate_formula(&rebar_collection.concrete_cover).unwrap_or(0.0);
+                for i in spacings {
+                    cumulative_x += i;
+                    y = cc_bot + diam / 2.0;
+                    (x, y) = get_rebar_location_with_side(cumulative_x, y, &rebar_collection.side, profile);
+                    calc_rebars.push(CalculationRebar {
+                        area: PI * diam.powi(2) / 4.0,
+                        x,
+                        y,
+                        reinf_data: rebar_collection.reinf_data.clone(),
+                        offset_start: offset_start,
+                        offset_end: offset_end,
+                    });
+                }
+            }
+        RebarDistribution::ByArea { area , sec_mom_of_area: mom_of_inertia} => {
+                // TODO: implement
+                todo!()
+            }
+        RebarDistribution::Single {
+                diam,
+                off_left,
+                off_bot,
+            } => {
+                let equation_handler = add_diam_to_eq_handler(equation_handler, *diam);
+                let x = equation_handler.calculate_formula(&off_left).unwrap_or(0.0);
+                let y = equation_handler.calculate_formula(&off_bot).unwrap_or(0.0);
                 calc_rebars.push(CalculationRebar {
                     area: PI * diam.powi(2) / 4.0,
                     x,
@@ -141,9 +198,14 @@ pub fn get_calculation_rebars(rebar_collection: &RebarCollection, profile: &Poly
                     offset_start: offset_start,
                     offset_end: offset_end,
                 });
-            } else {
-                let spacing = (row_length - cc_right - cc_left - *diam) / (*count - 1) as f64;
-                for i in 0..*count {
+            },
+        RebarDistribution::Spacing { diam, spacing, cc_start, cc_end } => {
+            let equation_handler = add_diam_to_eq_handler(equation_handler, *diam);
+            let cc_left = equation_handler.calculate_formula(&cc_start).unwrap_or(0.0);
+            let cc_right = equation_handler.calculate_formula(&cc_end).unwrap_or(0.0);
+            let cc_bot = equation_handler.calculate_formula(&rebar_collection.concrete_cover).unwrap_or(0.0);
+            let (spacing, count) = super::utils::get_spacing_and_count(row_length, *diam, cc_right, cc_left, *spacing);
+                for i in 0..(count+1) {
                     x = cc_left + diam / 2.0 + spacing * (i as f64);
                     y = cc_bot + diam / 2.0;
                     (x, y) = get_rebar_location_with_side(x, y, &rebar_collection.side, profile);
@@ -156,49 +218,8 @@ pub fn get_calculation_rebars(rebar_collection: &RebarCollection, profile: &Poly
                         offset_end: offset_end,
                     });
                 }
-            }            
-        }
-        RebarDistribution::Distributed { diam, distr } => {
-            let mut cumulative_x = 0.0;
-            let equation_handler = add_diam_to_eq_handler(equation_handler, *diam);
-            let spacings = super::utils::parse_distribution_string(&distr, &equation_handler);
-            let cc_bot = equation_handler.calculate_formula(&rebar_collection.concrete_cover).unwrap_or(0.0);
-            for i in spacings {
-                cumulative_x += i;
-                y = cc_bot + diam / 2.0;
-                (x, y) = get_rebar_location_with_side(cumulative_x, y, &rebar_collection.side, profile);
-                calc_rebars.push(CalculationRebar {
-                    area: PI * diam.powi(2) / 4.0,
-                    x,
-                    y,
-                    reinf_data: rebar_collection.reinf_data.clone(),
-                    offset_start: offset_start,
-                    offset_end: offset_end,
-                });
-            }
-        }
-        RebarDistribution::ByArea { area , mom_of_inertia} => {
-            // TODO: implement
-            todo!()
-        }
-        RebarDistribution::Single {
-            diam,
-            off_left,
-            off_bot,
-        } => {
-            let equation_handler = add_diam_to_eq_handler(equation_handler, *diam);
-            let x = equation_handler.calculate_formula(&off_left).unwrap_or(0.0);
-            let y = equation_handler.calculate_formula(&off_bot).unwrap_or(0.0);
-            calc_rebars.push(CalculationRebar {
-                area: PI * diam.powi(2) / 4.0,
-                x,
-                y,
-                reinf_data: rebar_collection.reinf_data.clone(),
-                offset_start: offset_start,
-                offset_end: offset_end,
-            });
         },
-    }
+        }
     calc_rebars
 }
 

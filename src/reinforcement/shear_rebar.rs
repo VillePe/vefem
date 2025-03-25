@@ -7,8 +7,6 @@ use super::{RebarData, RebarDistribution};
 pub struct ShearRebarGroup {
     pub reinf_data: RebarData,
     pub distribution: RebarDistribution,
-    pub offset_start: String,
-    pub offset_end: String,
     pub shape: Polygon,
 }
 
@@ -18,8 +16,6 @@ impl ShearRebarGroup {
         ShearRebarGroup {
             reinf_data,
             distribution,
-            offset_start: "0".to_string(),
-            offset_end: "L".to_string(),
             shape,
         }
     }

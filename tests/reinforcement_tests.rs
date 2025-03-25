@@ -28,8 +28,8 @@ mod reinf_tests {
             distribution: RebarDistribution::Even {
                 diam: 16.0,
                 count: 4,
-                cc_left: "30".to_string(),
-                cc_right: "30".to_string(),
+                cc_start: "30".to_string(),
+                cc_end: "30".to_string(),
             },
         };
         let result1 = rebar_coll1.get_calculation_rebars(&profile.get_polygon_profile(), &equation_handler);
@@ -40,6 +40,45 @@ mod reinf_tests {
         assert!(result1[1].x == 106.0);
         assert!(result1[2].x == 174.0);
         assert!(result1[3].x == 242.0);
+    }
+
+    #[test]
+    fn test_get_single_rebars_bbox_spacing_distr() {
+        let side = Side::BoundingBox { index: 0 };
+        // Notice the profile width and height is different than in other tests
+        let profile = Profile::new_rectangle("name".to_string(), 480.0, 480.0);
+        let reinf_data = ReinforcementData::Rebar(RebarData {
+            yield_strength: 500.0,
+            elastic_modulus: 200e3,
+        });
+        let offset_start = "0".to_string();
+        let offset_end = "L".to_string();
+        let mut equation_handler = EquationHandler::new();
+        equation_handler.add_variable("L", 4000.0);
+
+        let rebar_coll1: RebarCollection = RebarCollection {
+            reinf_data,
+            offset_start,
+            offset_end,
+            concrete_cover: "30.0".to_string(),
+            side,
+            distribution: RebarDistribution::Spacing {
+                diam: 10.0,
+                spacing: 100.0,
+                cc_start: "30".to_string(),
+                cc_end: "30".to_string(),
+            },
+        };
+        let result1 = rebar_coll1.get_calculation_rebars(&profile.get_polygon_profile(), &equation_handler);
+        for rebar in &result1 {
+            println!("X: {}, Y: {}", rebar.x, rebar.y);
+        }
+        assert!(result1[0].x == 35.0);
+        assert!(result1[1].x == 117.0);
+        assert!(result1[2].x == 199.0);
+        assert!(result1[3].x == 281.0);
+        assert!(result1[4].x == 363.0);
+        assert!(result1[5].x == 445.0);
     }
 
     #[test]
@@ -64,8 +103,8 @@ mod reinf_tests {
             distribution: RebarDistribution::Even {
                 diam: 16.0,
                 count: 4,
-                cc_left: "30".to_string(),
-                cc_right: "30".to_string(),
+                cc_start: "30".to_string(),
+                cc_end: "30".to_string(),
             },
         };
         let result = rebar_coll.get_calculation_rebars(&profile.get_polygon_profile(), &equation_handler);
@@ -86,8 +125,8 @@ mod reinf_tests {
             distribution: RebarDistribution::Even {
                 diam: 16.0,
                 count: 4,
-                cc_left: "30".to_string(),
-                cc_right: "30".to_string(),
+                cc_start: "30".to_string(),
+                cc_end: "30".to_string(),
             },
         };
         let result = rebar_coll.get_calculation_rebars(&profile.get_polygon_profile(), &equation_handler);
@@ -127,8 +166,8 @@ mod reinf_tests {
             distribution: RebarDistribution::Even {
                 diam: 16.0,
                 count: 4,
-                cc_left: "30".to_string(),
-                cc_right: "30".to_string(),
+                cc_start: "30".to_string(),
+                cc_end: "30".to_string(),
             },
         };
         let result = rebar_coll.get_calculation_rebars(&profile.get_polygon_profile(), &equation_handler);
@@ -162,8 +201,8 @@ mod reinf_tests {
             distribution: RebarDistribution::Even {
                 diam: 25.0,
                 count: 6,
-                cc_left: "30".to_string(),
-                cc_right: "30".to_string(),
+                cc_start: "30".to_string(),
+                cc_end: "30".to_string(),
             },
         };
         let result = rebar_coll.get_calculation_rebars(&profile.get_polygon_profile(), &equation_handler);
@@ -186,8 +225,8 @@ mod reinf_tests {
             distribution: RebarDistribution::Even {
                 diam: 25.0,
                 count: 6,
-                cc_left: "30".to_string(),
-                cc_right: "30".to_string(),
+                cc_start: "30".to_string(),
+                cc_end: "30".to_string(),
             },
         };
         let result = rebar_coll.get_calculation_rebars(&profile.get_polygon_profile(), &equation_handler);

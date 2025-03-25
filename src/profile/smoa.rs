@@ -158,8 +158,8 @@ mod tests {
                 RebarDistribution::Even {
                     diam: 15.0,
                     count: 1,
-                    cc_left: "300/2-15/2".to_string(),
-                    cc_right: "0".to_string(),
+                    cc_start: "300/2-15/2".to_string(),
+                    cc_end: "0".to_string(),
                 },
                 "50-15/2".to_string(),
             ));

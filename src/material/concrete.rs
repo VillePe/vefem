@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 
 use serde::{Deserialize, Serialize};
+use serde_repr::{Deserialize_repr, Serialize_repr};
 use crate::reinforcement;
 
 use super::MaterialTrait;
@@ -62,17 +63,18 @@ impl StandardConcrete {
     }
 }
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Serialize_repr, Deserialize_repr)]
+#[repr(u8)]
 pub enum ConcreteCalcType {
     // The reinforcement does not have an effect when calculating the area or the second moment of 
     // area of the element
-    Plain,
+    Plain = 0,
     // The reinforcement does have an effect when calculating the area and the second moment of 
     // area of the element. The concrete is considered to be uncracked.
-    WithReinforcement,
+    WithReinforcement = 1,
     // The reinforcement does have an effect when calculating the area and the second moment of 
     // area of the element and the part of concrete that is in tensile is ignored
-    Cracked,
+    Cracked = 2,
 }
 
 pub fn new_with_char_strength(char_strength: f64) -> Concrete {

@@ -20,7 +20,7 @@ impl RebarData {
     pub fn new_b500b() -> Self {
         Self {
             yield_strength: 500.0,
-            elastic_modulus: 200000.0,
+            elastic_modulus: 200e3,
         }
     }
 }

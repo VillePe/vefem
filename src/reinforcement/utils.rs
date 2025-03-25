@@ -59,6 +59,13 @@ pub fn elastic_centroid(profile: &PolygonProfile, concrete: &Concrete, _calc_set
     (result_x / total_area, result_y / total_area)
 }
 
+/// Gets the spacing and the count of spacings for given diameter and concrete cover values
+pub fn get_spacing_and_count(row_length: f64, diam: f64, cc_right: f64, cc_left: f64, target_spacing: f64) -> (f64, isize) {
+    let count = ((row_length - cc_right - cc_left - diam)/ target_spacing).ceil() as isize;
+    let spacing = (row_length - cc_right - cc_left - diam) / count as f64;
+    (spacing, count)
+}
+
 #[cfg(test)]
 mod test {
     use crate::{material::StandardConcrete, profile::Profile, reinforcement::{RebarCollection, RebarData, RebarDistribution, ReinforcementData}};
@@ -90,8 +97,8 @@ mod test {
         concrete.reinforcement.main_rebars.push(RebarCollection::new_bot_full(
             ReinforcementData::Rebar(RebarData::new_b500b()), 
             RebarDistribution::Even { diam: 25.0, count: 6, 
-                cc_left: "30.0".to_string(), 
-                cc_right: "30.0".to_string() }, 
+                cc_start: "30.0".to_string(), 
+                cc_end: "30.0".to_string() }, 
             "30.0".to_string())
         );
         match profile {
@@ -118,8 +125,8 @@ mod test {
         concrete.reinforcement.main_rebars.push(RebarCollection::new_bot_full(
             ReinforcementData::Rebar(RebarData::new(500.0, 210e3)), 
             RebarDistribution::Even { diam: 15.0, count: 1, 
-                cc_left: "300/2-15/2".to_string(), 
-                cc_right: "0".to_string() }, 
+                cc_start: "300/2-15/2".to_string(), 
+                cc_end: "0".to_string() }, 
             "50-15/2".to_string())
         );
         let (x, y) = elastic_centroid(&profile.get_polygon_profile(), &concrete, &CalculationSettings::default());
