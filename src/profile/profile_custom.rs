@@ -25,9 +25,9 @@ pub struct CustomProfile {
     pub custom_torsional_constant: f64,
     /// Custom warping constant for CustomProfile or Custom profile types
     pub custom_warping_constant: f64,
-    /// Custom X-value of the center of gravity for CustomProfile or Custom profile types
+    /// Custom X-value of the center of gravity for CustomProfile
     pub center_of_gravity_x: f64,
-    /// Custom Y-value of thecenter of gravity for CustomProfile or Custom profile types
+    /// Custom Y-value of thecenter of gravity for CustomProfile
     pub center_of_gravity_y: f64,
 }
 
