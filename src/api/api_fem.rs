@@ -22,4 +22,11 @@ pub extern "C" fn vefem_calculate(structure_json: *const c_char) -> *mut c_char 
     CString::new(results_json).unwrap().into_raw()
 }
 
-// expected value at line 95 column 20
+
+#[no_mangle]
+pub extern "C" fn version() -> *mut c_char {
+    let version = CARGO_VERSION.unwrap_or("Could not get the version of the library!");
+    CString::new(version).unwrap().into_raw()
+}
+
+const CARGO_VERSION: Option<&'static str> = option_env!("CARGO_PKG_VERSION");
