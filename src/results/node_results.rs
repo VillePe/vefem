@@ -132,7 +132,7 @@ mod tests {
             "name".to_string(),
             "1".to_string(),
             "1000".to_string(),
-            "10000".to_string(),
+            "10".to_string(),
             00.0,
         );
         let elements = vec![el];

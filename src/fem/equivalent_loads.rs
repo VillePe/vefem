@@ -384,7 +384,7 @@ mod tests {
             "".to_string(),
             "1".to_string(),
             "2000".to_string(),
-            "10000".to_string(),
+            "10".to_string(),
             0.0,
         );
         let elements = vec![el];
@@ -466,7 +466,7 @@ mod tests {
             "".to_string(),
             "1".to_string(),
             "0".to_string(),
-            "10000".to_string(),
+            "10".to_string(),
             0.0,
         );
         let elements = vec![el];
@@ -502,7 +502,7 @@ mod tests {
             "".to_string(),
             "1".to_string(),
             "L".to_string(),
-            "10000".to_string(),
+            "10".to_string(),
             0.0,
         );
         let elements = vec![el];
@@ -538,7 +538,7 @@ mod tests {
             "".to_string(),
             "1".to_string(),
             "2000".to_string(),
-            "10000".to_string(),
+            "10".to_string(),
         );
         let elements = vec![el];
         let loads = &mut vec![load];
@@ -550,21 +550,22 @@ mod tests {
         );
         let el_length = elements[0].get_length(&nodes);
         let result = handle_rotational_load(el_length, &calc_loads[0]);
+        println!("#1 {:?}", result);
         assert!((result[0] - (0.0)).abs() < 0.1);
-        assert!((result[1] - (-3.75)).abs() < 0.1);
-        assert!((result[2] - (-2500.0)).abs() < 0.1);
+        assert!((result[1] - (-3.75e3)).abs() < 0.1);
+        assert!((result[2] - (-2500e3)).abs() < 0.1);
         assert!((result[3] - (0.0)).abs() < 0.1);
-        assert!((result[4] - (3.75)).abs() < 0.1);
-        assert!((result[5] - (-2500.0)).abs() < 0.1);
+        assert!((result[4] - (3.75e3)).abs() < 0.1);
+        assert!((result[5] - (-2500e3)).abs() < 0.1);
 
         nodes.get_mut(&2).unwrap().point = VpPoint::new(2828.5714, 2828.5714);
         let result = handle_rotational_load(el_length, &calc_loads[0]);
         assert!((result[0] - (0.0)).abs() < 0.1);
-        assert!((result[1] - (-3.75)).abs() < 0.1);
-        assert!((result[2] - (-2500.0)).abs() < 0.1);
+        assert!((result[1] - (-3.75e3)).abs() < 0.1);
+        assert!((result[2] - (-2500.0e3)).abs() < 0.1);
         assert!((result[3] - (0.0)).abs() < 0.1);
-        assert!((result[4] - (3.75)).abs() < 0.1);
-        assert!((result[5] - (-2500.0)).abs() < 0.1);
+        assert!((result[4] - (3.75e3)).abs() < 0.1);
+        assert!((result[5] - (-2500.0e3)).abs() < 0.1);
     }
 
     #[test]

@@ -29,7 +29,7 @@ mod deflection_tests {
             "Pointload".to_string(),
             "1".to_string(),
             "L/2".to_string(),
-            "10000".to_string(),
+            "10".to_string(),
             -90.0,
         );
         let loads = vec![p_load];
@@ -155,7 +155,7 @@ mod deflection_tests {
             "Pointload".to_string(),
             "1".to_string(),
             "0".to_string(),
-            "10000".to_string(),
+            "10".to_string(),
             0.0,
         );
         let loads = vec![p_load];
@@ -204,7 +204,7 @@ mod deflection_tests {
             "Pointload".to_string(),
             "1".to_string(),
             "L".to_string(),
-            "10e3".to_string(),
+            "10".to_string(),
             0.0,
         );
         let calc_settings = CalculationSettings::default();
@@ -254,7 +254,7 @@ mod deflection_tests {
             "RotationalLoad".to_string(),
             "1".to_string(),
             "0".to_string(),
-            "10e6".to_string(),
+            "10".to_string(),
         );
         let loads = vec![p_load];
         let calc_model = CalculationModel {
@@ -302,7 +302,7 @@ mod deflection_tests {
             "RotationalLoad".to_string(),
             "1".to_string(),
             "L/2".to_string(),
-            "10000000".to_string(),
+            "10".to_string(),
         );
         let loads = vec![r_load];
         let calc_model = CalculationModel {

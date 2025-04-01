@@ -31,7 +31,7 @@ mod internal_forces_tests {
             "Pointload".to_string(),
             "1".to_string(),
             "L/2".to_string(),
-            "10000".to_string(),
+            "10".to_string(),
             -90.0,
         );
         let loads = vec![p_load];
@@ -150,7 +150,7 @@ mod internal_forces_tests {
             "RotationalLoad".to_string(),
             "1".to_string(),
             "L/2".to_string(),
-            "10000000".to_string(),
+            "10".to_string(),
         );
         let loads = vec![r_load];
         let calc_model = CalculationModel {
@@ -626,7 +626,7 @@ mod internal_forces_tests {
             "Pointload".to_string(),
             "1".to_string(),
             "L/2".to_string(),
-            "10000".to_string(),
+            "10".to_string(),
             -90.0,
         );
         let loads = vec![p_load];
@@ -745,7 +745,7 @@ mod internal_forces_tests {
             "RotationalLoad".to_string(),
             "1".to_string(),
             "L/2".to_string(),
-            "10000000".to_string(),
+            "10".to_string(),
         );
         let loads = vec![r_load];
         let calc_model = CalculationModel {
@@ -1290,7 +1290,7 @@ mod internal_forces_tests {
             "Pointload".to_string(),
             "1".to_string(),
             "L/2".to_string(),
-            "10000".to_string(),
+            "10".to_string(),
             0.0,
         );
         let loads = vec![p_load];

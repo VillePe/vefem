@@ -141,7 +141,8 @@ mod tests {
     }
 }
 
-/// Extracts the calculation loads from given loads.
+/// Extracts the calculation loads from given loads. Note that this method also converts the
+/// load strengths by their type (kN => N, kN/m => N/mm, kNm => Nmm)
 /// * `elements` - List of elements
 /// * `nodes` - List of nodes
 /// * `loads` - List of loads
@@ -176,7 +177,7 @@ pub fn extract_calculation_loads(
                 crate::loads::load::LoadType::Point => {
                     let calc_load = CalculationLoad {
                         offset_start,
-                        strength,
+                        strength: strength * 1e3, // kN => N
                         rotation,
                         element_number,
                         load_type: super::load::CalculationLoadType::Point,
@@ -188,7 +189,7 @@ pub fn extract_calculation_loads(
                     let calc_load = CalculationLoad {
                         offset_start,
                         offset_end,
-                        strength,
+                        strength, // No need to convert, because kN/m = N/mm
                         rotation,
                         element_number,
                         load_type: super::load::CalculationLoadType::Line,
@@ -210,7 +211,7 @@ pub fn extract_calculation_loads(
                     let calc_load = CalculationLoad {
                         offset_start,
                         offset_end,
-                        strength,
+                        strength: strength * 1e6,
                         rotation,
                         element_number,
                         load_type: super::load::CalculationLoadType::Rotational,

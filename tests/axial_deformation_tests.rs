@@ -26,7 +26,7 @@ mod axial_deformation_tests {
             "Pointload".to_string(),
             "1".to_string(),
             "L/2".to_string(),
-            "1000000".to_string(),
+            "1000".to_string(),
             0.0,
         );
         let loads = vec![p_load];
