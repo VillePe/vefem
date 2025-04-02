@@ -336,6 +336,7 @@ fn get_eq_loads_with_partial_eq_loads(
 /// Helper method to get temporary point load
 fn get_temp_pl(equivalent_strength: f64, end: f64, el_rotation: f64) -> CalculationLoad {
     CalculationLoad {
+        name: "NA".to_string(),
         element_number: -1,
         offset_start: end,
         offset_end: end,
@@ -348,6 +349,7 @@ fn get_temp_pl(equivalent_strength: f64, end: f64, el_rotation: f64) -> Calculat
 /// Helper method to get temporary rotational load
 fn get_temp_rotational_load(end: f64, equivalent_strength: f64) -> CalculationLoad {
     CalculationLoad {
+        name: "NA".to_string(),
         element_number: -1,
         offset_start: end,
         offset_end: end,

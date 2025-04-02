@@ -105,6 +105,21 @@ pub fn split_trapezoid_load_with_strengths(
     (line_load, tri_load)
 }
 
+/// Creates a map of loads by load names.
+/// ### Arguments
+/// * `loads` - List of loads
+pub fn get_load_map(loads: Vec<CalculationLoad>) -> BTreeMap<String, Vec<CalculationLoad>> {
+    let mut load_map: BTreeMap<String, Vec<CalculationLoad>> = BTreeMap::new();
+    for load in loads {
+        if load_map.contains_key(&load.name) {
+            load_map.get_mut(&load.name).unwrap().push(load);
+        } else {
+            load_map.insert(load.name.clone(), vec![load]);
+        }
+    }
+    load_map
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -161,6 +176,7 @@ pub fn extract_calculation_loads(
             if !load_is_linked(&element, load) {
                 continue;
             }
+            let name = load.name.clone();
             let element_number = element.number;
             let el_length = element.get_length(nodes);
             temp_eq_handler.set_variable("L", el_length);
@@ -176,6 +192,7 @@ pub fn extract_calculation_loads(
             match load.load_type {
                 crate::loads::load::LoadType::Point => {
                     let calc_load = CalculationLoad {
+                        name,
                         offset_start,
                         strength: strength * 1e3, // kN => N
                         rotation,
@@ -187,6 +204,7 @@ pub fn extract_calculation_loads(
                 }
                 super::load::LoadType::Line => {
                     let calc_load = CalculationLoad {
+                        name,
                         offset_start,
                         offset_end,
                         strength, // No need to convert, because kN/m = N/mm
@@ -198,6 +216,7 @@ pub fn extract_calculation_loads(
                 }
                 super::load::LoadType::Triangular => {
                     let calc_load = CalculationLoad {
+                        name,
                         offset_start,
                         offset_end,
                         strength,
@@ -209,6 +228,7 @@ pub fn extract_calculation_loads(
                 }
                 super::load::LoadType::Rotational => {
                     let calc_load = CalculationLoad {
+                        name,
                         offset_start,
                         offset_end,
                         strength: strength * 1e6,
@@ -225,6 +245,7 @@ pub fn extract_calculation_loads(
                         .calculate_formula(&ll.strength)
                         .unwrap_or(0.0);
                     let calc_ll_load = CalculationLoad {
+                        name: name.clone(),
                         offset_start,
                         offset_end,
                         strength,
@@ -243,6 +264,7 @@ pub fn extract_calculation_loads(
                         .calculate_formula(&tl.strength)
                         .unwrap_or(0.0);
                     let calc_tl_load = CalculationLoad {
+                        name,
                         offset_start,
                         offset_end,
                         strength,
@@ -254,6 +276,7 @@ pub fn extract_calculation_loads(
                 }
                 super::load::LoadType::Strain => {
                     let calc_load = CalculationLoad {
+                        name,
                         offset_start,
                         offset_end,
                         strength,
@@ -269,6 +292,7 @@ pub fn extract_calculation_loads(
                         crate::material::get_thermal_expansion_coefficient(element.material.value());
                     let displacement = strength * thermal_coefficient * el_length;
                     let calc_load = CalculationLoad {
+                        name,
                         offset_start,
                         offset_end,
                         strength: displacement,

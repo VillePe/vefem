@@ -5,6 +5,8 @@ use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use vputilslib::equation_handler::EquationHandler;
 
+use super::load_group::LoadGroup;
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Load {
     /// Name for the load. Does not need to be unique. Load combinations are created by using the load names.
@@ -36,8 +38,8 @@ pub struct Load {
     /// The percentage of the value that is set on the 'off element' when creating the load combinations with
     /// moving loads. Default value is 0 ('off element' has no load)
     pub moving_percent: f64,
-    // Todo add load group type so automatic load combinations can be created
-    // Load groups like permanent loads and live loads of different types need to be handled
+    /// Load group for the load
+    pub load_group: LoadGroup,
 }
 
 impl Load {
@@ -183,6 +185,7 @@ impl Default for Load {
             comment: "".to_string(),
             is_moving_load: false,
             moving_percent: 0.0,
+            load_group: LoadGroup::PERMANENT,
         }
     }
 }
@@ -200,7 +203,7 @@ pub enum LoadType {
     Thermal = 6,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 pub enum CalculationLoadType {
     Point,
     Line,
@@ -210,6 +213,7 @@ pub enum CalculationLoadType {
 }
 
 pub struct CalculationLoad {
+    pub name: String,
     pub load_type: CalculationLoadType,
     pub offset_start: f64,
     pub offset_end: f64,
