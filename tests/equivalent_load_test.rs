@@ -3,6 +3,7 @@
 #[cfg(test)]
 mod equivalent_load_tests {
     use approx::relative_eq;
+    use vefem::loads::LoadCombination;
     use vefem::material::MaterialData;
     use vefem::settings::CalculationSettings;
     use std::collections::BTreeMap;
@@ -46,6 +47,7 @@ mod equivalent_load_tests {
             &elements,
             &nodes,
             &loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
         let calc_settings = CalculationSettings::default();
@@ -106,6 +108,7 @@ mod equivalent_load_tests {
             &elements,
             &nodes,
             &loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
         nodes.get_mut(&2).unwrap().point = VpPoint::new(0.0, 4000.0);
@@ -180,6 +183,7 @@ mod equivalent_load_tests {
             &elements,
             &nodes,
             &loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
         let result =
@@ -239,6 +243,7 @@ mod equivalent_load_tests {
             &elements,
             &nodes,
             &loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
         nodes.get_mut(&2).unwrap().point = VpPoint::new(0.0, 4000.0);
@@ -293,6 +298,7 @@ mod equivalent_load_tests {
             &elements,
             &nodes,
             &loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
         let result =
@@ -327,6 +333,7 @@ mod equivalent_load_tests {
             &elements,
             &nodes,
             &loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
         let result = get_element_g_eq_loads(&elements[0], &calc_loads, &nodes, &calc_settings);
@@ -360,6 +367,7 @@ mod equivalent_load_tests {
             &elements,
             &nodes,
             &loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
         let result = get_element_g_eq_loads(&elements[0], &calc_loads, &nodes, &calc_settings);
@@ -382,6 +390,7 @@ mod equivalent_load_tests {
             &elements,
             &nodes,
             &loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
 
@@ -433,6 +442,7 @@ mod equivalent_load_tests {
             &elements,
             &nodes,
             &loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
         let calc_settings = CalculationSettings::default();
@@ -489,6 +499,7 @@ mod equivalent_load_tests {
             &elements,
             &nodes,
             &loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
         let calc_settings = CalculationSettings::default();

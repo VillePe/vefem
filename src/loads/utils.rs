@@ -6,6 +6,7 @@ use crate::loads::load::Load;
 use crate::structure::{Element, Node};
 
 use super::load::CalculationLoad;
+use super::LoadCombination;
 
 /// Gets the element numbers that are linked to given load. Different elements are separated with , (comma).
 ///
@@ -166,11 +167,26 @@ pub fn extract_calculation_loads(
     elements: &Vec<Element>,
     nodes: &BTreeMap<i32, Node>,
     loads: &Vec<Load>,
+    load_combination: &LoadCombination,
     eq_handler: &EquationHandler,
 ) -> Vec<CalculationLoad> {
     let mut calc_loads: Vec<CalculationLoad> = Vec::new();
     let mut temp_eq_handler = eq_handler.clone();
+    let lc_is_empty = load_combination.loads_n_factors.is_empty();
     for load in loads {
+        let mut strength_factor = 1.0;
+        // Check if the loads_n_factor contains any items. If that vector is empty, all loads
+        // will be extracted as calculation loads. Otherwise the loads will be extracted by names
+        // in the loads_n_factor vector
+        if !lc_is_empty {
+            // Check if the current load is in the loads_n_factor vector
+            if load_combination.loads_n_factors.contains_key(&load.name) {
+                strength_factor = load_combination.loads_n_factors[&load.name];
+            } else {
+                // If current load is not in the loads_n_factor vector, skip it
+                continue;
+            }
+        }
         let rotation = load.rotation;
         for element in elements {
             if !load_is_linked(&element, load) {
@@ -194,7 +210,7 @@ pub fn extract_calculation_loads(
                     let calc_load = CalculationLoad {
                         name,
                         offset_start,
-                        strength: strength * 1e3, // kN => N
+                        strength: strength * 1e3 * strength_factor, // kN => N
                         rotation,
                         element_number,
                         load_type: super::load::CalculationLoadType::Point,
@@ -207,7 +223,7 @@ pub fn extract_calculation_loads(
                         name,
                         offset_start,
                         offset_end,
-                        strength, // No need to convert, because kN/m = N/mm
+                        strength: strength * strength_factor, // No need to convert, because kN/m = N/mm
                         rotation,
                         element_number,
                         load_type: super::load::CalculationLoadType::Line,
@@ -219,7 +235,7 @@ pub fn extract_calculation_loads(
                         name,
                         offset_start,
                         offset_end,
-                        strength,
+                        strength: strength * strength_factor,
                         rotation,
                         element_number,
                         load_type: super::load::CalculationLoadType::Triangular,
@@ -231,7 +247,7 @@ pub fn extract_calculation_loads(
                         name,
                         offset_start,
                         offset_end,
-                        strength: strength * 1e6,
+                        strength: strength * strength_factor * 1e6,
                         rotation,
                         element_number,
                         load_type: super::load::CalculationLoadType::Rotational,
@@ -248,7 +264,7 @@ pub fn extract_calculation_loads(
                         name: name.clone(),
                         offset_start,
                         offset_end,
-                        strength,
+                        strength: strength * strength_factor,
                         rotation,
                         element_number,
                         load_type: super::load::CalculationLoadType::Line,
@@ -267,7 +283,7 @@ pub fn extract_calculation_loads(
                         name,
                         offset_start,
                         offset_end,
-                        strength,
+                        strength: strength * strength_factor,
                         rotation,
                         element_number,
                         load_type: super::load::CalculationLoadType::Triangular,
@@ -279,7 +295,7 @@ pub fn extract_calculation_loads(
                         name,
                         offset_start,
                         offset_end,
-                        strength,
+                        strength: strength * strength_factor,
                         rotation,
                         element_number,
                         load_type: super::load::CalculationLoadType::Strain,
@@ -295,7 +311,7 @@ pub fn extract_calculation_loads(
                         name,
                         offset_start,
                         offset_end,
-                        strength: displacement,
+                        strength: displacement * strength_factor,
                         rotation,
                         element_number,
                         load_type: super::load::CalculationLoadType::Strain,

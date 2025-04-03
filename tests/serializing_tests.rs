@@ -52,16 +52,16 @@ pub mod serializing_tests {
         let results2 = fem::calculate(&calc_model_deserialized, &mut EquationHandler::new());
         println!(
             "Support reaction node 1 dir 1: {:.2} = {:.2}",
-            results1.node_results.get_support_reaction(1, 1),
-            results2.node_results.get_support_reaction(1, 1)
+            results1[0].node_results.get_support_reaction(1, 1),
+            results2[0].node_results.get_support_reaction(1, 1)
         );
         assert_eq!(
-            results1.node_results.displacements,
-            results2.node_results.displacements
+            results1[0].node_results.displacements,
+            results2[0].node_results.displacements
         );
         assert_eq!(
-            results1.node_results.support_reactions,
-            results2.node_results.support_reactions
+            results1[0].node_results.support_reactions,
+            results2[0].node_results.support_reactions
         );
 
         let results_json = serde_json::to_string_pretty(&results2).unwrap();

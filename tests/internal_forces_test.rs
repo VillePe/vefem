@@ -6,7 +6,7 @@ mod internal_forces_tests {
     use vputilslib::{equation_handler::EquationHandler, geometry2d::VpPoint};
 
     use vefem::{
-        fem::internal_forces::{calculate_axial_force_at, calculate_shear_at}, loads::{self, Load}, 
+        fem::internal_forces::{calculate_axial_force_at, calculate_shear_at}, loads::{self, Load, LoadCombination}, 
         material::{MaterialData, Steel}, profile::Profile, settings::CalculationSettings, 
         structure::{CalculationModel, Element, Node}
     };
@@ -46,9 +46,10 @@ mod internal_forces_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let mom = calculate_moment_at(
             1000.0,
             &calc_model.elements[0],
@@ -82,9 +83,10 @@ mod internal_forces_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let mom = calculate_moment_at(
             2000.0,
             &calc_model.elements[0],
@@ -100,9 +102,10 @@ mod internal_forces_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let mom = calculate_moment_at(
             2000.0,
             &calc_model.elements[0],
@@ -118,9 +121,10 @@ mod internal_forces_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let mom = calculate_moment_at(
             2000.0,
             &calc_model.elements[0],
@@ -164,9 +168,10 @@ mod internal_forces_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let mom = calculate_moment_at(
             1000.0,
             &calc_model.elements[0],
@@ -239,9 +244,10 @@ mod internal_forces_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let mom = calculate_moment_at(
             1000.0,
             &calc_model.elements[0],
@@ -292,9 +298,10 @@ mod internal_forces_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let mom = calculate_moment_at(
             2000.0,
             &calc_model.elements[0],
@@ -317,9 +324,10 @@ mod internal_forces_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let mom = calculate_moment_at(
             2000.0,
             &calc_model.elements[0],
@@ -342,9 +350,10 @@ mod internal_forces_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let mom = calculate_moment_at(
             2000.0,
             &calc_model.elements[0],
@@ -390,9 +399,10 @@ mod internal_forces_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let mom = calculate_moment_at(
             1000.0,
             &calc_model.elements[0],
@@ -426,9 +436,10 @@ mod internal_forces_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let mom = calculate_moment_at(
             2000.0,
             &calc_model.elements[0],
@@ -447,9 +458,10 @@ mod internal_forces_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let mom = calculate_moment_at(
             2000.0,
             &calc_model.elements[0],
@@ -468,9 +480,10 @@ mod internal_forces_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let mom = calculate_moment_at(
             2000.0,
             &calc_model.elements[0],
@@ -516,9 +529,10 @@ mod internal_forces_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let mom = calculate_moment_at(
             1000.0,
             &calc_model.elements[0],
@@ -552,9 +566,10 @@ mod internal_forces_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let mom = calculate_moment_at(
             2000.0,
             &calc_model.elements[0],
@@ -573,9 +588,10 @@ mod internal_forces_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let mom = calculate_moment_at(
             2000.0,
             &calc_model.elements[0],
@@ -594,9 +610,10 @@ mod internal_forces_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let mom = calculate_moment_at(
             2000.0,
             &calc_model.elements[0],
@@ -641,9 +658,10 @@ mod internal_forces_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let shear = calculate_shear_at(
             1000.0,
             &calc_model.elements[0],
@@ -677,9 +695,10 @@ mod internal_forces_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let shear = calculate_shear_at(
             2000.0,
             &calc_model.elements[0],
@@ -695,9 +714,10 @@ mod internal_forces_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let shear = calculate_shear_at(
             2000.0,
             &calc_model.elements[0],
@@ -713,9 +733,10 @@ mod internal_forces_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let shear = calculate_shear_at(
             2000.0,
             &calc_model.elements[0],
@@ -759,9 +780,10 @@ mod internal_forces_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let shear = calculate_shear_at(
             1000.0,
             &calc_model.elements[0],
@@ -835,9 +857,10 @@ mod internal_forces_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let shear = calculate_shear_at(
             1000.0,
             &calc_model.elements[0],
@@ -878,9 +901,10 @@ mod internal_forces_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let shear = calculate_shear_at(
             1000.0,
             &calc_model.elements[0],
@@ -903,9 +927,10 @@ mod internal_forces_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let shear = calculate_shear_at(
             1000.0,
             &calc_model.elements[0],
@@ -928,9 +953,10 @@ mod internal_forces_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let shear = calculate_shear_at(
             1000.0,
             &calc_model.elements[0],
@@ -976,9 +1002,10 @@ mod internal_forces_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let shear = calculate_shear_at(
             1000.0,
             &calc_model.elements[0],
@@ -1043,9 +1070,10 @@ mod internal_forces_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let shear = calculate_shear_at(
             2000.0,
             &calc_model.elements[0],
@@ -1072,9 +1100,10 @@ mod internal_forces_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let shear = calculate_shear_at(
             2000.0,
             &calc_model.elements[0],
@@ -1101,9 +1130,10 @@ mod internal_forces_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let shear = calculate_shear_at(
             2000.0,
             &calc_model.elements[0],
@@ -1149,9 +1179,10 @@ mod internal_forces_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
 
         let shear = calculate_shear_at(
             1000.0,
@@ -1207,9 +1238,10 @@ mod internal_forces_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let shear = calculate_shear_at(
             2000.0,
             &calc_model.elements[0],
@@ -1232,9 +1264,10 @@ mod internal_forces_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let shear = calculate_shear_at(
             2000.0,
             &calc_model.elements[0],
@@ -1258,9 +1291,10 @@ mod internal_forces_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let shear = calculate_shear_at(
             2000.0,
             &calc_model.elements[0],
@@ -1305,9 +1339,10 @@ mod internal_forces_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let axial_f = calculate_axial_force_at(
             1000.0,
             &calc_model.elements[0],
@@ -1341,9 +1376,10 @@ mod internal_forces_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let axial_f = calculate_axial_force_at(
             2000.0,
             &calc_model.elements[0],
@@ -1362,9 +1398,10 @@ mod internal_forces_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let axial_f = calculate_axial_force_at(
             2000.0,
             &calc_model.elements[0],
@@ -1411,9 +1448,10 @@ mod internal_forces_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let axial_f = calculate_axial_force_at(
             1000.0,
             &calc_model.elements[0],
@@ -1478,9 +1516,10 @@ mod internal_forces_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let axial_f = calculate_axial_force_at(
             1000.0,
             &calc_model.elements[0],
@@ -1529,9 +1568,10 @@ mod internal_forces_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let axial_f = calculate_axial_force_at(
             1000.0,
             &calc_model.elements[0],
@@ -1554,9 +1594,10 @@ mod internal_forces_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let axial_f = calculate_axial_force_at(
             1000.0,
             &calc_model.elements[0],
@@ -1609,9 +1650,10 @@ mod internal_forces_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let axial_f = calculate_axial_force_at(
             1000.0,
             &calc_model.elements[0],
@@ -1676,9 +1718,10 @@ mod internal_forces_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let axial_f = calculate_axial_force_at(
             2000.0,
             &calc_model.elements[0],
@@ -1705,9 +1748,10 @@ mod internal_forces_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let axial_f = calculate_axial_force_at(
             2000.0,
             &calc_model.elements[0],
@@ -1764,9 +1808,10 @@ mod internal_forces_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
 
         let axial_f = calculate_axial_force_at(
             1000.0,
@@ -1822,9 +1867,10 @@ mod internal_forces_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let axial_f = calculate_axial_force_at(
             2000.0,
             &calc_model.elements[0],
@@ -1847,9 +1893,10 @@ mod internal_forces_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let axial_f = calculate_axial_force_at(
             2000.0,
             &calc_model.elements[0],

@@ -5,7 +5,7 @@ mod axial_deformation_tests {
     use approx::relative_eq;
     use vputilslib::{equation_handler::EquationHandler, geometry2d::VpPoint};
 
-    use vefem::{fem::axial_deformation, loads::{self, Load}, material::{MaterialData, Steel}, profile::Profile, 
+    use vefem::{fem::axial_deformation, loads::{self, Load, LoadCombination}, material::{MaterialData, Steel}, profile::Profile, 
     settings::CalculationSettings, structure::{CalculationModel, Element, Node}};
 
     #[test]
@@ -34,6 +34,7 @@ mod axial_deformation_tests {
             &elements,
             &nodes,
             &loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
         let mut calc_model = CalculationModel {
@@ -43,7 +44,7 @@ mod axial_deformation_tests {
             calc_settings: CalculationSettings::default(),
             load_combinations: vec![],
         };
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let defl = axial_deformation::calculate_at(
             1000.0,
             &calc_model.elements[0],
@@ -90,9 +91,10 @@ mod axial_deformation_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let defl = axial_deformation::calculate_at(
             2000.0,
             &calc_model.elements[0],
@@ -109,9 +111,10 @@ mod axial_deformation_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let defl = axial_deformation::calculate_at(
             2000.0,
             &calc_model.elements[0],
@@ -151,6 +154,7 @@ mod axial_deformation_tests {
             &elements,
             &nodes,
             &loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
         let mut calc_model = CalculationModel {
@@ -160,7 +164,7 @@ mod axial_deformation_tests {
             calc_settings: CalculationSettings::default(),
             load_combinations: vec![],
         };
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let defl = axial_deformation::calculate_at(
             1000.0,
             &calc_model.elements[0],
@@ -197,9 +201,10 @@ mod axial_deformation_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let defl = axial_deformation::calculate_at(
             2000.0,
             &calc_model.elements[0],
@@ -216,9 +221,10 @@ mod axial_deformation_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let defl = axial_deformation::calculate_at(
             2000.0,
             &calc_model.elements[0],
@@ -237,9 +243,10 @@ mod axial_deformation_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let defl = axial_deformation::calculate_at(
             2000.0,
             &calc_model.elements[0],
@@ -279,6 +286,7 @@ mod axial_deformation_tests {
             &elements,
             &nodes,
             &loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
         let mut calc_model = CalculationModel {
@@ -288,7 +296,7 @@ mod axial_deformation_tests {
             calc_settings: CalculationSettings::default(),
             load_combinations: vec![],
         };
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let defl = axial_deformation::calculate_at(
             1000.0,
             &calc_model.elements[0],
@@ -325,9 +333,10 @@ mod axial_deformation_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let defl = axial_deformation::calculate_at(
             2000.0,
             &calc_model.elements[0],
@@ -344,9 +353,10 @@ mod axial_deformation_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let defl = axial_deformation::calculate_at(
             2000.0,
             &calc_model.elements[0],
@@ -387,6 +397,7 @@ mod axial_deformation_tests {
             &elements,
             &nodes,
             &loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
         let mut calc_model = CalculationModel {
@@ -396,7 +407,7 @@ mod axial_deformation_tests {
             calc_settings: CalculationSettings::default(),
             load_combinations: vec![],
         };
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let defl = axial_deformation::calculate_at(
             2000.0,
             &calc_model.elements[0],
@@ -423,9 +434,10 @@ mod axial_deformation_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let defl = axial_deformation::calculate_at(
             2000.0,
             &calc_model.elements[0],
@@ -442,9 +454,10 @@ mod axial_deformation_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let defl = axial_deformation::calculate_at(
             2000.0,
             &calc_model.elements[0],
@@ -484,6 +497,7 @@ mod axial_deformation_tests {
             &elements,
             &nodes,
             &loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
         let calc_settings = CalculationSettings::default();
@@ -494,7 +508,7 @@ mod axial_deformation_tests {
             calc_settings: CalculationSettings::default(),
             load_combinations: vec![],
         };
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let defl = axial_deformation::calculate_at(
             1000.0,
             &calc_model.elements[0],
@@ -531,9 +545,10 @@ mod axial_deformation_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let defl = axial_deformation::calculate_at(
             2000.0,
             &calc_model.elements[0],
@@ -550,9 +565,10 @@ mod axial_deformation_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let defl = axial_deformation::calculate_at(
             2000.0,
             &calc_model.elements[0],
@@ -594,6 +610,7 @@ mod axial_deformation_tests {
             &elements,
             &nodes,
             &loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
         let mut calc_model = CalculationModel {
@@ -603,7 +620,7 @@ mod axial_deformation_tests {
             calc_settings: CalculationSettings::default(),
             load_combinations: vec![],
         };
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let defl = axial_deformation::calculate_at(
             2000.0,
             &calc_model.elements[0],
@@ -630,9 +647,10 @@ mod axial_deformation_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let defl = axial_deformation::calculate_at(
             2000.0,
             &calc_model.elements[0],
@@ -649,9 +667,10 @@ mod axial_deformation_tests {
             &calc_model.elements,
             &calc_model.nodes,
             &calc_model.loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let results = vefem::fem::calculate(&calc_model, &mut EquationHandler::new()).node_results;
+        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
         let defl = axial_deformation::calculate_at(
             2000.0,
             &calc_model.elements[0],

@@ -144,7 +144,7 @@ mod tests {
             load_combinations: vec![],
         };
         let results = crate::fem::calculate(&calc_model, &mut EquationHandler::new());
-        let local_reactions = results
+        let local_reactions = results[0]
             .node_results
             .get_elem_local_reactions(&calc_model.elements[0], &calc_model.nodes);
         println!("Local reactions: {:.0}", local_reactions);

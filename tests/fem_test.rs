@@ -48,7 +48,7 @@ mod readme_test {
         // The default settings divide the internal force calculation points into 100 intervals.
         // Assert that the value at the middle of the element is ql^2/8
         assert_eq!(
-            results.internal_force_results[&1].moment_forces[50].value_y,
+            results[0].internal_force_results[&1].moment_forces[50].value_y,
             10.0 * 4000f64.powi(2) / 8.0
         );
     }
@@ -62,7 +62,7 @@ mod fem_tests {
     use vefem::fem::matrices::{
         get_unknown_translation_rows, get_unknown_translation_stiffness_rows,
     };
-    use vefem::loads;
+    use vefem::loads::{self, LoadCombination};
     use vefem::material::{MaterialData, Steel};
     use vefem::profile::{CustomProfile, Profile};
     use vefem::structure::Element;
@@ -84,6 +84,7 @@ mod fem_tests {
             &elements,
             &nodes,
             &loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
         let gl_eq_loads_m = vefem::fem::equivalent_loads::create(&elements, &nodes, &calc_loads, &calc_settings);
@@ -167,6 +168,7 @@ mod fem_tests {
             &elements,
             &nodes,
             &loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
         let gl_eq_loads_m = vefem::fem::equivalent_loads::create(&elements, &nodes, &calc_loads, &calc_settings);
@@ -264,6 +266,7 @@ mod fem_tests {
             &elements,
             &nodes,
             &loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
         let gl_eq_loads_m = vefem::fem::equivalent_loads::create(&elements, &nodes, &calc_loads, &calc_settings);
@@ -357,6 +360,7 @@ mod fem_tests {
             &elements,
             &nodes,
             &loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
         let gl_eq_loads_m = vefem::fem::equivalent_loads::create(&elements, &nodes, &calc_loads, &calc_settings);
@@ -411,6 +415,7 @@ mod fem_tests {
             &elements,
             &nodes,
             &loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
         let gl_eq_loads_m = vefem::fem::equivalent_loads::create(&elements, &nodes, &calc_loads, &calc_settings);

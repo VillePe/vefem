@@ -364,7 +364,7 @@ mod tests {
     use crate::fem::equivalent_loads::{
         handle_line_load, handle_point_load, handle_rotational_load, handle_triangular_load,
     };
-    use crate::loads::{self, Load};
+    use crate::loads::{self, Load, LoadCombination};
     use crate::structure::{Element, Node};
     use std::collections::BTreeMap;
     use std::vec;
@@ -395,6 +395,7 @@ mod tests {
             &elements,
             &nodes,
             loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
         let el_length = elements[0].get_length(&nodes);
@@ -440,6 +441,7 @@ mod tests {
             &elements,
             &nodes,
             loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
         nodes.get_mut(&2).unwrap().point = VpPoint::new(4000.0, 0.0);
@@ -477,6 +479,7 @@ mod tests {
             &elements,
             &nodes,
             loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
         let el_length = elements[0].get_length(&nodes);
@@ -513,6 +516,7 @@ mod tests {
             &elements,
             &nodes,
             loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
         let el_length = elements[0].get_length(&nodes);
@@ -548,6 +552,7 @@ mod tests {
             &elements,
             &nodes,
             loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
         let el_length = elements[0].get_length(&nodes);
@@ -595,6 +600,7 @@ mod tests {
             &elements,
             &nodes,
             loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
         let el_length = elements[0].get_length(&nodes);
@@ -650,6 +656,7 @@ mod tests {
             &elements,
             &nodes,
             loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
         nodes.get_mut(&2).unwrap().point = VpPoint::new(0.0, 4000.0);
@@ -717,6 +724,7 @@ mod tests {
             &elements,
             &nodes,
             loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
         let el_length = elements[0].get_length(&nodes);
@@ -772,6 +780,7 @@ mod tests {
             &elements,
             &nodes,
             loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
         nodes.get_mut(&2).unwrap().point = VpPoint::new(0.0, 4000.0);
@@ -825,6 +834,7 @@ mod tests {
             &elements,
             &nodes,
             loads,
+            &LoadCombination::default(),
             &EquationHandler::new(),
         );
         let result =

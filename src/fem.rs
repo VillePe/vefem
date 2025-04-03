@@ -8,6 +8,7 @@ use vputilslib::equation_handler::EquationHandler;
 use crate::fem::fem_handler::*;
 use crate::fem::stiffness::*;
 use crate::loads;
+use crate::loads::LoadCombination;
 use crate::structure::CalculationModel;
 use crate::{
     loads::load::CalculationLoad,
@@ -34,44 +35,56 @@ pub mod utils;
 pub fn calculate(
     calc_model: &CalculationModel,
     equation_handler: &EquationHandler,
-) -> CalculationResults {
+) -> Vec<CalculationResults> {
     let nodes = &calc_model.nodes;
     let elements = &calc_model.elements;
     let loads = &calc_model.loads;
     let calc_settings = &calc_model.calc_settings;
 
     let col_height = utils::col_height(nodes, elements);
+    
+    let load_combinations = if calc_model.load_combinations.is_empty() {
+        &vec![LoadCombination::default()]
+    } else {
+        &calc_model.load_combinations
+    };
+    
+    let mut results: Vec<CalculationResults> = Vec::new();
+    for lc in load_combinations {
+        let calculation_loads =
+        &loads::utils::extract_calculation_loads(elements, nodes, loads, lc, equation_handler);
 
-    let calculation_loads =
-        &loads::utils::extract_calculation_loads(elements, nodes, loads, equation_handler);
+        let mut global_stiff_matrix = create_joined_stiffness_matrix(elements, nodes, calc_settings);
+        // The global equivalent loads matrix
+        let global_eq_l_matrix = equivalent_loads::create(elements, nodes, calculation_loads, calc_settings);
+        let displacements = calculate_displacements(
+            nodes,
+            col_height,
+            &mut global_stiff_matrix,
+            &global_eq_l_matrix,
+        );
+        let reactions = calculate_reactions(&global_stiff_matrix, &displacements, &global_eq_l_matrix);
 
-    let mut global_stiff_matrix = create_joined_stiffness_matrix(elements, nodes, calc_settings);
-    // The global equivalent loads matrix
-    let global_eq_l_matrix = equivalent_loads::create(elements, nodes, calculation_loads, calc_settings);
-    let displacements = calculate_displacements(
-        nodes,
-        col_height,
-        &mut global_stiff_matrix,
-        &global_eq_l_matrix,
-    );
-    let reactions = calculate_reactions(&global_stiff_matrix, &displacements, &global_eq_l_matrix);
+        let displacements = displacements.column(0).as_slice().to_vec();
+        let reactions = reactions.column(0).as_slice().to_vec();
 
-    let displacements = displacements.column(0).as_slice().to_vec();
-    let reactions = reactions.column(0).as_slice().to_vec();
+        let node_results = NodeResults::new(displacements, reactions, nodes.len(), &equation_handler);
+        let internal_force_results = calc_internal_forces(
+            elements,
+            nodes,
+            calculation_loads,
+            &node_results,
+            calc_settings,
+        );
 
-    let node_results = NodeResults::new(displacements, reactions, nodes.len(), &equation_handler);
-    let internal_force_results = calc_internal_forces(
-        elements,
-        nodes,
-        calculation_loads,
-        &node_results,
-        calc_settings,
-    );
-
-    CalculationResults {
-        node_results,
-        internal_force_results,
+        let result = CalculationResults {
+            load_combination: lc.name.clone(),
+            node_results,
+            internal_force_results,
+        };
+        results.push(result);
     }
+    results
 }
 
 fn calc_internal_forces(
