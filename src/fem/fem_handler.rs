@@ -138,7 +138,7 @@ mod tests {
     use vputilslib::{equation_handler::EquationHandler, geometry2d::VpPoint};
 
     use crate::{loads::Load, material::{MaterialData, Steel}, profile::Profile, settings::CalculationSettings, 
-        structure::{CalculationModel, Element, Node}};
+        structure::{StructureModel, Element, Node}};
 
     // #[test]
     fn t_simple_benchmark_calculation() {
@@ -169,7 +169,7 @@ mod tests {
             -90.0,
         );
 
-        let calc_model = CalculationModel {
+        let calc_model = StructureModel {
             nodes,
             elements,
             loads: vec![load],

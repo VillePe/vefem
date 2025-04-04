@@ -8,7 +8,7 @@ mod internal_forces_tests {
     use vefem::{
         fem::internal_forces::{calculate_axial_force_at, calculate_shear_at}, loads::{self, Load, LoadCombination}, 
         material::{MaterialData, Steel}, profile::Profile, settings::CalculationSettings, 
-        structure::{CalculationModel, Element, Node}
+        structure::{StructureModel, Element, Node}
     };
 
     use vefem::fem::internal_forces::calculate_moment_at;
@@ -35,7 +35,7 @@ mod internal_forces_tests {
             -90.0,
         );
         let loads = vec![p_load];
-        let mut calc_model = CalculationModel {
+        let mut calc_model = StructureModel {
             nodes,
             elements,
             loads,
@@ -157,7 +157,7 @@ mod internal_forces_tests {
             "10".to_string(),
         );
         let loads = vec![r_load];
-        let calc_model = CalculationModel {
+        let calc_model = StructureModel {
             nodes,
             elements,
             loads,
@@ -233,7 +233,7 @@ mod internal_forces_tests {
             -90.0,
         );
         let loads = vec![l_load];
-        let mut calc_model = CalculationModel {
+        let mut calc_model = StructureModel {
             nodes,
             elements,
             loads,
@@ -388,7 +388,7 @@ mod internal_forces_tests {
             -90.0,
         );
         let loads = vec![l_load];
-        let mut calc_model = CalculationModel {
+        let mut calc_model = StructureModel {
             nodes,
             elements,
             loads,
@@ -518,7 +518,7 @@ mod internal_forces_tests {
             -90.0,
         );
         let loads = vec![l_load];
-        let mut calc_model = CalculationModel {
+        let mut calc_model = StructureModel {
             nodes,
             elements,
             loads,
@@ -647,7 +647,7 @@ mod internal_forces_tests {
             -90.0,
         );
         let loads = vec![p_load];
-        let mut calc_model = CalculationModel {
+        let mut calc_model = StructureModel {
             nodes,
             elements,
             loads,
@@ -769,7 +769,7 @@ mod internal_forces_tests {
             "10".to_string(),
         );
         let loads = vec![r_load];
-        let calc_model = CalculationModel {
+        let calc_model = StructureModel {
             nodes,
             elements,
             loads,
@@ -846,7 +846,7 @@ mod internal_forces_tests {
             -90.0,
         );
         let loads = vec![l_load];
-        let mut calc_model = CalculationModel {
+        let mut calc_model = StructureModel {
             nodes,
             elements,
             loads,
@@ -991,7 +991,7 @@ mod internal_forces_tests {
             -90.0,
         );
         let loads = vec![l_load];
-        let mut calc_model = CalculationModel {
+        let mut calc_model = StructureModel {
             nodes,
             elements,
             loads,
@@ -1168,7 +1168,7 @@ mod internal_forces_tests {
             -90.0,
         );
         let loads = vec![l_load];
-        let mut calc_model = CalculationModel {
+        let mut calc_model = StructureModel {
             nodes,
             elements,
             loads,
@@ -1328,7 +1328,7 @@ mod internal_forces_tests {
             0.0,
         );
         let loads = vec![p_load];
-        let mut calc_model = CalculationModel {
+        let mut calc_model = StructureModel {
             nodes,
             elements,
             loads,
@@ -1437,7 +1437,7 @@ mod internal_forces_tests {
             "10000000".to_string(),
         );
         let loads = vec![r_load];
-        let calc_model = CalculationModel {
+        let calc_model = StructureModel {
             nodes,
             elements,
             loads,
@@ -1505,7 +1505,7 @@ mod internal_forces_tests {
             0.0,
         );
         let loads = vec![l_load];
-        let mut calc_model = CalculationModel {
+        let mut calc_model = StructureModel {
             nodes,
             elements,
             loads,
@@ -1639,7 +1639,7 @@ mod internal_forces_tests {
             0.0,
         );
         let loads = vec![l_load];
-        let mut calc_model = CalculationModel {
+        let mut calc_model = StructureModel {
             nodes,
             elements,
             loads,
@@ -1797,7 +1797,7 @@ mod internal_forces_tests {
             0.0,
         );
         let loads = vec![l_load];
-        let mut calc_model = CalculationModel {
+        let mut calc_model = StructureModel {
             nodes,
             elements,
             loads,

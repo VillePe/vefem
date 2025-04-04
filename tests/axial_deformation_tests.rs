@@ -6,7 +6,7 @@ mod axial_deformation_tests {
     use vputilslib::{equation_handler::EquationHandler, geometry2d::VpPoint};
 
     use vefem::{fem::axial_deformation, loads::{self, Load, LoadCombination}, material::{MaterialData, Steel}, profile::Profile, 
-    settings::CalculationSettings, structure::{CalculationModel, Element, Node}};
+    settings::CalculationSettings, structure::{StructureModel, Element, Node}};
 
     #[test]
     fn t_calculate_axial_deformation_at_pl() {
@@ -37,7 +37,7 @@ mod axial_deformation_tests {
             &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let mut calc_model = CalculationModel {
+        let mut calc_model = StructureModel {
             nodes,
             elements,
             loads,
@@ -157,7 +157,7 @@ mod axial_deformation_tests {
             &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let mut calc_model = CalculationModel {
+        let mut calc_model = StructureModel {
             nodes,
             elements,
             loads,
@@ -289,7 +289,7 @@ mod axial_deformation_tests {
             &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let mut calc_model = CalculationModel {
+        let mut calc_model = StructureModel {
             nodes,
             elements,
             loads,
@@ -400,7 +400,7 @@ mod axial_deformation_tests {
             &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let mut calc_model = CalculationModel {
+        let mut calc_model = StructureModel {
             nodes,
             elements,
             loads,
@@ -501,7 +501,7 @@ mod axial_deformation_tests {
             &EquationHandler::new(),
         );
         let calc_settings = CalculationSettings::default();
-        let mut calc_model = CalculationModel {
+        let mut calc_model = StructureModel {
             nodes,
             elements,
             loads,
@@ -613,7 +613,7 @@ mod axial_deformation_tests {
             &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let mut calc_model = CalculationModel {
+        let mut calc_model = StructureModel {
             nodes,
             elements,
             loads,

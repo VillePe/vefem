@@ -4,7 +4,7 @@ use crate::{loads::{Load, LoadCombination}, settings::CalculationSettings};
 use super::{Element, Node};
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct CalculationModel {
+pub struct StructureModel {
     /// All the nodes in the model. The key is the node number
     pub nodes: BTreeMap<i32, Node>,
     /// All the elements in the model

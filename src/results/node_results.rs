@@ -112,7 +112,7 @@ mod tests {
     use crate::material::{MaterialData, Steel};
     use crate::profile::Profile;
     use crate::settings::CalculationSettings;
-    use crate::structure::CalculationModel;
+    use crate::structure::StructureModel;
     use crate::structure::{Element, Node};
 
     #[test]
@@ -136,7 +136,7 @@ mod tests {
             00.0,
         );
         let elements = vec![el];
-        let calc_model = CalculationModel {
+        let calc_model = StructureModel {
             nodes,
             elements: elements,
             loads: vec![pl],

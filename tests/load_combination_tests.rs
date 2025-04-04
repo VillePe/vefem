@@ -43,7 +43,7 @@ mod tests {
         assert!(calc_loads[1].strength == 14.0); // 2
         assert!(calc_loads[2].strength == 10.0); // 3
 
-        let calc_model = vefem::structure::CalculationModel{
+        let calc_model = vefem::structure::StructureModel{
             nodes,
             elements,            
             loads,

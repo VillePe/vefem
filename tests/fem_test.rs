@@ -10,7 +10,7 @@ mod readme_test {
         material::{MaterialData, Steel},
         profile::Profile,
         settings::CalculationSettings,
-        structure::{CalculationModel, Node},
+        structure::{StructureModel, Node},
     };
 
     #[test]
@@ -37,7 +37,7 @@ mod readme_test {
         let loads = vec![line_load];
         let mut eq_handler = EquationHandler::new();
         let calc_settings = CalculationSettings::default();
-        let calc_model = CalculationModel {
+        let calc_model = StructureModel {
             nodes,
             elements,
             loads,

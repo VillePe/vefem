@@ -2,14 +2,16 @@
 #![allow(dead_code)]
 
 use std::collections::BTreeMap;
+use std::collections::HashMap;
 
+use calculation_model::CalcModel;
 use vputilslib::equation_handler::EquationHandler;
 
 use crate::fem::fem_handler::*;
 use crate::fem::stiffness::*;
 use crate::loads;
 use crate::loads::LoadCombination;
-use crate::structure::CalculationModel;
+use crate::structure::StructureModel;
 use crate::{
     loads::load::CalculationLoad,
     results::*,
@@ -25,26 +27,33 @@ pub mod internal_forces;
 pub mod matrices;
 pub mod stiffness;
 pub mod utils;
+mod calculation_model;
 
 /// Calculates the displacements, support reactions and element internal forces.
 /// * 'calc_model' - calculation model that is extracted to calculation objects
 /// * 'equation_handler' - equation handler that can contain custom variables set by the user.
 /// The 'L' variable is reserved for the length of the element.
 pub fn calculate(
-    calc_model: &CalculationModel,
+    struct_model: &StructureModel,
     equation_handler: &EquationHandler,
 ) -> Vec<CalculationResults> {
-    let nodes = &calc_model.nodes;
-    let elements = &calc_model.elements;
-    let loads = &calc_model.loads;
-    let calc_settings = &calc_model.calc_settings;
+    let nodes = &struct_model.nodes;
+    let elements = &struct_model.elements;
+    let loads = &struct_model.loads;
+    let calc_settings = &struct_model.calc_settings;
+    let (calc_elements, extra_nodes) = crate::structure::utils::get_calc_elements(elements, nodes, &HashMap::new());
+    let mut calc_model = CalcModel {
+        nodes: &nodes,
+        extra_nodes: extra_nodes,
+        calc_elements: calc_elements,
+    };
 
     let col_height = utils::col_height(nodes, elements);
     
-    let load_combinations = if calc_model.load_combinations.is_empty() {
+    let load_combinations = if struct_model.load_combinations.is_empty() {
         &vec![LoadCombination::default()]
     } else {
-        &calc_model.load_combinations
+        &struct_model.load_combinations
     };
     
     let mut results: Vec<CalculationResults> = Vec::new();

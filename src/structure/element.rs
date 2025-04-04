@@ -69,6 +69,20 @@ impl Default for Element {
     }
 }
 
+pub struct CalculationElement {
+    pub number: i32,
+    pub model_el_num: i32,
+    pub node_start: i32,
+    pub node_end: i32,
+    pub material: MaterialData,
+    pub profile: Profile,
+    pub releases: Release,
+    pub length: f64,
+    pub rotation: f64,
+    pub elastic_modulus: f64,
+    pub major_smoa: f64,
+}
+
 #[cfg(test)]
 mod tests {
     use crate::material::*;

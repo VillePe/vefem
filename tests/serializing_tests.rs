@@ -11,7 +11,7 @@ pub mod serializing_tests {
         profile::Profile,
         reinforcement::{RebarCollection, RebarData, ReinforcementData, ShearRebarGroup},
         settings::CalculationSettings,
-        structure::{CalculationModel, Element, Node},
+        structure::{StructureModel, Element, Node},
         *,
     };
     use vputilslib::{equation_handler::EquationHandler, geometry2d::{Polygon, VpPoint}};
@@ -22,7 +22,7 @@ pub mod serializing_tests {
         let load_combinations: Vec<LoadCombination> = vec![];
         let loads = common::get_fem_matriisi_loads();
         let calc_settings = CalculationSettings::default();
-        let calc_model = CalculationModel {
+        let calc_model = StructureModel {
             nodes,
             elements,
             load_combinations,
@@ -31,7 +31,7 @@ pub mod serializing_tests {
         };
         let calc_model_json = serde_json::to_string_pretty(&calc_model).unwrap();
         println!("Calculation model JSON: {}", calc_model_json);
-        let calc_model_deserialized: CalculationModel =
+        let calc_model_deserialized: StructureModel =
             serde_json::from_str(&calc_model_json).unwrap();
         assert_eq!(
             calc_model.elements.len(),
@@ -132,7 +132,7 @@ pub mod serializing_tests {
         let load_combinations: Vec<LoadCombination> = vec![];
         let loads = common::get_fem_matriisi_loads();
         let calc_settings = CalculationSettings::default();
-        let calc_model = CalculationModel {
+        let calc_model = StructureModel {
             nodes,
             elements,
             load_combinations,
