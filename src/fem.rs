@@ -27,9 +27,7 @@ pub mod stiffness;
 pub mod utils;
 
 /// Calculates the displacements, support reactions and element internal forces.
-/// * 'elements' - list of elements to calculate
-/// * 'nodes' - list of nodes for the elements.
-/// * 'loads' - list of loads to calculate
+/// * 'calc_model' - calculation model that is extracted to calculation objects
 /// * 'equation_handler' - equation handler that can contain custom variables set by the user.
 /// The 'L' variable is reserved for the length of the element.
 pub fn calculate(
@@ -87,6 +85,15 @@ pub fn calculate(
     results
 }
 
+/// Calculates the internal forces for the elements by support reactions and displacements in node results
+/// 
+/// Parameters:
+/// * 'elements' - the elements of the structure model
+/// * 'nodes' - the nodes of the structure model
+/// * 'loads' - the loads of the calculation model
+/// * 'node_results' - the node results of the structure
+/// * 'calc_settings' - the calculation settings
+/// Returns: BTreeMap<i32, InternalForceResults> where the key is the element number
 fn calc_internal_forces(
     elements: &Vec<Element>,
     nodes: &BTreeMap<i32, Node>,
