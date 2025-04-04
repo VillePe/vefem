@@ -1,6 +1,7 @@
 use std::borrow::Cow;
 
 use serde::{Deserialize, Serialize};
+use serde_repr::{Deserialize_repr, Serialize_repr};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct LoadGroup {
@@ -16,7 +17,7 @@ pub struct LoadGroup {
 #[allow(dead_code)]
 impl LoadGroup {
     pub const PERMANENT: Self = Self{id: 0, name: Cow::Borrowed("Pysyvät"), uls_factor: 1.15, psii0: 1.0, psii1: 1.0, psii2: 1.0, group_type: GroupType::Permanent};
-    pub const PERMANENT_FAV: Self = Self{id: 1, name: Cow::Borrowed("Pysyvät, edu."), uls_factor: 1.15, psii0: 1.0, psii1: 1.0, psii2: 1.0, group_type: GroupType::Permanent};
+    pub const PERMANENT_FAV: Self = Self{id: 1, name: Cow::Borrowed("Pysyvät, edu."), uls_factor: 1.15, psii0: 1.0, psii1: 1.0, psii2: 1.0, group_type: GroupType::PermanentFav};
     pub const CLASS_A: Self = Self{id: 2, name: Cow::Borrowed("KL A"), uls_factor: 1.0, psii0: 1.0, psii1: 1.0, psii2: 1.0, group_type: GroupType::LiveLoad};
     pub const CLASS_B: Self = Self{id: 3, name: Cow::Borrowed("KL B"), uls_factor: 1.0, psii0: 1.0, psii1: 1.0, psii2: 1.0, group_type: GroupType::LiveLoad};
     pub const CLASS_C: Self = Self{id: 4, name: Cow::Borrowed("KL C"), uls_factor: 1.0, psii0: 1.0, psii1: 1.0, psii2: 1.0, group_type: GroupType::LiveLoad};
@@ -63,10 +64,12 @@ impl LoadGroup {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize_repr, Deserialize_repr)]
+#[repr(u8)]
 pub enum GroupType {
-    Permanent,
-    LiveLoad,
+    Permanent = 0,
+    LiveLoad = 1,
+    PermanentFav = 10,
 }
 
 #[cfg(test)]

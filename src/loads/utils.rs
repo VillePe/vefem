@@ -121,42 +121,6 @@ pub fn get_load_map(loads: Vec<CalculationLoad>) -> BTreeMap<String, Vec<Calcula
     load_map
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn t_get_element_list() {
-        let load1 = Load {
-            element_numbers: "1,2,3".to_string(),
-            ..Load::default()
-        };
-        let result1 = get_linked_element_numbers(&load1);
-        assert_eq!(vec![1, 2, 3], result1);
-
-        let load2 = Load {
-            element_numbers: "1,2,6,8".to_string(),
-            ..Load::default()
-        };
-        let result2 = get_linked_element_numbers(&load2);
-        assert_eq!(vec![1, 2, 6, 8], result2);
-
-        let load3 = Load {
-            element_numbers: "1,3..6,8".to_string(),
-            ..Load::default()
-        };
-        let result3 = get_linked_element_numbers(&load3);
-        assert_eq!(vec![1, 3, 4, 5, 6, 8], result3);
-
-        let load4 = Load {
-            element_numbers: "-1".to_string(),
-            ..Load::default()
-        };
-        let result4 = get_linked_element_numbers(&load4);
-        assert_eq!(vec![-1], result4);
-    }
-}
-
 /// Extracts the calculation loads from given loads. Note that this method also converts the
 /// load strengths by their type (kN => N, kN/m => N/mm, kNm => Nmm)
 /// * `elements` - List of elements
@@ -323,4 +287,40 @@ pub fn extract_calculation_loads(
     }
 
     calc_loads
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn t_get_element_list() {
+        let load1 = Load {
+            element_numbers: "1,2,3".to_string(),
+            ..Load::default()
+        };
+        let result1 = get_linked_element_numbers(&load1);
+        assert_eq!(vec![1, 2, 3], result1);
+
+        let load2 = Load {
+            element_numbers: "1,2,6,8".to_string(),
+            ..Load::default()
+        };
+        let result2 = get_linked_element_numbers(&load2);
+        assert_eq!(vec![1, 2, 6, 8], result2);
+
+        let load3 = Load {
+            element_numbers: "1,3..6,8".to_string(),
+            ..Load::default()
+        };
+        let result3 = get_linked_element_numbers(&load3);
+        assert_eq!(vec![1, 3, 4, 5, 6, 8], result3);
+
+        let load4 = Load {
+            element_numbers: "-1".to_string(),
+            ..Load::default()
+        };
+        let result4 = get_linked_element_numbers(&load4);
+        assert_eq!(vec![-1], result4);
+    }
 }
