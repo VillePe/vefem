@@ -2,8 +2,9 @@
 
 use vputilslib::equation_handler::EquationHandler;
 
-use crate::loads::load::Load;
 use crate::fem::CalcModel;
+use crate::loads::load::Load;
+use crate::structure::CalculationElement;
 
 use super::load::CalculationLoad;
 use super::LoadCombination;
@@ -159,20 +160,27 @@ pub fn extract_calculation_loads(
             let element_number = element.model_el_num;
             let el_length = element.length;
             temp_eq_handler.set_variable("L", el_length);
-            let offset_start = temp_eq_handler
+            let mut offset_start = temp_eq_handler
                 .calculate_formula(&load.offset_start)
                 .unwrap_or(0.0);
-            let offset_end = temp_eq_handler
+            let mut offset_end = temp_eq_handler
                 .calculate_formula(&load.offset_end)
                 .unwrap_or(0.0);
             let strength = temp_eq_handler
                 .calculate_formula(&load.strength)
                 .unwrap_or(0.0);
+
+            if offset_end < element.offset_from_model_el
+                || offset_start + element.offset_from_model_el > element.length
+            {
+                continue;
+            }
+
             match load.load_type {
                 crate::loads::load::LoadType::Point => {
                     let calc_load = CalculationLoad {
                         name,
-                        offset_start,
+                        offset_start: offset_start - element.offset_from_model_el,
                         strength: strength * 1e3 * strength_factor, // kN => N
                         rotation,
                         element_number,
@@ -182,6 +190,16 @@ pub fn extract_calculation_loads(
                     calc_loads.push(calc_load);
                 }
                 super::load::LoadType::Line => {
+                    if offset_start <= element.offset_from_model_el {
+                        offset_start = 0.0;
+                    } else {
+                        offset_start = offset_start - element.offset_from_model_el;
+                    }
+                    if offset_end >= element.offset_from_model_el + element.length {
+                        offset_end = element.length;
+                    } else {
+                        offset_end = offset_end - element.offset_from_model_el;
+                    }
                     let calc_load = CalculationLoad {
                         name,
                         offset_start,
@@ -194,21 +212,24 @@ pub fn extract_calculation_loads(
                     calc_loads.push(calc_load);
                 }
                 super::load::LoadType::Triangular => {
-                    let calc_load = CalculationLoad {
-                        name,
+                    let (tr_load, line_load) = handle_triang_load_extracting(
+                        element,
+                        &load.name,
                         offset_start,
                         offset_end,
-                        strength: strength * strength_factor,
+                        strength,
                         rotation,
                         element_number,
-                        load_type: super::load::CalculationLoadType::Triangular,
-                    };
-                    calc_loads.push(calc_load);
+                    );
+                    calc_loads.push(tr_load);
+                    if line_load.is_some() {
+                        calc_loads.push(line_load.unwrap());
+                    }
                 }
                 super::load::LoadType::Rotational => {
                     let calc_load = CalculationLoad {
                         name,
-                        offset_start,
+                        offset_start: offset_start - element.offset_from_model_el,
                         offset_end,
                         strength: strength * strength_factor * 1e6,
                         rotation,
@@ -258,7 +279,8 @@ pub fn extract_calculation_loads(
                         name,
                         offset_start,
                         offset_end,
-                        strength: strength * strength_factor,
+                        strength: strength * strength_factor * element.length
+                            / element.model_el_length,
                         rotation,
                         element_number,
                         load_type: super::load::CalculationLoadType::Strain,
@@ -267,8 +289,9 @@ pub fn extract_calculation_loads(
                 }
                 super::load::LoadType::Thermal => {
                     // Convert the thermal coefficient to strain load
-                    let thermal_coefficient =
-                        crate::material::get_thermal_expansion_coefficient(element.material.value());
+                    let thermal_coefficient = crate::material::get_thermal_expansion_coefficient(
+                        element.material.value(),
+                    );
                     let displacement = strength * thermal_coefficient * el_length;
                     let calc_load = CalculationLoad {
                         name,
@@ -288,8 +311,142 @@ pub fn extract_calculation_loads(
     calc_loads
 }
 
+fn handle_triang_load_extracting(
+    calc_element: &CalculationElement,
+    load_name: &String,
+    load_offset_start: f64,
+    load_offset_end: f64,
+    load_original_strength: f64,
+    rotation: f64,
+    element_number: i32,
+) -> (CalculationLoad, Option<CalculationLoad>) {
+    let mut tr_load = CalculationLoad {
+        name: load_name.clone(),
+        offset_start: 0.0, // This needs to be set in the ifs!
+        offset_end: 0.0,   // This needs to be set in the ifs!
+        strength: 0.0,     // This needs to be set in the ifs!
+        rotation,
+        element_number,
+        load_type: super::load::CalculationLoadType::Triangular,
+    };
+    let mut line_load = CalculationLoad {
+        name: load_name.clone(),
+        offset_start: 0.0,
+        offset_end: 0.0,
+        strength: 0.0,
+        load_type: super::load::CalculationLoadType::Line,
+        ..tr_load
+    };
+    let original_load_length = (load_offset_start-load_offset_end).abs();
+    let mut result_line_load: Option<CalculationLoad> = None;
+    // Load is shrinking in positive X
+    if load_offset_start < load_offset_end {
+        // Load starts before the element
+        if load_offset_start < calc_element.offset_from_model_el {
+            // And load ends after the element
+            if load_offset_end > calc_element.offset_from_model_el + calc_element.length {
+                // The distance from start of the element to start of the load
+                let x1 = calc_element.offset_from_model_el - load_offset_start;
+                // The distance from end of the element to start of the load
+                let x2 = (calc_element.offset_from_model_el + calc_element.length) - load_offset_start;
+                let strength_start = load_original_strength * (1.0-x1 / original_load_length);
+                let strength_end = load_original_strength * (1.0-x2 / original_load_length);
+                tr_load.strength = strength_start - strength_end;
+                line_load.strength = strength_end;
+                tr_load.offset_start = 0.0;
+                tr_load.offset_end = calc_element.length;
+                line_load.offset_start = 0.0;
+                line_load.offset_end = calc_element.length;
+                result_line_load = Some(line_load);
+            } else {
+                // Load ends before element (only need a single triangle load)
+                let x1 = calc_element.offset_from_model_el - load_offset_start;
+                let strength_start = load_original_strength * (1.0-x1 / original_load_length);
+                tr_load.strength = strength_start;
+                tr_load.offset_start = 0.0;
+                tr_load.offset_end = load_offset_end - calc_element.offset_from_model_el;
+            }
+        } else {
+            // Load starts after the element
+            // And load ends after the element
+            if load_offset_end > calc_element.offset_from_model_el + calc_element.length {
+                let x2 = (calc_element.offset_from_model_el + calc_element.length) - load_offset_start;
+                let strength_left = load_original_strength;
+                let strength_right = load_original_strength * (1.0-x2 / original_load_length);
+                tr_load.strength = strength_left - strength_right;
+                line_load.strength = strength_right;
+                tr_load.offset_start = load_offset_start - calc_element.offset_from_model_el;
+                tr_load.offset_end = calc_element.length;
+                line_load.offset_start = load_offset_start - calc_element.offset_from_model_el;
+                line_load.offset_end = calc_element.length;
+                result_line_load = Some(line_load);
+            } else {
+                // Load ends before element (only need a single triangle load). The original
+                // strength is correct
+                tr_load.offset_start = load_offset_start - calc_element.offset_from_model_el;
+                tr_load.offset_end = load_offset_end - calc_element.offset_from_model_el;
+                tr_load.strength = load_original_strength;
+            }
+        }
+    } else {
+        // Note that the load_offset_start is the right end point and vice versa
+        // Load starts before the element
+        if load_offset_end < calc_element.offset_from_model_el {
+            // And load ends after the element
+            if load_offset_start > calc_element.offset_from_model_el + calc_element.length {
+                // The distance from start of the element to left side of the load
+                let x1 = calc_element.offset_from_model_el - load_offset_end;
+                // The distance from end of the element to left side of the load
+                let x2 = (calc_element.offset_from_model_el + calc_element.length) - load_offset_end;
+                let strength_left = load_original_strength * (x1 / original_load_length);
+                let strength_right = load_original_strength * (x2 / original_load_length);
+                tr_load.strength = strength_right - strength_left;
+                line_load.strength = strength_left;
+                tr_load.offset_end = 0.0;
+                tr_load.offset_start = calc_element.length;
+                line_load.offset_start = 0.0;
+                line_load.offset_end = calc_element.length;
+                result_line_load = Some(line_load);
+            } else {
+                // Load ends before element
+                let x1 = calc_element.offset_from_model_el - load_offset_end;                
+                let strength_left = load_original_strength * (x1 / original_load_length);
+                let strength_right = load_original_strength;
+                tr_load.strength = strength_right - strength_left;
+                line_load.strength = strength_left;
+                tr_load.offset_end = 0.0;
+                tr_load.offset_start = load_offset_start - calc_element.offset_from_model_el;
+                line_load.offset_start = 0.0;
+                line_load.offset_end = load_offset_start - calc_element.offset_from_model_el;
+                result_line_load = Some(line_load);
+            }
+        } else {
+            // Load starts after the element
+            // And load ends after the element
+            if load_offset_start > calc_element.offset_from_model_el + calc_element.length {       
+                let x2 = (calc_element.offset_from_model_el + calc_element.length) - load_offset_end;
+                let strength_left = 0.0;
+                let strength_right = load_original_strength * (x2 / original_load_length);
+                tr_load.strength = strength_right - strength_left;
+                tr_load.offset_end = load_offset_end - calc_element.offset_from_model_el;
+                tr_load.offset_start = calc_element.length;
+            } else {
+                // Load ends before element (only needed single triangle load). The original
+                // strength is correct
+                tr_load.offset_start = load_offset_start - calc_element.offset_from_model_el;
+                tr_load.offset_end = load_offset_end - calc_element.offset_from_model_el;
+                tr_load.strength = load_original_strength;
+            }
+        }
+    }
+
+    (tr_load, result_line_load)
+}
+
 #[cfg(test)]
 mod tests {
+    use crate::{material::Steel, profile::PolygonProfile, structure::Release};
+
     use super::*;
 
     #[test]
@@ -321,5 +478,155 @@ mod tests {
         };
         let result4 = get_linked_element_numbers(&load4);
         assert_eq!(vec![-1], result4);
+    }
+
+    #[test]
+    fn t_handle_triang_load_extracting() {
+        let calc_elem: CalculationElement = CalculationElement {
+            calc_el_num: 1002,
+            model_el_num: 1,
+            model_el_length: 4000.0,
+            node_start: 3,
+            node_end: 4,
+            material: &crate::material::MaterialData::Steel(Steel::new_s355()),
+            profile: &crate::profile::Profile::PolygonProfile(PolygonProfile::new_rectangle("name".to_string(), 100.0, 100.0)),
+            releases: Release::new(),
+            length: 1000.0,
+            rotation: 0.0,
+            profile_area: 100.0*100.0,
+            elastic_modulus: 210e3,
+            major_smoa: 100.0*100.0f64.powi(3)/12.0,
+            offset_from_model_el: 1000.0,
+        };        
+        let tr_load = Load::new_triangular_load("ABC".to_string(), "1".to_string(), 
+            "XXX".to_string(), "XXX".to_string(), "XXX".to_string(), -90.0
+        );
+        // Load starts before and ends after element. Shrinking from left to right
+        let (tr, ll) = handle_triang_load_extracting(&calc_elem, &tr_load.name, 
+            0.0, 4000.0, 10.0, -90.0, 1
+        );        
+        println!("tr.strength: {0}", tr.strength);
+        println!("tr.offset_start: {0}", tr.offset_start);
+        println!("tr.offset_end: {0}", tr.offset_end);
+        println!("ll.strength: {0}", ll.as_ref().unwrap().strength);
+        println!("ll.offset_start: {0}", ll.as_ref().unwrap().offset_start);
+        println!("ll.offset_end: {0}", ll.as_ref().unwrap().offset_end);
+        println!();
+        assert!(tr.strength == 2.5);
+        assert!(ll.as_ref().unwrap().strength == 5.0);
+        assert!(tr.offset_start == 0.0);
+        assert!(tr.offset_end == 1000.0);
+        assert!(ll.as_ref().unwrap().offset_start == 0.0);
+        assert!(ll.as_ref().unwrap().offset_end == 1000.0);
+
+        // Load starts before and ends before element. Shrinking from left to right
+        let (tr, ll) = handle_triang_load_extracting(&calc_elem, &tr_load.name, 
+            500.0, 1500.0, 10.0, -90.0, 1
+        );
+        println!("tr.strength: {0}", tr.strength);
+        println!("tr.offset_start: {0}", tr.offset_start);
+        println!("tr.offset_end: {0}", tr.offset_end);
+        println!();
+        assert!(tr.strength == 5.0);
+        assert!(ll.is_none());
+        assert!(tr.offset_start == 0.0);
+        assert!(tr.offset_end == 500.0);
+
+        // Load starts after and ends after element. Shrinking from left to right
+        let (tr, ll) = handle_triang_load_extracting(&calc_elem, &tr_load.name, 
+            1500.0, 4000.0, 10.0, -90.0, 1
+        );
+        println!("tr.strength: {0}", tr.strength);
+        println!("tr.offset_start: {0}", tr.offset_start);
+        println!("tr.offset_end: {0}", tr.offset_end);
+        println!("ll.strength: {0}", ll.as_ref().unwrap().strength);
+        println!("ll.offset_start: {0}", ll.as_ref().unwrap().offset_start);
+        println!("ll.offset_end: {0}", ll.as_ref().unwrap().offset_end);
+        println!();
+        assert!(tr.strength == 2.0);
+        assert!(ll.as_ref().unwrap().strength == 8.0);
+        assert!(tr.offset_start == 500.0);
+        assert!(tr.offset_end == 1000.0);
+        assert!(ll.as_ref().unwrap().offset_start == 500.0);
+        assert!(ll.as_ref().unwrap().offset_end == 1000.0);
+
+        // Load starts after and ends before element. Shrinking from left to right
+        let (tr, ll) = handle_triang_load_extracting(&calc_elem, &tr_load.name, 
+            1200.0, 1800.0, 10.0, -90.0, 1
+        );
+        println!("tr.strength: {0}", tr.strength);
+        println!("tr.offset_start: {0}", tr.offset_start);
+        println!("tr.offset_end: {0}", tr.offset_end);
+        println!();
+        assert!(tr.strength == 10.0);
+        assert!(ll.is_none());
+        assert!(tr.offset_start == 200.0);
+        assert!(tr.offset_end == 800.0);
+
+
+        let tr_load = Load::new_triangular_load("ABC".to_string(), "1".to_string(), 
+            "L".to_string(), "0".to_string(), "10".to_string(), -90.0
+        );
+        // Load starts before and ends after element. Growing from left to right
+        let (tr, ll) = handle_triang_load_extracting(&calc_elem, &tr_load.name, 
+            4000.0, 0.0, 10.0, -90.0, 1
+        );
+        println!("tr.strength: {0}", tr.strength);
+        println!("tr.offset_start: {0}", tr.offset_start);
+        println!("tr.offset_end: {0}", tr.offset_end);
+        println!("ll.strength: {0}", ll.as_ref().unwrap().strength);
+        println!("ll.offset_start: {0}", ll.as_ref().unwrap().offset_start);
+        println!("ll.offset_end: {0}", ll.as_ref().unwrap().offset_end);
+        println!();
+        assert!(tr.strength == 2.5);
+        assert!(ll.as_ref().unwrap().strength == 2.5);
+        assert!(tr.offset_start == 1000.0);
+        assert!(tr.offset_end == 0000.0);
+        assert!(ll.as_ref().unwrap().offset_start == 000.0);
+        assert!(ll.as_ref().unwrap().offset_end == 1000.0);
+
+        // Load starts before and ends before element. Growing from left to right
+        let (tr, ll) = handle_triang_load_extracting(&calc_elem, &tr_load.name, 
+            1500.0, 0.0, 10.0, -90.0, 1
+        );
+        println!("tr.strength: {0}", tr.strength);
+        println!("tr.offset_start: {0}", tr.offset_start);
+        println!("tr.offset_end: {0}", tr.offset_end);
+        println!("ll.strength: {0}", ll.as_ref().unwrap().strength);
+        println!("ll.offset_start: {0}", ll.as_ref().unwrap().offset_start);
+        println!("ll.offset_end: {0}", ll.as_ref().unwrap().offset_end);
+        println!();
+        assert!((tr.strength - 3.333333).abs() < 0.1);
+        assert!((ll.as_ref().unwrap().strength - 6.66666).abs() < 0.1);
+        assert!(tr.offset_start == 500.0);
+        assert!(tr.offset_end == 0000.0);
+        assert!(ll.as_ref().unwrap().offset_start == 000.0);
+        assert!(ll.as_ref().unwrap().offset_end == 500.0);
+
+        // Load starts after and ends after element. Growing from left to right
+        let (tr, ll) = handle_triang_load_extracting(&calc_elem, &tr_load.name, 
+            4000.0, 1500.0, 10.0, -90.0, 1
+        );
+        println!("tr.strength: {0}", tr.strength);
+        println!("tr.offset_start: {0}", tr.offset_start);
+        println!("tr.offset_end: {0}", tr.offset_end);
+        println!();
+        assert!(tr.strength == 2.0);
+        assert!(ll.is_none());
+        assert!(tr.offset_start == 1000.0);
+        assert!(tr.offset_end == 500.0);
+
+        // Load starts after and ends before element. Growing from left to right
+        let (tr, ll) = handle_triang_load_extracting(&calc_elem, &tr_load.name, 
+            1800.0, 1200.0, 10.0, -90.0, 1
+        );
+        println!("tr.strength: {0}", tr.strength);
+        println!("tr.offset_start: {0}", tr.offset_start);
+        println!("tr.offset_end: {0}", tr.offset_end);
+        println!();
+        assert!(tr.strength == 10.0);
+        assert!(ll.is_none());
+        assert!(tr.offset_start == 800.0);
+        assert!(tr.offset_end == 200.0);
     }
 }

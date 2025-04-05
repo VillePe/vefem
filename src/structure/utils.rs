@@ -114,6 +114,7 @@ pub fn get_calc_elements<'a>(
                 // Create the last element
                 el_num += 1;
                 calc_element.node_start = e.node_end;
+                calc_element.offset_from_model_el = prev_split_pos.unwrap() as f64;
                 calc_element.length = (split_pos.0 - prev_split_pos.unwrap()) as f64;
                 calc_element.releases.s_tx = false;
                 calc_element.releases.s_tz = false;
@@ -123,6 +124,7 @@ pub fn get_calc_elements<'a>(
                 el_num += 1;
                 calc_element.node_start = split_pos.1.number;
                 calc_element.node_end = split_pos.1.number;
+                calc_element.offset_from_model_el = prev_split_pos.unwrap() as f64;
                 calc_element.length = length - prev_split_pos.unwrap() as f64;
                 clear_element_releases(&mut calc_element.releases);
             }

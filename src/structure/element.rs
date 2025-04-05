@@ -73,6 +73,7 @@ impl Default for Element {
 pub struct CalculationElement<'a> {
     pub calc_el_num: i32,
     pub model_el_num: i32,
+    pub model_el_length: f64,
     pub node_start: i32,
     pub node_end: i32,
     pub material: &'a MaterialData,
@@ -82,11 +83,13 @@ pub struct CalculationElement<'a> {
     pub rotation: f64,
     pub profile_area: f64,
     pub elastic_modulus: f64,
-    pub major_smoa: f64,
+    pub major_smoa: f64, 
+    pub offset_from_model_el: f64,
 }
 
 impl<'a> CalculationElement<'a> {
     pub fn from(element: &'a Element, structure_nodes: &BTreeMap<i32, Node>, number: i32, calc_settings: &CalculationSettings) -> Self {
+        let el_length = element.get_length(structure_nodes);
         Self {
             calc_el_num: number,
             model_el_num: element.number,
@@ -95,7 +98,8 @@ impl<'a> CalculationElement<'a> {
             material: &element.material,
             profile: &element.profile,
             releases: element.releases,
-            length: element.get_length(structure_nodes),
+            length: el_length,
+            model_el_length: el_length,
             rotation: element.get_rotation(structure_nodes),
             elastic_modulus: element.get_elastic_modulus(),
             profile_area: element.profile.get_area(&element.material, calc_settings),
@@ -103,6 +107,7 @@ impl<'a> CalculationElement<'a> {
                 &element.material, 
                 calc_settings
             ),
+            offset_from_model_el: 0.0,
         }   
     }
 }
