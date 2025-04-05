@@ -16,13 +16,6 @@ pub fn get_element_global_stiffness_matrix(
     let e_stiff_matrix = get_element_stiffness_matrix(&e, settings);
     let e_rotation_matrix = get_element_rotation_matrix(&e);
     let e_rot_matrix_t = e_rotation_matrix.transpose();
-    println!("e_length: {:?}", &e.length);
-    println!("e_rotation: {:?}", &e.rotation);
-    println!("e_area: {:?}", &e.profile_area);
-    println!("e_smoa: {:?}", &e.major_smoa);
-    println!("MATRIX {:?}", &e_rot_matrix_t);
-    println!("MATRIX {:?}", &e_stiff_matrix);
-    println!("MATRIX {:?}", &e_rotation_matrix);
     let e_glob_stiff_matrix = e_rot_matrix_t * e_stiff_matrix * e_rotation_matrix;
     e_glob_stiff_matrix
 }
