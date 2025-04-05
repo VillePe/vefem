@@ -4,7 +4,7 @@ use vputilslib::geometry2d::VpPoint;
 
 use super::Support;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 pub struct Node {
     pub number: i32,
     pub point: VpPoint,

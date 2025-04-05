@@ -13,6 +13,7 @@ mod tests {
     fn test_get_loads() {
         let loads = common::get_fem_matriisi_loads();
         let (elements, nodes) = common::get_structure_fem_matriisit_releases();
+        let calc_model = common::get_calc_model(&elements, &nodes);
         let mut load_combination = vefem::loads::LoadCombination::new(
             String::from("Load combination 1"), 
             load_combination::LoadCombinationType::ULS(false)
@@ -30,8 +31,7 @@ mod tests {
         load_combination2.add_load_n_factor(String::from("3"), 2.0);
 
         let calc_loads = loads::utils::extract_calculation_loads(
-            &elements, 
-            &nodes,
+            &calc_model,
             &loads,
             &load_combination2,
             &EquationHandler::new()

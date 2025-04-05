@@ -1,13 +1,12 @@
 ﻿#![allow(dead_code)]
 
-use crate::structure::element::Element;
-use crate::structure::Node;
+use crate::structure::{CalculationElement, Node};
 use nalgebra::DMatrix;
 use std::collections::BTreeMap;
 
 /// Gets the rotation matrix for the element. This matrix is in elements local coordinate system
-pub fn get_element_rotation_matrix(element: &Element, nodes: &BTreeMap<i32, Node>) -> DMatrix<f64> {
-    let angle_radians = element.get_rotation(nodes).to_radians();
+pub fn get_element_rotation_matrix(element: &CalculationElement) -> DMatrix<f64> {
+    let angle_radians = element.rotation.to_radians();
     let c = angle_radians.cos();
     let s = angle_radians.sin();
     DMatrix::from_row_slice(

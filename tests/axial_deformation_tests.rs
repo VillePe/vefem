@@ -1,12 +1,21 @@
+mod common;
+
 #[cfg(test)]
 mod axial_deformation_tests {
+    
     use std::collections::BTreeMap;
 
     use approx::relative_eq;
     use vputilslib::{equation_handler::EquationHandler, geometry2d::VpPoint};
 
-    use vefem::{fem::axial_deformation, loads::{self, Load, LoadCombination}, material::{MaterialData, Steel}, profile::Profile, 
-    settings::CalculationSettings, structure::{StructureModel, Element, Node}};
+    use vefem::{
+        loads::Load,
+        material::{MaterialData, Steel},
+        profile::Profile,
+        results::ForceType,
+        settings::CalculationSettings,
+        structure::{Element, Node, StructureModel},
+    };
 
     #[test]
     fn t_calculate_axial_deformation_at_pl() {
@@ -30,99 +39,54 @@ mod axial_deformation_tests {
             0.0,
         );
         let loads = vec![p_load];
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
-            &LoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let mut calc_model = StructureModel {
+        let mut struct_model = StructureModel {
             nodes,
             elements,
             loads,
             calc_settings: CalculationSettings::default(),
             load_combinations: vec![],
         };
-        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
-        let defl = axial_deformation::calculate_at(
-            1000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &cacl_loads,
-            &calc_model.calc_settings,
-            &results,
-        );
+        let results = &vefem::fem::calculate(&struct_model, &mut EquationHandler::new())[0];
+        let defl = results.internal_force_results[&1]
+            .get_force_at(ForceType::Deflection, 1000.0)
+            .unwrap()
+            .value_x;
         println!("Strain(1000): {} mm", defl);
         assert_eq!(relative_eq!(defl, 0.238, epsilon = 0.01), true);
-        let defl = axial_deformation::calculate_at(
-            2000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &cacl_loads,
-            &calc_model.calc_settings,
-            &results,
-        );
+        let defl = results.internal_force_results[&1]
+            .get_force_at(ForceType::Deflection, 2000.0)
+            .unwrap()
+            .value_x;
         println!("Strain(2000): {} mm", defl);
         assert_eq!(relative_eq!(defl, 0.476, epsilon = 0.01), true);
-        let defl = axial_deformation::calculate_at(
-            3000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &cacl_loads,
-            &calc_model.calc_settings,
-            &results,
-        );
+        let defl = results.internal_force_results[&1]
+            .get_force_at(ForceType::Deflection, 3000.0)
+            .unwrap()
+            .value_x;
         println!("Strain(3000): {} mm", defl);
         assert_eq!(relative_eq!(defl, 0.238, epsilon = 0.01), true);
-        let defl = axial_deformation::calculate_at(
-            4000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &cacl_loads,
-            &calc_model.calc_settings,
-            &results,
-        );
+        let defl = results.internal_force_results[&1]
+            .get_force_at(ForceType::Deflection, 4000.0)
+            .unwrap()
+            .value_x;
         println!("Strain(4000): {} mm", defl);
         assert_eq!(relative_eq!(defl, 0.0, epsilon = 0.01), true);
 
-        calc_model.loads[0].rotation = -45.0;
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &calc_model.elements,
-            &calc_model.nodes,
-            &calc_model.loads,
-            &LoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
-        let defl = axial_deformation::calculate_at(
-            2000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &cacl_loads,
-            &calc_model.calc_settings,
-            &results,
-        );
+        struct_model.loads[0].rotation = -45.0;
+        let results = &vefem::fem::calculate(&struct_model, &mut EquationHandler::new())[0];
+        let defl = results.internal_force_results[&1]
+            .get_force_at(ForceType::Deflection, 2000.0)
+            .unwrap()
+            .value_x;
         println!("Strain(2000<-45): {} mm", defl);
         assert_eq!(relative_eq!(defl, 0.337, epsilon = 0.01), true);
 
-        calc_model.loads[0].rotation = 135.0;
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &calc_model.elements,
-            &calc_model.nodes,
-            &calc_model.loads,
-            &LoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
-        let defl = axial_deformation::calculate_at(
-            2000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &cacl_loads,
-            &calc_model.calc_settings,
-            &results,
-        );
+        struct_model.loads[0].rotation = 135.0;
+        let results = &vefem::fem::calculate(&struct_model, &mut EquationHandler::new())[0];
+        let defl = results.internal_force_results[&1]
+            .get_force_at(ForceType::Deflection, 2000.0)
+            .unwrap()
+            .value_x;
         println!("Strain(2000<45): {} mm", defl);
         assert_eq!(relative_eq!(defl, -0.337, epsilon = 0.01), true);
     }
@@ -150,111 +114,61 @@ mod axial_deformation_tests {
             0.0,
         );
         let loads = vec![l_load];
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
-            &LoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let mut calc_model = StructureModel {
+        let mut structure_model = StructureModel {
             nodes,
             elements,
             loads,
             calc_settings: CalculationSettings::default(),
             load_combinations: vec![],
         };
-        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
-        let defl = axial_deformation::calculate_at(
-            1000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &cacl_loads,
-            &calc_model.calc_settings,
-            &results,
-        );
+        let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        println!("LENGTH: {:?}", results.internal_force_results.len());
+        println!("LENGTH2: {:?}", results.internal_force_results[&1].deflections.len());
+        let defl = results.internal_force_results[&1]
+            .get_force_at(ForceType::Deflection, 1000.0)
+            .unwrap()
+            .value_x;
         println!("Strain(1000): {} mm", defl);
         assert_eq!(relative_eq!(defl, 0.714, epsilon = 0.01), true);
-        let defl = axial_deformation::calculate_at(
-            2000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &cacl_loads,
-            &calc_model.calc_settings,
-            &results,
-        );
+        let defl = results.internal_force_results[&1]
+            .get_force_at(ForceType::Deflection, 2000.0)
+            .unwrap()
+            .value_x;
         println!("Strain(2000): {} mm", defl);
         assert_eq!(relative_eq!(defl, 0.952, epsilon = 0.01), true);
-        let defl = axial_deformation::calculate_at(
-            3000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &cacl_loads,
-            &calc_model.calc_settings,
-            &results,
-        );
+        let defl = results.internal_force_results[&1]
+            .get_force_at(ForceType::Deflection, 3000.0)
+            .unwrap()
+            .value_x;
         println!("Strain(3000): {} mm", defl);
         assert_eq!(relative_eq!(defl, 0.714, epsilon = 0.01), true);
 
-        calc_model.loads[0].rotation = -45.0;
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &calc_model.elements,
-            &calc_model.nodes,
-            &calc_model.loads,
-            &LoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
-        let defl = axial_deformation::calculate_at(
-            2000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &cacl_loads,
-            &calc_model.calc_settings,
-            &results,
-        );
+        structure_model.loads[0].rotation = -45.0;
+        let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let defl = results.internal_force_results[&1]
+            .get_force_at(ForceType::Deflection, 2000.0)
+            .unwrap()
+            .value_x;
         println!("Strain(2000<-45): {} mm", defl);
         assert_eq!(relative_eq!(defl, 0.673, epsilon = 0.01), true);
 
-        calc_model.loads[0].rotation = 135.0;
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &calc_model.elements,
-            &calc_model.nodes,
-            &calc_model.loads,
-            &LoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
-        let defl = axial_deformation::calculate_at(
-            2000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &cacl_loads,
-            &calc_model.calc_settings,
-            &results,
-        );
+        structure_model.loads[0].rotation = -45.0;
+        let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let defl = results.internal_force_results[&1]
+            .get_force_at(ForceType::Deflection, 2000.0)
+            .unwrap()
+            .value_x;
         println!("Strain(2000<45): {} mm", defl);
-        assert_eq!(relative_eq!(defl, -0.673, epsilon = 0.01), true);
+        assert_eq!(relative_eq!(defl, 0.673, epsilon = 0.01), true);
 
-        calc_model.loads[0].offset_start = "500".to_string();
-        calc_model.loads[0].offset_end = "1500".to_string();
-        calc_model.loads[0].rotation = 0.0;
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &calc_model.elements,
-            &calc_model.nodes,
-            &calc_model.loads,
-            &LoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
-        let defl = axial_deformation::calculate_at(
-            2000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &cacl_loads,
-            &calc_model.calc_settings,
-            &results,
-        );
+        structure_model.loads[0].offset_start = "500".to_string();
+        structure_model.loads[0].offset_end = "1500".to_string();
+        structure_model.loads[0].rotation = 0.0;
+        let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let defl = results.internal_force_results[&1]
+            .get_force_at(ForceType::Deflection, 2000.0)
+            .unwrap()
+            .value_x;
         println!("Strain(slice): {} mm", defl);
         assert_eq!(relative_eq!(defl, 0.238, epsilon = 0.01), true);
     }
@@ -282,89 +196,48 @@ mod axial_deformation_tests {
             0.0,
         );
         let loads = vec![l_load];
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
-            &LoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let mut calc_model = StructureModel {
+        let mut structure_model = StructureModel {
             nodes,
             elements,
             loads,
             calc_settings: CalculationSettings::default(),
             load_combinations: vec![],
         };
-        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
-        let defl = axial_deformation::calculate_at(
-            1000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &cacl_loads,
-            &calc_model.calc_settings,
-            &results,
-        );
+        let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let defl = results.internal_force_results[&1]
+            .get_force_at(ForceType::Deflection, 1000.0)
+            .unwrap()
+            .value_x;
         println!("Strain(1000): {} mm", defl);
         assert_eq!(relative_eq!(defl, 0.417, epsilon = 0.01), true);
-        let defl = axial_deformation::calculate_at(
-            2000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &cacl_loads,
-            &calc_model.calc_settings,
-            &results,
-        );
+        let defl = results.internal_force_results[&1]
+            .get_force_at(ForceType::Deflection, 2000.0)
+            .unwrap()
+            .value_x;
         println!("Strain(2000): {} mm", defl);
         assert_eq!(relative_eq!(defl, 0.476, epsilon = 0.01), true);
-        let defl = axial_deformation::calculate_at(
-            3000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &cacl_loads,
-            &calc_model.calc_settings,
-            &results,
-        );
+        let defl = results.internal_force_results[&1]
+            .get_force_at(ForceType::Deflection, 3000.0)
+            .unwrap()
+            .value_x;
         println!("Strain(3000): {} mm", defl);
         assert_eq!(relative_eq!(defl, 0.298, epsilon = 0.01), true);
 
-        calc_model.loads[0].rotation = -45.0;
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &calc_model.elements,
-            &calc_model.nodes,
-            &calc_model.loads,
-            &LoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
-        let defl = axial_deformation::calculate_at(
-            2000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &cacl_loads,
-            &calc_model.calc_settings,
-            &results,
-        );
+        structure_model.loads[0].rotation = -45.0;
+        let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let defl = results.internal_force_results[&1]
+            .get_force_at(ForceType::Deflection, 2000.0)
+            .unwrap()
+            .value_x;
         println!("Strain(2000<-45): {} mm", defl);
         assert_eq!(relative_eq!(defl, 0.337, epsilon = 0.01), true);
 
-        calc_model.loads[0].rotation = 135.0;
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &calc_model.elements,
-            &calc_model.nodes,
-            &calc_model.loads,
-            &LoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
-        let defl = axial_deformation::calculate_at(
-            2000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &cacl_loads,
-            &calc_model.calc_settings,
-            &results,
-        );
+        structure_model.loads[0].rotation = 135.0;
+        let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let defl = results.internal_force_results[&1]
+            .get_force_at(ForceType::Deflection, 2000.0)
+            .unwrap()
+            .value_x;
         println!("Strain(2000<45): {} mm", defl);
         assert_eq!(relative_eq!(defl, -0.337, epsilon = 0.01), true);
     }
@@ -393,79 +266,42 @@ mod axial_deformation_tests {
             0.0,
         );
         let loads = vec![l_load];
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
-            &LoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let mut calc_model = StructureModel {
+        let mut structure_model = StructureModel {
             nodes,
             elements,
             loads,
             calc_settings: CalculationSettings::default(),
             load_combinations: vec![],
         };
-        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
-        let defl = axial_deformation::calculate_at(
-            2000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &cacl_loads,
-            &calc_model.calc_settings,
-            &results,
-        );
+        let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let defl = results.internal_force_results[&1]
+            .get_force_at(ForceType::Deflection, 2000.0)
+            .unwrap()
+            .value_x;
         println!("Strain(2000): {} mm", defl);
         assert_eq!(relative_eq!(defl, 0.099, epsilon = 0.1), true);
-        let defl = axial_deformation::calculate_at(
-            3000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &cacl_loads,
-            &calc_model.calc_settings,
-            &results,
-        );
+        let defl = results.internal_force_results[&1]
+            .get_force_at(ForceType::Deflection, 3000.0)
+            .unwrap()
+            .value_x;
         println!("Strain(3000): {} mm", defl);
         assert_eq!(relative_eq!(defl, 0.05, epsilon = 0.1), true);
 
-        calc_model.loads[0].rotation = -45.0;
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &calc_model.elements,
-            &calc_model.nodes,
-            &calc_model.loads,
-            &LoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
-        let defl = axial_deformation::calculate_at(
-            2000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &cacl_loads,
-            &calc_model.calc_settings,
-            &results,
-        );
+        structure_model.loads[0].rotation = -45.0;
+        let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let defl = results.internal_force_results[&1]
+            .get_force_at(ForceType::Deflection, 2000.0)
+            .unwrap()
+            .value_x;
         println!("Strain(2000<-45): {} mm", defl);
         assert_eq!(relative_eq!(defl, 0.07, epsilon = 0.01), true);
 
-        calc_model.loads[0].rotation = 135.0;
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &calc_model.elements,
-            &calc_model.nodes,
-            &calc_model.loads,
-            &LoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
-        let defl = axial_deformation::calculate_at(
-            2000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &cacl_loads,
-            &calc_model.calc_settings,
-            &results,
-        );
+        structure_model.loads[0].rotation = 135.0;
+        let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let defl = results.internal_force_results[&1]
+            .get_force_at(ForceType::Deflection, 2000.0)
+            .unwrap()
+            .value_x;
         println!("Strain(2000<45): {} mm", defl);
         assert_eq!(relative_eq!(defl, -0.07, epsilon = 0.01), true);
     }
@@ -493,90 +329,48 @@ mod axial_deformation_tests {
             0.0,
         );
         let loads = vec![l_load];
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
-            &LoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let calc_settings = CalculationSettings::default();
-        let mut calc_model = StructureModel {
+        let mut structure_model = StructureModel {
             nodes,
             elements,
             loads,
             calc_settings: CalculationSettings::default(),
             load_combinations: vec![],
         };
-        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
-        let defl = axial_deformation::calculate_at(
-            1000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &cacl_loads,
-            &calc_settings,
-            &results,
-        );
+        let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let defl = results.internal_force_results[&1]
+            .get_force_at(ForceType::Deflection, 1000.0)
+            .unwrap()
+            .value_x;
         println!("Strain(1000): {} mm", defl);
         assert_eq!(relative_eq!(defl, 0.298, epsilon = 0.01), true);
-        let defl = axial_deformation::calculate_at(
-            2000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &cacl_loads,
-            &calc_settings,
-            &results,
-        );
+        let defl = results.internal_force_results[&1]
+            .get_force_at(ForceType::Deflection, 2000.0)
+            .unwrap()
+            .value_x;
         println!("Strain(2000): {} mm", defl);
         assert_eq!(relative_eq!(defl, 0.476, epsilon = 0.01), true);
-        let defl = axial_deformation::calculate_at(
-            3000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &cacl_loads,
-            &calc_settings,
-            &results,
-        );
+        let defl = results.internal_force_results[&1]
+            .get_force_at(ForceType::Deflection, 3000.0)
+            .unwrap()
+            .value_x;
         println!("Strain(3000): {} mm", defl);
         assert_eq!(relative_eq!(defl, 0.417, epsilon = 0.01), true);
 
-        calc_model.loads[0].rotation = -45.0;
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &calc_model.elements,
-            &calc_model.nodes,
-            &calc_model.loads,
-            &LoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
-        let defl = axial_deformation::calculate_at(
-            2000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &cacl_loads,
-            &calc_settings,
-            &results,
-        );
+        structure_model.loads[0].rotation = -45.0;
+        let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let defl = results.internal_force_results[&1]
+            .get_force_at(ForceType::Deflection, 2000.0)
+            .unwrap()
+            .value_x;
         println!("Strain(2000<-45): {} mm", defl);
         assert_eq!(relative_eq!(defl, 0.337, epsilon = 0.01), true);
 
-        calc_model.loads[0].rotation = 135.0;
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &calc_model.elements,
-            &calc_model.nodes,
-            &calc_model.loads,
-            &LoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
-        let defl = axial_deformation::calculate_at(
-            2000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &cacl_loads,
-            &calc_settings,
-            &results,
-        );
+        structure_model.loads[0].rotation = 135.0;
+        let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let defl = results.internal_force_results[&1]
+            .get_force_at(ForceType::Deflection, 2000.0)
+            .unwrap()
+            .value_x;
         println!("Strain(2000<45): {} mm", defl);
         assert_eq!(relative_eq!(defl, -0.337, epsilon = 0.01), true);
     }
@@ -595,7 +389,6 @@ mod axial_deformation_tests {
             (1, Node::new_hinged(1, VpPoint::new(0.0, 0.0))),
             (2, Node::new_hinged(2, VpPoint::new(4000.0, 0.0))),
         ]);
-        let calc_settings = CalculationSettings::default();
         let elements = vec![el];
         let l_load = Load::new_triangular_load(
             "TriangularLoad".to_string(),
@@ -606,79 +399,42 @@ mod axial_deformation_tests {
             0.0,
         );
         let loads = vec![l_load];
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
-            &loads,
-            &LoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let mut calc_model = StructureModel {
+        let mut structure_model = StructureModel {
             nodes,
             elements,
             loads,
             calc_settings: CalculationSettings::default(),
             load_combinations: vec![],
         };
-        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
-        let defl = axial_deformation::calculate_at(
-            2000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &cacl_loads,
-            &calc_settings,
-            &results,
-        );
+        let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let defl = results.internal_force_results[&1]
+            .get_force_at(ForceType::Deflection, 2000.0)
+            .unwrap()
+            .value_x;
         println!("Strain(2000): {} mm", defl);
         assert_eq!(relative_eq!(defl, 0.139, epsilon = 0.1), true);
-        let defl = axial_deformation::calculate_at(
-            3000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &cacl_loads,
-            &calc_settings,
-            &results,
-        );
+        let defl = results.internal_force_results[&1]
+            .get_force_at(ForceType::Deflection, 3000.0)
+            .unwrap()
+            .value_x;
         println!("Strain(3000): {} mm", defl);
         assert_eq!(relative_eq!(defl, 0.069, epsilon = 0.1), true);
 
-        calc_model.loads[0].rotation = -45.0;
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &calc_model.elements,
-            &calc_model.nodes,
-            &calc_model.loads,
-            &LoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
-        let defl = axial_deformation::calculate_at(
-            2000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &cacl_loads,
-            &calc_settings,
-            &results,
-        );
+        structure_model.loads[0].rotation = -45.0;
+        let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let defl = results.internal_force_results[&1]
+            .get_force_at(ForceType::Deflection, 2000.0)
+            .unwrap()
+            .value_x;
         println!("Strain(2000<-45): {} mm", defl);
         assert_eq!(relative_eq!(defl, 0.098, epsilon = 0.01), true);
 
-        calc_model.loads[0].rotation = 135.0;
-        let cacl_loads = loads::utils::extract_calculation_loads(
-            &calc_model.elements,
-            &calc_model.nodes,
-            &calc_model.loads,
-            &LoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
-        let defl = axial_deformation::calculate_at(
-            2000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &cacl_loads,
-            &calc_settings,
-            &results,
-        );
+        structure_model.loads[0].rotation = 135.0;
+        let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let defl = results.internal_force_results[&1]
+            .get_force_at(ForceType::Deflection, 2000.0)
+            .unwrap()
+            .value_x;
         println!("Strain(2000<45): {} mm", defl);
         assert_eq!(relative_eq!(defl, -0.098, epsilon = 0.01), true);
     }

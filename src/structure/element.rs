@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use crate::material;
 use crate::material::*;
 use crate::profile::Profile;
+use crate::settings::CalculationSettings;
 use crate::structure::node::Node;
 use std::collections::BTreeMap;
 use crate::structure::release::Release;
@@ -69,18 +70,41 @@ impl Default for Element {
     }
 }
 
-pub struct CalculationElement {
-    pub number: i32,
+pub struct CalculationElement<'a> {
+    pub calc_el_num: i32,
     pub model_el_num: i32,
     pub node_start: i32,
     pub node_end: i32,
-    pub material: MaterialData,
-    pub profile: Profile,
+    pub material: &'a MaterialData,
+    pub profile: &'a Profile,
     pub releases: Release,
     pub length: f64,
     pub rotation: f64,
+    pub profile_area: f64,
     pub elastic_modulus: f64,
     pub major_smoa: f64,
+}
+
+impl<'a> CalculationElement<'a> {
+    pub fn from(element: &'a Element, structure_nodes: &BTreeMap<i32, Node>, number: i32, calc_settings: &CalculationSettings) -> Self {
+        Self {
+            calc_el_num: number,
+            model_el_num: element.number,
+            node_start: element.node_start,
+            node_end: element.node_end,
+            material: &element.material,
+            profile: &element.profile,
+            releases: element.releases,
+            length: element.get_length(structure_nodes),
+            rotation: element.get_rotation(structure_nodes),
+            elastic_modulus: element.get_elastic_modulus(),
+            profile_area: element.profile.get_area(&element.material, calc_settings),
+            major_smoa: element.profile.get_major_second_mom_of_area(
+                &element.material, 
+                calc_settings
+            ),
+        }   
+    }
 }
 
 #[cfg(test)]

@@ -4,7 +4,7 @@
 use std::collections::BTreeMap;
 use std::collections::HashMap;
 
-use calculation_model::CalcModel;
+pub use calculation_model::CalcModel;
 use vputilslib::equation_handler::EquationHandler;
 
 use crate::fem::fem_handler::*;
@@ -16,7 +16,6 @@ use crate::{
     loads::load::CalculationLoad,
     results::*,
     settings::{self, CalculationSettings},
-    structure::{Element, Node},
 };
 
 pub mod axial_deformation;
@@ -41,12 +40,8 @@ pub fn calculate(
     let elements = &struct_model.elements;
     let loads = &struct_model.loads;
     let calc_settings = &struct_model.calc_settings;
-    let (calc_elements, extra_nodes) = crate::structure::utils::get_calc_elements(elements, nodes, &HashMap::new());
-    let mut calc_model = CalcModel {
-        nodes: &nodes,
-        extra_nodes: extra_nodes,
-        calc_elements: calc_elements,
-    };
+    let (calc_elements, extra_nodes) = crate::structure::utils::get_calc_elements(elements, nodes, &HashMap::new(), calc_settings);
+    let calc_model = CalcModel::new(&nodes, extra_nodes, &elements, calc_elements);
 
     let col_height = utils::col_height(nodes, elements);
     
@@ -59,11 +54,11 @@ pub fn calculate(
     let mut results: Vec<CalculationResults> = Vec::new();
     for lc in load_combinations {
         let calculation_loads =
-        &loads::utils::extract_calculation_loads(elements, nodes, loads, lc, equation_handler);
+        &loads::utils::extract_calculation_loads(&calc_model, loads, lc, equation_handler);
 
-        let mut global_stiff_matrix = create_joined_stiffness_matrix(elements, nodes, calc_settings);
+        let mut global_stiff_matrix = create_joined_stiffness_matrix(&calc_model, calc_settings);
         // The global equivalent loads matrix
-        let global_eq_l_matrix = equivalent_loads::create(elements, nodes, calculation_loads, calc_settings);
+        let global_eq_l_matrix = equivalent_loads::create(&calc_model, calculation_loads, calc_settings);
         let displacements = calculate_displacements(
             nodes,
             col_height,
@@ -77,8 +72,7 @@ pub fn calculate(
 
         let node_results = NodeResults::new(displacements, reactions, nodes.len(), &equation_handler);
         let internal_force_results = calc_internal_forces(
-            elements,
-            nodes,
+            &calc_model,
             calculation_loads,
             &node_results,
             calc_settings,
@@ -104,15 +98,14 @@ pub fn calculate(
 /// * 'calc_settings' - the calculation settings
 /// Returns: BTreeMap<i32, InternalForceResults> where the key is the element number
 fn calc_internal_forces(
-    elements: &Vec<Element>,
-    nodes: &BTreeMap<i32, Node>,
+    calc_model: &CalcModel,
     loads: &Vec<CalculationLoad>,
     node_results: &NodeResults,
     calc_settings: &CalculationSettings,
 ) -> BTreeMap<i32, InternalForceResults> {
     let mut map: BTreeMap<i32, InternalForceResults> = BTreeMap::new();
-    for element in elements {
-        let element_length = element.get_length(nodes);
+    for element in calc_model.calc_elements.iter() {
+        let element_length = element.length;
         let split_interval = match calc_settings.calc_split_interval {
             settings::calc_settings::CalcSplitInterval::Absolute(a) => a,
             settings::calc_settings::CalcSplitInterval::Relative(r) => element_length * r,
@@ -125,21 +118,21 @@ fn calc_internal_forces(
         let mut last = false;
         while x < element_length || last {
             let moment_force_val =
-                internal_forces::calculate_moment_at(x, element, nodes, loads, node_results);
+                internal_forces::calculate_moment_at(x, element, loads, node_results);
             let axial_force_val =
-                internal_forces::calculate_axial_force_at(x, element, nodes, loads, node_results);
+                internal_forces::calculate_axial_force_at(x, element, loads, node_results);
             let shear_force_val =
-                internal_forces::calculate_shear_at(x, element, nodes, loads, node_results);
-            let deflection_val = deflection::calculate_at(x, element, nodes, loads, calc_settings, node_results);
+                internal_forces::calculate_shear_at(x, element, loads, node_results);
+            let deflection_val = deflection::calculate_at(x, element, loads, calc_settings, node_results);
             let axial_deformation_val =
-                axial_deformation::calculate_at(x, element, nodes, loads, calc_settings, node_results);
+                axial_deformation::calculate_at(x, element, loads, calc_settings, node_results);
 
             moment_forces.push(InternalForcePoint {
                 force_type: ForceType::Moment,
                 value_x: 0.0,
                 value_y: moment_force_val,
-                pos_on_element: x,
-                element_number: element.number,
+                pos_on_element: x, // TODO ADD THE OFFSET OF CALC ELEMENT TO MODEL ELEMENT START
+                element_number: element.model_el_num,
                 load_comb_number: 0,
             });
             axial_forces.push(InternalForcePoint {
@@ -147,7 +140,7 @@ fn calc_internal_forces(
                 value_x: 0.0,
                 value_y: axial_force_val,
                 pos_on_element: x,
-                element_number: element.number,
+                element_number: element.model_el_num,
                 load_comb_number: 0,
             });
             shear_forces.push(InternalForcePoint {
@@ -155,7 +148,7 @@ fn calc_internal_forces(
                 value_x: 0.0,
                 value_y: shear_force_val,
                 pos_on_element: x,
-                element_number: element.number,
+                element_number: element.model_el_num,
                 load_comb_number: 0,
             });
             deflections.push(InternalForcePoint {
@@ -163,7 +156,7 @@ fn calc_internal_forces(
                 value_x: axial_deformation_val,
                 value_y: deflection_val,
                 pos_on_element: x,
-                element_number: element.number,
+                element_number: element.model_el_num,
                 load_comb_number: 0,
             });
 
@@ -180,13 +173,13 @@ fn calc_internal_forces(
         }
 
         let res = InternalForceResults {
-            element_number: element.number,
+            element_number: element.model_el_num,
             axial_forces,
             shear_forces,
             moment_forces,
             deflections,
         };
-        map.insert(element.number, res);
+        map.insert(element.model_el_num, res);
     }
 
     map

@@ -1,9 +1,9 @@
 #![allow(dead_code)]
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 
 use vefem::{
-    loads::Load, material::{MaterialData, Steel}, profile::Profile, structure::{Element, Node}
+    fem::CalcModel, loads::Load, material::{MaterialData, Steel}, profile::Profile, settings::CalculationSettings, structure::{Element, Node}
 };
 use vputilslib::geometry2d::{Polygon, VpPoint};
 
@@ -120,15 +120,28 @@ pub fn get_fem_matriisi_loads() -> Vec<Load> {
 }
 
 pub fn get_inversed_t_profile() -> Profile {
-    Profile::new("name".to_string(), Polygon::new(vec![
-        VpPoint::new(0.0, 0.0),
-        VpPoint::new(880.0, 0.0),
-        VpPoint::new(880.0, 250.0),
-        VpPoint::new(680.0, 250.0),
-        VpPoint::new(680.0, 580.0),
-        VpPoint::new(200.0, 580.0),
-        VpPoint::new(200.0, 250.0),
-        VpPoint::new(0.0, 250.0),
-        VpPoint::new(0.0, 0.0),
-    ]))
+    Profile::new(
+        "name".to_string(),
+        Polygon::new(vec![
+            VpPoint::new(0.0, 0.0),
+            VpPoint::new(880.0, 0.0),
+            VpPoint::new(880.0, 250.0),
+            VpPoint::new(680.0, 250.0),
+            VpPoint::new(680.0, 580.0),
+            VpPoint::new(200.0, 580.0),
+            VpPoint::new(200.0, 250.0),
+            VpPoint::new(0.0, 250.0),
+            VpPoint::new(0.0, 0.0),
+        ]),
+    )
+}
+
+pub fn get_calc_model<'a>(elements: &'a Vec<Element>, nodes: &'a BTreeMap<i32, Node>) -> CalcModel<'a> {
+    let (calc_elements, extra_nodes) = vefem::structure::utils::get_calc_elements(
+        elements,
+        nodes,
+        &HashMap::new(),
+        &CalculationSettings::default(),
+    );
+    CalcModel::new(nodes, extra_nodes, elements, calc_elements)
 }

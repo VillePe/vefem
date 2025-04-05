@@ -5,10 +5,8 @@ mod deflection_tests {
     use approx::relative_eq;
     use vputilslib::{equation_handler::EquationHandler, geometry2d::VpPoint};
 
-    use vefem::{loads::{self, Load, LoadCombination}, material::{MaterialData, Steel}, profile::Profile, 
-    settings::CalculationSettings, structure::{StructureModel, Element, Node}};
+    use vefem::{loads::Load, material::{MaterialData, Steel}, profile::Profile, results::ForceType, settings::CalculationSettings, structure::{Element, Node, StructureModel}};
 
-    use vefem::fem::deflection;
 
 
     #[test]
@@ -33,110 +31,45 @@ mod deflection_tests {
             -90.0,
         );
         let loads = vec![p_load];
-        let mut calc_model = StructureModel {
+        let mut structure_model = StructureModel {
             nodes,
             elements,
             loads,
             calc_settings: CalculationSettings::default(),
             load_combinations: vec![],
         };
-        let calc_settings = CalculationSettings::default();
-        let calc_loads = loads::utils::extract_calculation_loads(
-            &calc_model.elements,
-            &calc_model.nodes,
-            &calc_model.loads,
-            &LoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
-        let defl = deflection::calculate_at(
-            1000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &calc_loads,
-            &CalculationSettings::default(),
-            &results,
-        );
+       let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let defl = results.internal_force_results[&1].get_force_at(ForceType::Deflection, 1000.0)
+            .unwrap().value_y;
         println!("Deflection(1000): {} mm", defl);
         assert!(relative_eq!(defl, -5.238, epsilon = 0.01));
-        let defl = deflection::calculate_at(
-            2000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &calc_loads,
-            &calc_settings,
-            &results,
-        );
+        let defl = results.internal_force_results[&1].get_force_at(ForceType::Deflection, 2000.0)
+            .unwrap().value_y;
         println!("Deflection(2000): {} mm", defl);
         assert!(relative_eq!(defl, -7.619, epsilon = 0.01));
-        let defl = deflection::calculate_at(
-            3000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &calc_loads,
-            &calc_settings,
-            &results,
-        );
+        let defl = results.internal_force_results[&1].get_force_at(ForceType::Deflection, 3000.0)
+            .unwrap().value_y;
         println!("Deflection(3000): {} mm", defl);
         assert!(relative_eq!(defl, -5.238, epsilon = 0.01));
 
-        calc_model.loads[0].rotation = -45.0;
-        let calc_loads = loads::utils::extract_calculation_loads(
-            &calc_model.elements,
-            &calc_model.nodes,
-            &calc_model.loads,
-            &LoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
-        let defl = deflection::calculate_at(
-            2000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &calc_loads,
-            &calc_settings,
-            &results,
-        );
+        structure_model.loads[0].rotation = -45.0;
+       let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let defl = results.internal_force_results[&1].get_force_at(ForceType::Deflection, 2000.0)
+            .unwrap().value_y;
         println!("Deflection(2000<-45): {} mm", defl);
         assert!(relative_eq!(defl, -5.387, epsilon = 0.01));
 
-        calc_model.loads[0].rotation = 45.0;
-        let calc_loads = loads::utils::extract_calculation_loads(
-            &calc_model.elements,
-            &calc_model.nodes,
-            &calc_model.loads,
-            &LoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
-        let defl = deflection::calculate_at(
-            2000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &calc_loads,
-            &calc_settings,
-            &results,
-        );
+        structure_model.loads[0].rotation = 45.0;
+       let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let defl = results.internal_force_results[&1].get_force_at(ForceType::Deflection, 2000.0)
+            .unwrap().value_y;
         println!("Deflection(2000<45): {} mm", defl);
         assert!(relative_eq!(defl, 5.387, epsilon = 0.01));
 
-        calc_model.loads[0].rotation = 0.0;
-        let calc_loads = loads::utils::extract_calculation_loads(
-            &calc_model.elements,
-            &calc_model.nodes,
-            &calc_model.loads,
-            &LoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
-        let defl = deflection::calculate_at(
-            2000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &calc_loads,
-            &calc_settings,
-            &results,
-        );
+        structure_model.loads[0].rotation = 0.0;
+       let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let defl = results.internal_force_results[&1].get_force_at(ForceType::Deflection, 2000.0)
+            .unwrap().value_y;
         println!("Deflection(horizontal): {} mm", defl);
         assert!(relative_eq!(defl, 0.0, epsilon = 0.01));
     }
@@ -163,31 +96,17 @@ mod deflection_tests {
             0.0,
         );
         let loads = vec![p_load];
-        let calc_model = StructureModel {
+        let structure_model = StructureModel {
             nodes,
             elements,
             loads,
             calc_settings: CalculationSettings::default(),
             load_combinations: vec![],
         };
-        let calc_loads = loads::utils::extract_calculation_loads(
-            &calc_model.elements,
-            &calc_model.nodes,
-            &calc_model.loads,
-            &LoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let calc_settings = CalculationSettings::default();
-        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
-        let defl = deflection::calculate_at(
-            0.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &calc_loads,
-            &calc_settings,
-            &results,
-        );
-        println!("Deflection(L): {} mm", defl);
+       let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let defl = results.internal_force_results[&1].get_force_at(ForceType::Deflection, 0.0)
+            .unwrap().value_y;
+        println!("Deflection(0): {} mm", defl);
         assert!(relative_eq!(defl, -121.9, epsilon = 0.1));
     }
 
@@ -212,31 +131,17 @@ mod deflection_tests {
             "10".to_string(),
             0.0,
         );
-        let calc_settings = CalculationSettings::default();
         let loads = vec![p_load];
-        let calc_model = StructureModel {
+        let structure_model = StructureModel {
             nodes,
             elements,
             loads,
             calc_settings: CalculationSettings::default(),
             load_combinations: vec![],
         };
-        let calc_loads = loads::utils::extract_calculation_loads(
-            &calc_model.elements,
-            &calc_model.nodes,
-            &calc_model.loads,
-            &LoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
-        let defl = deflection::calculate_at(
-            4000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &calc_loads,
-            &calc_settings,
-            &results,
-        );
+       let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let defl = results.internal_force_results[&1].get_force_at(ForceType::Deflection, 4000.0)
+            .unwrap().value_y;
         println!("Deflection(L): {} mm", defl);
         assert!(relative_eq!(defl, -121.9, epsilon = 0.1));
     }
@@ -254,7 +159,6 @@ mod deflection_tests {
             (1, Node::new_free(1, VpPoint::new(0.0, 0.0))),
             (2, Node::new_fixed(2, VpPoint::new(0.0, 4000.0))),
         ]);
-        let calc_settings = CalculationSettings::default();
         let elements = vec![el];
         let p_load = Load::new_rotational_load(
             "RotationalLoad".to_string(),
@@ -263,30 +167,17 @@ mod deflection_tests {
             "10".to_string(),
         );
         let loads = vec![p_load];
-        let calc_model = StructureModel {
+        let structure_model = StructureModel {
             nodes,
             elements,
             loads,
             calc_settings: CalculationSettings::default(),
             load_combinations: vec![],
         };
-        let calc_loads = loads::utils::extract_calculation_loads(
-            &calc_model.elements,
-            &calc_model.nodes,
-            &calc_model.loads,
-            &LoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
-        let defl = deflection::calculate_at(
-            0.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &calc_loads,
-            &calc_settings,
-            &results,
-        );
-        println!("Deflection(L): {} mm", defl);
+       let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let defl = results.internal_force_results[&1].get_force_at(ForceType::Deflection, 0.0)
+            .unwrap().value_y;
+        println!("Deflection(0): {} mm", defl);
         assert!(relative_eq!(defl, -45.7143, epsilon = 0.1));
     }
 
@@ -303,7 +194,6 @@ mod deflection_tests {
             (1, Node::new_hinged(1, VpPoint::new(0.0, 0.0))),
             (2, Node::new_hinged(2, VpPoint::new(4000.0, 0.0))),
         ]);
-        let calc_settings = CalculationSettings::default();
         let elements = vec![el];
         let r_load = Load::new_rotational_load(
             "RotationalLoad".to_string(),
@@ -312,49 +202,24 @@ mod deflection_tests {
             "10".to_string(),
         );
         let loads = vec![r_load];
-        let calc_model = StructureModel {
+        let structure_model = StructureModel {
             nodes,
             elements,
             loads,
             calc_settings: CalculationSettings::default(),
             load_combinations: vec![],
         };
-        let calc_loads = loads::utils::extract_calculation_loads(
-            &calc_model.elements,
-            &calc_model.nodes,
-            &calc_model.loads,
-            &LoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
-        let defl = deflection::calculate_at(
-            1000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &calc_loads,
-            &calc_settings,
-            &results,
-        );
+       let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let defl = results.internal_force_results[&1].get_force_at(ForceType::Deflection, 1000.0)
+            .unwrap().value_y;
         println!("Deflection(1000): {} mm", defl);
         assert_eq!(relative_eq!(defl, -0.714, epsilon = 0.01), true);
-        let defl = deflection::calculate_at(
-            2000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &calc_loads,
-            &calc_settings,
-            &results,
-        );
+        let defl = results.internal_force_results[&1].get_force_at(ForceType::Deflection, 2000.0)
+            .unwrap().value_y;
         println!("Deflection(2000): {} mm", defl);
         assert_eq!(relative_eq!(defl, 0.0, epsilon = 0.01), true);
-        let defl = deflection::calculate_at(
-            3000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &calc_loads,
-            &calc_settings,
-            &results,
-        );
+        let defl = results.internal_force_results[&1].get_force_at(ForceType::Deflection, 3000.0)
+            .unwrap().value_y;
         println!("Deflection(3000): {} mm", defl);
         assert_eq!(relative_eq!(defl, 0.714, epsilon = 0.01), true);
     }
@@ -368,7 +233,6 @@ mod deflection_tests {
             Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
             MaterialData::Steel(Steel::default()),
         );
-        let calc_settings = CalculationSettings::default();
         let nodes = BTreeMap::from([
             (1, Node::new_hinged(1, VpPoint::new(0.0, 0.0))),
             (2, Node::new_hinged(2, VpPoint::new(4000.0, 0.0))),
@@ -383,131 +247,54 @@ mod deflection_tests {
             -90.0,
         );
         let loads = vec![l_load];
-        let mut calc_model = StructureModel {
+        let mut structure_model = StructureModel {
             nodes,
             elements,
             loads,
             calc_settings: CalculationSettings::default(),
             load_combinations: vec![],
         };
-        let calc_loads = loads::utils::extract_calculation_loads(
-            &calc_model.elements,
-            &calc_model.nodes,
-            &calc_model.loads,
-            &LoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
-        let defl = deflection::calculate_at(
-            1000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &calc_loads,
-            &calc_settings,
-            &results,
-        );
+       let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let defl = results.internal_force_results[&1].get_force_at(ForceType::Deflection, 1000.0)
+            .unwrap().value_y;
         println!("Deflection(1000): {} mm", defl);
         assert_eq!(relative_eq!(defl, -13.571, epsilon = 0.01), true);
-        let defl = deflection::calculate_at(
-            2000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &calc_loads,
-            &calc_settings,
-            &results,
-        );
+        let defl = results.internal_force_results[&1].get_force_at(ForceType::Deflection, 2000.0)
+            .unwrap().value_y;
         println!("Deflection(2000): {} mm", defl);
         assert_eq!(relative_eq!(defl, -19.048, epsilon = 0.01), true);
-        let defl = deflection::calculate_at(
-            3000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &calc_loads,
-            &calc_settings,
-            &results,
-        );
+        let defl = results.internal_force_results[&1].get_force_at(ForceType::Deflection, 3000.0)
+            .unwrap().value_y;
         println!("Deflection(3000): {} mm", defl);
         assert_eq!(relative_eq!(defl, -13.571, epsilon = 0.01), true);
 
-        calc_model.loads[0].rotation = -45.0;
-        let calc_loads = loads::utils::extract_calculation_loads(
-            &calc_model.elements,
-            &calc_model.nodes,
-            &calc_model.loads,
-            &LoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
-        let defl = deflection::calculate_at(
-            2000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &calc_loads,
-            &calc_settings,
-            &results,
-        );
+        structure_model.loads[0].rotation = -45.0;
+       let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let defl = results.internal_force_results[&1].get_force_at(ForceType::Deflection, 2000.0)
+            .unwrap().value_y;
         println!("Deflection(2000<-45): {} mm", defl);
         assert_eq!(relative_eq!(defl, -13.469, epsilon = 0.01), true);
 
-        calc_model.loads[0].rotation = 45.0;
-        let calc_loads = loads::utils::extract_calculation_loads(
-            &calc_model.elements,
-            &calc_model.nodes,
-            &calc_model.loads,
-            &LoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
-        let defl = deflection::calculate_at(
-            2000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &calc_loads,
-            &calc_settings,
-            &results,
-        );
+        structure_model.loads[0].rotation = 45.0;
+       let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let defl = results.internal_force_results[&1].get_force_at(ForceType::Deflection, 2000.0)
+            .unwrap().value_y;
         println!("Deflection(2000<45): {} mm", defl);
         assert_eq!(relative_eq!(defl, 13.469, epsilon = 0.01), true);
 
-        calc_model.loads[0].rotation = 0.0;
-        let calc_loads = loads::utils::extract_calculation_loads(
-            &calc_model.elements,
-            &calc_model.nodes,
-            &calc_model.loads,
-            &LoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
-        let defl = deflection::calculate_at(
-            2000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &calc_loads,
-            &calc_settings,
-            &results,
-        );
+        structure_model.loads[0].rotation = 0.0;
+       let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let defl = results.internal_force_results[&1].get_force_at(ForceType::Deflection, 2000.0)
+            .unwrap().value_y;
         println!("Deflection(horizontal): {} mm", defl);
         assert_eq!(relative_eq!(defl, 0.0, epsilon = 0.01), true);
 
-        calc_model.loads[0].offset_start = "500".to_string();
-        calc_model.loads[0].offset_end = "1500".to_string();
-        calc_model.loads[0].rotation = -90.0;
-        let calc_loads = loads::utils::extract_calculation_loads(
-            &calc_model.elements,
-            &calc_model.nodes,
-            &calc_model.loads,
-            &LoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
-        let defl = deflection::calculate_at(
-            2000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &calc_loads,
-            &calc_settings,
-            &results,
-        );
+        structure_model.loads[0].offset_start = "500".to_string();
+        structure_model.loads[0].offset_end = "1500".to_string();
+        structure_model.loads[0].rotation = -90.0;
+       let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let defl = results.internal_force_results[&1].get_force_at(ForceType::Deflection, 2000.0)
+            .unwrap().value_y;
         println!("Deflection(slice): {} mm", defl);
         assert_eq!(relative_eq!(defl, -5.119, epsilon = 0.01), true);
     }
@@ -525,7 +312,6 @@ mod deflection_tests {
             (1, Node::new_hinged(1, VpPoint::new(0.0, 0.0))),
             (2, Node::new_hinged(2, VpPoint::new(4000.0, 0.0))),
         ]);
-        let calc_settings = CalculationSettings::default();
         let elements = vec![el];
         let l_load = Load::new_triangular_load(
             "TriangularLoad".to_string(),
@@ -536,109 +322,45 @@ mod deflection_tests {
             -90.0,
         );
         let loads = vec![l_load];
-        let mut calc_model = StructureModel {
+        let mut structure_model = StructureModel {
             nodes,
             elements,
             loads,
             calc_settings: CalculationSettings::default(),
             load_combinations: vec![],
         };
-        let calc_loads = loads::utils::extract_calculation_loads(
-            &calc_model.elements,
-            &calc_model.nodes,
-            &calc_model.loads,
-            &LoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
-        let defl = deflection::calculate_at(
-            1000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &calc_loads,
-            &calc_settings,
-            &results,
-        );
+       let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let defl = results.internal_force_results[&1].get_force_at(ForceType::Deflection, 1000.0)
+            .unwrap().value_y;
         println!("Deflection(1000): {} mm", defl);
         assert_eq!(relative_eq!(defl, -7.083, epsilon = 0.01), true);
-        let defl = deflection::calculate_at(
-            2000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &calc_loads,
-            &calc_settings,
-            &results,
-        );
+        let defl = results.internal_force_results[&1].get_force_at(ForceType::Deflection, 2000.0)
+            .unwrap().value_y;
         println!("Deflection(2000): {} mm", defl);
         assert_eq!(relative_eq!(defl, -9.524, epsilon = 0.01), true);
-        let defl = deflection::calculate_at(
-            3000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &calc_loads,
-            &calc_settings,
-            &results,
-        );
+        let defl = results.internal_force_results[&1].get_force_at(ForceType::Deflection, 3000.0)
+            .unwrap().value_y;
         println!("Deflection(3000): {} mm", defl);
         assert_eq!(relative_eq!(defl, -6.488, epsilon = 0.01), true);
 
-        calc_model.loads[0].rotation = -45.0;
-        let calc_loads = loads::utils::extract_calculation_loads(
-            &calc_model.elements,
-            &calc_model.nodes,
-            &calc_model.loads,
-            &LoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
-        let defl = deflection::calculate_at(
-            2000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &calc_loads,
-            &calc_settings,
-            &results,
-        );
+        structure_model.loads[0].rotation = -45.0;
+       let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let defl = results.internal_force_results[&1].get_force_at(ForceType::Deflection, 2000.0)
+            .unwrap().value_y;
         println!("Deflection(2000<-45): {} mm", defl);
         assert_eq!(relative_eq!(defl, -6.734, epsilon = 0.01), true);
 
-        calc_model.loads[0].rotation = 45.0;
-        let calc_loads = loads::utils::extract_calculation_loads(
-            &calc_model.elements,
-            &calc_model.nodes,
-            &calc_model.loads,
-            &LoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
-        let defl = deflection::calculate_at(
-            2000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &calc_loads,
-            &calc_settings,
-            &results,
-        );
+        structure_model.loads[0].rotation = 45.0;
+       let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let defl = results.internal_force_results[&1].get_force_at(ForceType::Deflection, 2000.0)
+            .unwrap().value_y;
         println!("Deflection(2000<45): {} mm", defl);
         assert_eq!(relative_eq!(defl, 6.734, epsilon = 0.01), true);
 
-        calc_model.loads[0].rotation = 0.0;
-        let calc_loads = loads::utils::extract_calculation_loads(
-            &calc_model.elements,
-            &calc_model.nodes,
-            &calc_model.loads,
-            &LoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
-        let defl = deflection::calculate_at(
-            2000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &calc_loads,
-            &calc_settings,
-            &results,
-        );
+        structure_model.loads[0].rotation = 0.0;
+       let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let defl = results.internal_force_results[&1].get_force_at(ForceType::Deflection, 2000.0)
+            .unwrap().value_y;
         println!("Deflection(horizontal)): {} mm", defl);
         assert_eq!(relative_eq!(defl, 0.0, epsilon = 0.01), true);
     }
@@ -657,7 +379,6 @@ mod deflection_tests {
             (1, Node::new_hinged(1, VpPoint::new(0.0, 0.0))),
             (2, Node::new_hinged(2, VpPoint::new(4000.0, 0.0))),
         ]);
-        let calc_settings = CalculationSettings::default();
         let elements = vec![el];
         let l_load = Load::new_triangular_load(
             "TriangularLoad".to_string(),
@@ -668,79 +389,34 @@ mod deflection_tests {
             -90.0,
         );
         let loads = vec![l_load];
-        let mut calc_model = StructureModel {
+        let mut structure_model = StructureModel {
             nodes,
             elements,
             loads,
             calc_settings: CalculationSettings::default(),
             load_combinations: vec![],
         };
-        let calc_loads = loads::utils::extract_calculation_loads(
-            &calc_model.elements,
-            &calc_model.nodes,
-            &calc_model.loads,
-            &LoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
-        let defl = deflection::calculate_at(
-            2000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &calc_loads,
-            &calc_settings,
-            &results,
-        );
+       let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let defl = results.internal_force_results[&1].get_force_at(ForceType::Deflection, 2000.0)
+            .unwrap().value_y;
         println!("Deflection(2000): {} mm", defl);
         assert_eq!(relative_eq!(defl, -2.208, epsilon = 0.1), true);
-        let defl = deflection::calculate_at(
-            3000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &calc_loads,
-            &calc_settings,
-            &results,
-        );
+        let defl = results.internal_force_results[&1].get_force_at(ForceType::Deflection, 3000.0)
+            .unwrap().value_y;
         println!("Deflection(3000): {} mm", defl);
         assert_eq!(relative_eq!(defl, -1.402, epsilon = 0.1), true);
 
-        calc_model.loads[0].rotation = -45.0;
-        let calc_loads = loads::utils::extract_calculation_loads(
-            &calc_model.elements,
-            &calc_model.nodes,
-            &calc_model.loads,
-            &LoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
-        let defl = deflection::calculate_at(
-            2000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &calc_loads,
-            &calc_settings,
-            &results,
-        );
+        structure_model.loads[0].rotation = -45.0;
+       let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let defl = results.internal_force_results[&1].get_force_at(ForceType::Deflection, 2000.0)
+            .unwrap().value_y;
         println!("Deflection(2000<-45): {} mm", defl);
         assert_eq!(relative_eq!(defl, -1.562, epsilon = 0.01), true);
 
-        calc_model.loads[0].rotation = 45.0;
-        let calc_loads = loads::utils::extract_calculation_loads(
-            &calc_model.elements,
-            &calc_model.nodes,
-            &calc_model.loads,
-            &LoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
-        let defl = deflection::calculate_at(
-            2000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &calc_loads,
-            &calc_settings,
-            &results,
-        );
+        structure_model.loads[0].rotation = 45.0;
+       let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let defl = results.internal_force_results[&1].get_force_at(ForceType::Deflection, 2000.0)
+            .unwrap().value_y;
         println!("Deflection(2000<45): {} mm", defl);
         assert_eq!(relative_eq!(defl, 1.562, epsilon = 0.01), true);
     }
@@ -758,7 +434,6 @@ mod deflection_tests {
             (1, Node::new_hinged(1, VpPoint::new(0.0, 0.0))),
             (2, Node::new_hinged(2, VpPoint::new(4000.0, 0.0))),
         ]);
-        let calc_settings = CalculationSettings::default();
         let elements = vec![el];
         let l_load = Load::new_triangular_load(
             "TriangularLoad".to_string(),
@@ -769,109 +444,45 @@ mod deflection_tests {
             -90.0,
         );
         let loads = vec![l_load];
-        let mut calc_model = StructureModel {
+        let mut structure_model = StructureModel {
             nodes,
             elements,
             loads,
             calc_settings: CalculationSettings::default(),
             load_combinations: vec![],
         };
-        let calc_loads = loads::utils::extract_calculation_loads(
-            &calc_model.elements,
-            &calc_model.nodes,
-            &calc_model.loads,
-            &LoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
-        let defl = deflection::calculate_at(
-            1000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &calc_loads,
-            &calc_settings,
-            &results,
-        );
+       let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let defl = results.internal_force_results[&1].get_force_at(ForceType::Deflection, 1000.0)
+            .unwrap().value_y;
         println!("Deflection(1000): {} mm", defl);
         assert_eq!(relative_eq!(defl, -6.488, epsilon = 0.01), true);
-        let defl = deflection::calculate_at(
-            2000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &calc_loads,
-            &calc_settings,
-            &results,
-        );
+        let defl = results.internal_force_results[&1].get_force_at(ForceType::Deflection, 2000.0)
+            .unwrap().value_y;
         println!("Deflection(2000): {} mm", defl);
         assert_eq!(relative_eq!(defl, -9.524, epsilon = 0.01), true);
-        let defl = deflection::calculate_at(
-            3000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &calc_loads,
-            &calc_settings,
-            &results,
-        );
+        let defl = results.internal_force_results[&1].get_force_at(ForceType::Deflection, 3000.0)
+            .unwrap().value_y;
         println!("Deflection(3000): {} mm", defl);
         assert_eq!(relative_eq!(defl, -7.083, epsilon = 0.01), true);
 
-        calc_model.loads[0].rotation = -45.0;
-        let calc_loads = loads::utils::extract_calculation_loads(
-            &calc_model.elements,
-            &calc_model.nodes,
-            &calc_model.loads,
-            &LoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
-        let defl = deflection::calculate_at(
-            2000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &calc_loads,
-            &calc_settings,
-            &results,
-        );
+        structure_model.loads[0].rotation = -45.0;
+       let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let defl = results.internal_force_results[&1].get_force_at(ForceType::Deflection, 2000.0)
+            .unwrap().value_y;
         println!("Deflection(2000<-45): {} mm", defl);
         assert_eq!(relative_eq!(defl, -6.734, epsilon = 0.01), true);
 
-        calc_model.loads[0].rotation = 45.0;
-        let calc_loads = loads::utils::extract_calculation_loads(
-            &calc_model.elements,
-            &calc_model.nodes,
-            &calc_model.loads,
-            &LoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
-        let defl = deflection::calculate_at(
-            2000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &calc_loads,
-            &calc_settings,
-            &results,
-        );
+        structure_model.loads[0].rotation = 45.0;
+       let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let defl = results.internal_force_results[&1].get_force_at(ForceType::Deflection, 2000.0)
+            .unwrap().value_y;
         println!("Deflection(2000<45): {} mm", defl);
         assert_eq!(relative_eq!(defl, 6.734, epsilon = 0.01), true);
 
-        calc_model.loads[0].rotation = 0.0;
-        let calc_loads = loads::utils::extract_calculation_loads(
-            &calc_model.elements,
-            &calc_model.nodes,
-            &calc_model.loads,
-            &LoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
-        let defl = deflection::calculate_at(
-            2000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &calc_loads,
-            &calc_settings,
-            &results,
-        );
+        structure_model.loads[0].rotation = 0.0;
+       let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let defl = results.internal_force_results[&1].get_force_at(ForceType::Deflection, 2000.0)
+            .unwrap().value_y;
         println!("Deflection(horizontal)): {} mm", defl);
         assert_eq!(relative_eq!(defl, 0.0, epsilon = 0.01), true);
     }
@@ -890,7 +501,6 @@ mod deflection_tests {
             (1, Node::new_hinged(1, VpPoint::new(0.0, 0.0))),
             (2, Node::new_hinged(2, VpPoint::new(4000.0, 0.0))),
         ]);
-        let calc_settings = CalculationSettings::default();
         let elements = vec![el];
         let l_load = Load::new_triangular_load(
             "TriangularLoad".to_string(),
@@ -901,79 +511,34 @@ mod deflection_tests {
             -90.0,
         );
         let loads = vec![l_load];
-        let mut calc_model = StructureModel {
+        let mut structure_model = StructureModel {
             nodes,
             elements,
             loads,
             calc_settings: CalculationSettings::default(),
             load_combinations: vec![],
         };
-        let calc_loads = loads::utils::extract_calculation_loads(
-            &calc_model.elements,
-            &calc_model.nodes,
-            &calc_model.loads,
-            &LoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
-        let defl = deflection::calculate_at(
-            2000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &calc_loads,
-            &calc_settings,
-            &results,
-        );
+       let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let defl = results.internal_force_results[&1].get_force_at(ForceType::Deflection, 2000.0)
+            .unwrap().value_y;
         println!("Deflection(2000): {} mm", defl);
         assert_eq!(relative_eq!(defl, -2.911, epsilon = 0.1), true);
-        let defl = deflection::calculate_at(
-            3000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &calc_loads,
-            &calc_settings,
-            &results,
-        );
+        let defl = results.internal_force_results[&1].get_force_at(ForceType::Deflection, 3000.0)
+            .unwrap().value_y;
         println!("Deflection(3000): {} mm", defl);
         assert_eq!(relative_eq!(defl, -1.872, epsilon = 0.1), true);
 
-        calc_model.loads[0].rotation = -45.0;
-        let calc_loads = loads::utils::extract_calculation_loads(
-            &calc_model.elements,
-            &calc_model.nodes,
-            &calc_model.loads,
-            &LoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
-        let defl = deflection::calculate_at(
-            2000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &calc_loads,
-            &calc_settings,
-            &results,
-        );
+        structure_model.loads[0].rotation = -45.0;
+       let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let defl = results.internal_force_results[&1].get_force_at(ForceType::Deflection, 2000.0)
+            .unwrap().value_y;
         println!("Deflection(2000<-45): {} mm", defl);
         assert_eq!(relative_eq!(defl, -2.058, epsilon = 0.01), true);
 
-        calc_model.loads[0].rotation = 45.0;
-        let calc_loads = loads::utils::extract_calculation_loads(
-            &calc_model.elements,
-            &calc_model.nodes,
-            &calc_model.loads,
-            &LoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let results = &vefem::fem::calculate(&calc_model, &mut EquationHandler::new())[0].node_results;
-        let defl = deflection::calculate_at(
-            2000.0,
-            &calc_model.elements[0],
-            &calc_model.nodes,
-            &calc_loads,
-            &calc_settings,
-            &results,
-        );
+        structure_model.loads[0].rotation = 45.0;
+       let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let defl = results.internal_force_results[&1].get_force_at(ForceType::Deflection, 2000.0)
+            .unwrap().value_y;
         println!("Deflection(2000<45): {} mm", defl);
         assert_eq!(relative_eq!(defl, 2.058, epsilon = 0.01), true);
     }

@@ -1,20 +1,20 @@
 ﻿use crate::fem::matrices;
 use crate::loads::load::{CalculationLoad, CalculationLoadType};
 use crate::settings::CalculationSettings;
-use crate::structure::{Element, Node};
+use crate::structure::CalculationElement;
 use nalgebra::DMatrix;
-use std::collections::BTreeMap;
+
+use super::CalcModel;
 
 pub fn create(
-    elements: &Vec<Element>,
-    nodes: &BTreeMap<i32, Node>,
+    calc_model: &CalcModel,
     loads: &Vec<CalculationLoad>,
     settings: &CalculationSettings,
 ) -> DMatrix<f64> {
-    let supp_count = nodes.len();
+    let supp_count = calc_model.get_node_count();
     // Increase the joined stiffness matrix size by release count. Releases are set into their
     // own rows and columns at the end of the joined matrix
-    let release_count = crate::structure::utils::get_element_release_count(&elements);
+    let release_count = crate::structure::utils::get_element_release_count(&calc_model.structure_elements);
     // The degrees of freedom count of single node (tx, tz, ry)
     let dof = 3;
     let col_height = supp_count * dof + release_count;
@@ -26,8 +26,8 @@ pub fn create(
     let mut supp_index: usize;
     let mut i_normalized: usize;
 
-    for elem in elements {
-        let el_global_eq_loads = get_element_g_eq_loads(&elem, loads, nodes, settings);
+    for elem in calc_model.calc_elements.iter() {
+        let el_global_eq_loads = get_element_g_eq_loads(&elem, loads, settings);
         // The index of the start node
         let s = (elem.node_start - 1) as usize;
         // The index of the end node
@@ -59,9 +59,8 @@ pub fn create(
 /// Creates the equivalent load matrix in global coordinates for given element
 /// The returned matrix is in the size of \[6 rows, 1 columns] (a column vector)
 pub fn get_element_g_eq_loads(
-    element: &Element,
+    element: &CalculationElement,
     loads: &Vec<CalculationLoad>,
-    nodes: &BTreeMap<i32, Node>,
     settings: &CalculationSettings,
 ) -> DMatrix<f64> {
     let dof = 3;
@@ -69,13 +68,13 @@ pub fn get_element_g_eq_loads(
     let mut linked_loads: Vec<&CalculationLoad> = Vec::new();
     // Gather the loads that are linked to the given element
     for l in loads {
-        if l.element_number == element.number {
+        if l.element_number == element.model_el_num {
             linked_loads.push(l);
         }
     }
-    let rot_matrix = matrices::get_element_rotation_matrix(&element, nodes).transpose();
-    let el_length = element.get_length(nodes);
-    let el_rotation = element.get_rotation(nodes);
+    let rot_matrix = matrices::get_element_rotation_matrix(&element).transpose();
+    let el_length = element.length;
+    let el_rotation = element.rotation;
     // Iterate through the linked loads and add them to the equivalent load matrix
     for load in linked_loads {
         match load.load_type {
@@ -100,7 +99,7 @@ pub fn get_element_g_eq_loads(
                 result_vector += element_eql_matrix_gl;
             }
             CalculationLoadType::Strain => {
-                let val = element.get_elastic_modulus() * element.profile.get_area(&element.material, settings) / el_length
+                let val = element.elastic_modulus * element.profile.get_area(&element.material, settings) / el_length
                     * load.strength;
                 result_vector +=
                     &rot_matrix * DMatrix::from_row_slice(6, 1, &[-val, 0.0, 0.0, val, 0.0, 0.0]);
@@ -364,12 +363,28 @@ mod tests {
     use crate::fem::equivalent_loads::{
         handle_line_load, handle_point_load, handle_rotational_load, handle_triangular_load,
     };
+    use crate::fem::CalcModel;
     use crate::loads::{self, Load, LoadCombination};
+    use crate::settings::CalculationSettings;
     use crate::structure::{Element, Node};
-    use std::collections::BTreeMap;
+    use std::collections::{BTreeMap, HashMap};
     use std::vec;
     use vputilslib::equation_handler::EquationHandler;
     use vputilslib::geometry2d::VpPoint;
+
+    fn get_calc_model<'a>(elements: &'a Vec<Element>, nodes: &'a BTreeMap<i32, Node>) -> CalcModel<'a> {
+        let (calc_elements, extra_nodes) = crate::structure::utils::get_calc_elements(
+            elements, 
+            nodes, 
+            &HashMap::new(), 
+            &CalculationSettings::default());
+        CalcModel::new(
+            nodes, 
+            extra_nodes, 
+            elements, 
+            calc_elements
+        )
+    }
 
     #[test]
     fn t_handle_point_load() {
@@ -391,9 +406,12 @@ mod tests {
         );
         let elements = vec![el];
         let loads = &mut vec![load];
+
+        let node_clone = nodes.clone();
+        let calc_model = get_calc_model(&elements, &node_clone);
+
         let calc_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
+            &calc_model,
             loads,
             &LoadCombination::default(),
             &EquationHandler::new(),
@@ -438,8 +456,7 @@ mod tests {
 
         loads[0].rotation = -90.0;
         let calc_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
+            &calc_model,
             loads,
             &LoadCombination::default(),
             &EquationHandler::new(),
@@ -475,9 +492,12 @@ mod tests {
         );
         let elements = vec![el];
         let loads = &mut vec![load];
+
+        let node_clone = nodes.clone();
+        let calc_model = get_calc_model(&elements, &node_clone);
+
         let calc_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
+            &calc_model,
             loads,
             &LoadCombination::default(),
             &EquationHandler::new(),
@@ -512,9 +532,12 @@ mod tests {
         );
         let elements = vec![el];
         let loads = &mut vec![load];
+
+        let node_clone = nodes.clone();
+        let calc_model = get_calc_model(&elements, &node_clone);
+
         let calc_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
+            &calc_model,
             loads,
             &LoadCombination::default(),
             &EquationHandler::new(),
@@ -548,9 +571,12 @@ mod tests {
         );
         let elements = vec![el];
         let loads = &mut vec![load];
+
+        let node_clone = nodes.clone();
+        let calc_model = get_calc_model(&elements, &node_clone);
+
         let calc_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
+            &calc_model,
             loads,
             &LoadCombination::default(),
             &EquationHandler::new(),
@@ -596,9 +622,12 @@ mod tests {
         );
         let elements = vec![el];
         let loads = &mut vec![load];
+
+        let node_clone = nodes.clone();
+        let calc_model = get_calc_model(&elements, &node_clone);
+
         let calc_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
+            &calc_model,
             loads,
             &LoadCombination::default(),
             &EquationHandler::new(),
@@ -652,9 +681,12 @@ mod tests {
             "10".to_string(),
             0.0,
         );
+
+        let node_clone = nodes.clone();
+        let calc_model = get_calc_model(&elements, &node_clone);
+
         let calc_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
+            &calc_model,
             loads,
             &LoadCombination::default(),
             &EquationHandler::new(),
@@ -720,9 +752,10 @@ mod tests {
         );
         let elements = vec![el];
         let loads = &mut vec![load];
+        let node_clone = nodes.clone();
+        let calc_model = get_calc_model(&elements, &node_clone);
         let calc_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
+            &calc_model,
             loads,
             &LoadCombination::default(),
             &EquationHandler::new(),
@@ -776,9 +809,10 @@ mod tests {
             "10".to_string(),
             0.0,
         );
+        let node_clone = nodes.clone();
+        let calc_model = get_calc_model(&elements, &node_clone);
         let calc_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
+            &calc_model,
             loads,
             &LoadCombination::default(),
             &EquationHandler::new(),
@@ -830,9 +864,9 @@ mod tests {
         // 120°
         loads[0].offset_start = "3500".to_string();
         loads[0].offset_end = "1000".to_string();
+        
         let calc_loads = loads::utils::extract_calculation_loads(
-            &elements,
-            &nodes,
+            &calc_model,
             loads,
             &LoadCombination::default(),
             &EquationHandler::new(),

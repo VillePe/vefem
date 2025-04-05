@@ -3,7 +3,7 @@
 use vputilslib::equation_handler::EquationHandler;
 
 use crate::loads::load::Load;
-use crate::structure::{Element, Node};
+use crate::fem::CalcModel;
 
 use super::load::CalculationLoad;
 use super::LoadCombination;
@@ -43,9 +43,9 @@ pub fn get_linked_element_numbers(load: &Load) -> Vec<i32> {
 }
 
 /// Checks if the given load is linked to given element by comparing the elements number to 'element_numbers' in [`Load`]
-pub fn load_is_linked(elem: &Element, load: &Load) -> bool {
+pub fn load_is_linked(elem_number: i32, load: &Load) -> bool {
     let linked_elements = get_linked_element_numbers(&load);
-    linked_elements.contains(&-1) || linked_elements.contains(&elem.number)
+    linked_elements.contains(&-1) || linked_elements.contains(&elem_number)
 }
 
 /// Splits the trapezoid load into line load and triangular load. The first item in tuple is the
@@ -128,8 +128,7 @@ pub fn get_load_map(loads: Vec<CalculationLoad>) -> BTreeMap<String, Vec<Calcula
 /// * `loads` - List of loads
 /// * `eq_handler` - Equation handler with pre initialized variables. Variable 'L' is preserved for element length.
 pub fn extract_calculation_loads(
-    elements: &Vec<Element>,
-    nodes: &BTreeMap<i32, Node>,
+    calc_model: &CalcModel,
     loads: &Vec<Load>,
     load_combination: &LoadCombination,
     eq_handler: &EquationHandler,
@@ -152,13 +151,13 @@ pub fn extract_calculation_loads(
             }
         }
         let rotation = load.rotation;
-        for element in elements {
-            if !load_is_linked(&element, load) {
+        for element in calc_model.calc_elements.iter() {
+            if !load_is_linked(element.model_el_num, load) {
                 continue;
             }
             let name = load.name.clone();
-            let element_number = element.number;
-            let el_length = element.get_length(nodes);
+            let element_number = element.model_el_num;
+            let el_length = element.length;
             temp_eq_handler.set_variable("L", el_length);
             let offset_start = temp_eq_handler
                 .calculate_formula(&load.offset_start)

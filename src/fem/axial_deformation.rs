@@ -1,9 +1,8 @@
 #![allow(dead_code)]
 
-use std::collections::BTreeMap;
 
 use crate::{
-    loads::load::{self, CalculationLoad}, settings::CalculationSettings, structure::{Element, Node}
+    loads::load::{self, CalculationLoad}, settings::CalculationSettings, structure::CalculationElement
 };
 
 use crate::results::NodeResults;
@@ -11,8 +10,7 @@ use crate::results::NodeResults;
 /// Calculates the deflection at given point.
 pub fn calculate_at(
     x: f64,
-    element: &Element,
-    nodes: &BTreeMap<i32, Node>,
+    element: &CalculationElement,
     loads: &Vec<CalculationLoad>,
     settings: &CalculationSettings,
     results: &NodeResults,
@@ -22,10 +20,10 @@ pub fn calculate_at(
 
     // The sum of integrals from loads and support reactions
     let mut s_integral = 0.0;
-    let local_reactions = results.get_elem_local_reactions(element, nodes);
-    let local_displacements = results.get_elem_local_displacements(element, nodes);
+    let local_reactions = results.get_elem_local_reactions(element);
+    let local_displacements = results.get_elem_local_displacements(element);
 
-    let e_m = element.get_elastic_modulus();
+    let e_m = element.elastic_modulus;
     let area = element.profile.get_area(&element.material, settings);
 
     for load in loads {

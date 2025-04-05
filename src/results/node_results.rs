@@ -1,10 +1,8 @@
-use std::collections::BTreeMap;
-
 use nalgebra::DMatrix;
 use serde::{Deserialize, Serialize};
 use vputilslib::equation_handler::EquationHandler;
 
-use crate::structure::{Element, Node};
+use crate::structure::CalculationElement;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct NodeResults {
@@ -63,8 +61,7 @@ impl NodeResults {
     /// Get the local reaction matrix for the element
     pub fn get_elem_local_reactions(
         &self,
-        element: &Element,
-        nodes: &BTreeMap<i32, Node>,
+        element: &CalculationElement
     ) -> DMatrix<f64> {
         let mut global_reactions = DMatrix::<f64>::zeros(6, 1);
 
@@ -75,7 +72,7 @@ impl NodeResults {
             global_reactions[(self.dof_count + i, 0)] =
                 self.get_support_reaction(element.node_end, i);
         }
-        let rot_matrix = crate::fem::matrices::get_element_rotation_matrix(element, nodes);
+        let rot_matrix = crate::fem::matrices::get_element_rotation_matrix(element);
 
         rot_matrix * global_reactions
     }
@@ -83,8 +80,7 @@ impl NodeResults {
     /// Get the local displacement matrix for the element
     pub fn get_elem_local_displacements(
         &self,
-        element: &Element,
-        nodes: &BTreeMap<i32, Node>,
+        element: &CalculationElement,
     ) -> DMatrix<f64> {
         let mut global_matrix = DMatrix::<f64>::zeros(6, 1);
 
@@ -94,7 +90,7 @@ impl NodeResults {
         for i in 0..self.dof_count {
             global_matrix[(self.dof_count + i, 0)] = self.get_displacement(element.node_end, i);
         }
-        let rot_matrix = crate::fem::matrices::get_element_rotation_matrix(element, nodes);
+        let rot_matrix = crate::fem::matrices::get_element_rotation_matrix(element);
 
         rot_matrix * global_matrix
     }
@@ -103,11 +99,12 @@ impl NodeResults {
 #[cfg(test)]
 mod tests {
     use approx::relative_eq;
-    use std::collections::BTreeMap;
+    use std::collections::{BTreeMap, HashMap};
     use vputilslib::equation_handler::EquationHandler;
 
     use vputilslib::geometry2d::VpPoint;
 
+    use crate::fem::CalcModel;
     use crate::loads::Load;
     use crate::material::{MaterialData, Steel};
     use crate::profile::Profile;
@@ -136,17 +133,28 @@ mod tests {
             00.0,
         );
         let elements = vec![el];
-        let calc_model = StructureModel {
+        let struct_model = StructureModel {
             nodes,
             elements: elements,
             loads: vec![pl],
             calc_settings: CalculationSettings::default(),
             load_combinations: vec![],
         };
-        let results = crate::fem::calculate(&calc_model, &mut EquationHandler::new());
+        let (calc_elements, extra_nodes) = crate::structure::utils::get_calc_elements(
+            &struct_model.elements, 
+            &struct_model.nodes, 
+            &HashMap::new(), 
+            &struct_model.calc_settings);
+        let calc_model = CalcModel::new(
+            &struct_model.nodes, 
+            extra_nodes, 
+            &struct_model.elements, 
+            calc_elements
+        );
+        let results = crate::fem::calculate(&struct_model, &mut EquationHandler::new());
         let local_reactions = results[0]
             .node_results
-            .get_elem_local_reactions(&calc_model.elements[0], &calc_model.nodes);
+            .get_elem_local_reactions(&calc_model.calc_elements[0]);
         println!("Local reactions: {:.0}", local_reactions);
         assert!(relative_eq!(local_reactions[(0, 0)], 0.0, epsilon = 1.0));
         assert!(relative_eq!(local_reactions[(1, 0)], 7500.0, epsilon = 1.0));

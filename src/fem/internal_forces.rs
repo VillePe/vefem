@@ -1,23 +1,21 @@
 #![allow(dead_code)]
 
-use std::collections::BTreeMap;
 
 use crate::{
     loads::load::{self, CalculationLoad},
-    structure::{Element, Node},
+    structure::CalculationElement,
 };
 
 use crate::results::NodeResults;
 
 pub fn calculate_moment_at(
     x: f64,
-    element: &Element,
-    nodes: &BTreeMap<i32, Node>,
+    element: &CalculationElement,
     loads: &Vec<CalculationLoad>,
     results: &NodeResults,
 ) -> f64 {
     let mut moment = 0.0;
-    let local_reactions = results.get_elem_local_reactions(element, nodes);
+    let local_reactions = results.get_elem_local_reactions(element);
     for load in loads {
         // The factor to handle skewed loads
         let z_dir_factor = load.rotation.to_radians().sin();
@@ -63,13 +61,12 @@ pub fn calculate_moment_at(
 
 pub fn calculate_shear_at(
     x: f64,
-    element: &Element,
-    nodes: &BTreeMap<i32, Node>,
+    element: &CalculationElement,
     loads: &Vec<CalculationLoad>,
     results: &NodeResults,
 ) -> f64 {
     let mut shear = 0.0;
-    let local_reactions = results.get_elem_local_reactions(element, nodes);
+    let local_reactions = results.get_elem_local_reactions(element);
     for load in loads {
         // The factor to handle skewed loads
         let z_dir_factor = load.rotation.to_radians().sin();
@@ -110,13 +107,12 @@ pub fn calculate_shear_at(
 
 pub fn calculate_axial_force_at(
     x: f64,
-    element: &Element,
-    nodes: &BTreeMap<i32, Node>,
+    element: &CalculationElement,
     loads: &Vec<CalculationLoad>,
     results: &NodeResults,
 ) -> f64 {
     let mut axial_f = 0.0;
-    let local_reactions = results.get_elem_local_reactions(element, nodes);
+    let local_reactions = results.get_elem_local_reactions(element);
     for load in loads {
         // The factor to handle skewed loads
         let x_dir_factor = -load.rotation.to_radians().cos();

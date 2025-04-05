@@ -3,27 +3,33 @@
 use crate::fem::matrices::get_element_rotation_matrix;
 use crate::material::MaterialData;
 use crate::settings::CalculationSettings;
-use crate::structure::element::Element;
-use crate::structure::Node;
+use crate::structure::CalculationElement;
 use nalgebra::DMatrix;
-use std::collections::BTreeMap;
+
+use super::CalcModel;
 
 /// Gets the elements stiffness matrix in the global coordinate system.
 pub fn get_element_global_stiffness_matrix(
-    e: &Element,
-    nodes: &BTreeMap<i32, Node>,
+    e: &CalculationElement,
     settings: &CalculationSettings
-) -> DMatrix<f64> {
-    let e_stiff_matrix = get_element_stiffness_matrix(&e, nodes, settings);
-    let e_rotation_matrix = get_element_rotation_matrix(&e, nodes);
+) -> DMatrix<f64> {    
+    let e_stiff_matrix = get_element_stiffness_matrix(&e, settings);
+    let e_rotation_matrix = get_element_rotation_matrix(&e);
     let e_rot_matrix_t = e_rotation_matrix.transpose();
+    println!("e_length: {:?}", &e.length);
+    println!("e_rotation: {:?}", &e.rotation);
+    println!("e_area: {:?}", &e.profile_area);
+    println!("e_smoa: {:?}", &e.major_smoa);
+    println!("MATRIX {:?}", &e_rot_matrix_t);
+    println!("MATRIX {:?}", &e_stiff_matrix);
+    println!("MATRIX {:?}", &e_rotation_matrix);
     let e_glob_stiff_matrix = e_rot_matrix_t * e_stiff_matrix * e_rotation_matrix;
     e_glob_stiff_matrix
 }
 
 /// Gets the stiffness matrix of the element in elements local coordinate system.
 /// Do not use this directly in the calculations. Use get_element_global_stiffness_matrix
-pub fn get_element_stiffness_matrix(element: &Element, nodes: &BTreeMap<i32, Node>, 
+pub fn get_element_stiffness_matrix(element: &CalculationElement, 
     settings: &CalculationSettings
 ) -> DMatrix<f64> {
     let E = match &element.material {
@@ -34,7 +40,7 @@ pub fn get_element_stiffness_matrix(element: &Element, nodes: &BTreeMap<i32, Nod
             0.0
         }
     };
-    let L = element.get_length(nodes);
+    let L = element.length;
     let A = element.profile.get_area(&element.material, settings);
     let I = element.profile.get_major_second_mom_of_area(&element.material, settings);
     let EA = E * A;
@@ -84,14 +90,13 @@ pub fn get_element_stiffness_matrix(element: &Element, nodes: &BTreeMap<i32, Nod
 }
 
 pub fn create_joined_stiffness_matrix(
-    elements: &Vec<Element>,
-    nodes: &BTreeMap<i32, Node>,
+    calc_model: &CalcModel,
     settings: &CalculationSettings
 ) -> DMatrix<f64> {
-    let supp_count = nodes.len();
+    let supp_count = calc_model.structure_nodes.len() + calc_model.extra_nodes.len();    
     // Increase the joined stiffness matrix size by release count. Releases are set into their
     // own rows and columns at the end of the joined matrix
-    let release_count = crate::structure::utils::get_element_release_count(&elements);
+    let release_count = crate::structure::utils::get_element_release_count(&calc_model.structure_elements);
     // The degrees of freedom count of single node (tx, tz, ry)
     let dof = 3;
     let row_width = supp_count * dof + release_count;
@@ -106,8 +111,8 @@ pub fn create_joined_stiffness_matrix(
     let mut i_normalized: usize;
     let mut j_normalized: usize;
 
-    for elem in elements {
-        let e_glob_stiff_matrix = get_element_global_stiffness_matrix(&elem, nodes, settings);
+    for elem in calc_model.calc_elements.iter() {
+        let e_glob_stiff_matrix = get_element_global_stiffness_matrix(&elem, settings);
         // The index of the start node
         let s = (elem.node_start - 1) as usize;
         // The index of the end node
