@@ -70,6 +70,7 @@ impl Default for Element {
     }
 }
 
+#[derive(Debug)]
 pub struct CalculationElement<'a> {
     pub calc_el_num: i32,
     pub model_el_num: i32,

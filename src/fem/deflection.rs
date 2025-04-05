@@ -27,6 +27,9 @@ pub fn calculate_at(
     let s_mom_area = element.profile.get_major_second_mom_of_area(&element.material, settings);
 
     for load in loads {
+        if load.element_number != element.calc_el_num {
+            continue;
+        }
         // The factor to handle skewed loads
         let z_dir_factor = load.rotation.to_radians().sin();
         match load.load_type {

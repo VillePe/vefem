@@ -27,7 +27,11 @@ impl<'a> CalcModel<'a> {
         }
     }
 
-    pub fn get_nodes(&'a mut self) -> &BTreeMap<i32, &Node> {
+    pub fn get_nodes(&'a self) -> &BTreeMap<i32, &Node> { 
+        &self.all_nodes 
+    }
+
+    pub fn get_nodes_mut(&'a mut self) -> &BTreeMap<i32, &Node> {
         if self.all_nodes.is_empty() {
             self.all_nodes = BTreeMap::new();
             for n in self.structure_nodes.values() {

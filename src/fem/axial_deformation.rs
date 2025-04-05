@@ -2,7 +2,7 @@
 
 
 use crate::{
-    loads::load::{self, CalculationLoad}, settings::CalculationSettings, structure::CalculationElement
+    loads::load::{self, CalculationLoad}, structure::CalculationElement
 };
 
 use crate::results::NodeResults;
@@ -12,7 +12,6 @@ pub fn calculate_at(
     x: f64,
     element: &CalculationElement,
     loads: &Vec<CalculationLoad>,
-    settings: &CalculationSettings,
     results: &NodeResults,
 ) -> f64 {
     // See theory files for more information how these values are calculated.
@@ -24,9 +23,12 @@ pub fn calculate_at(
     let local_displacements = results.get_elem_local_displacements(element);
 
     let e_m = element.elastic_modulus;
-    let area = element.profile.get_area(&element.material, settings);
+    let area = element.profile_area;
 
     for load in loads {
+        if load.element_number != element.calc_el_num {
+            continue;
+        }
         // The factor to handle skewed loads
         let x_dir_factor = load.rotation.to_radians().cos();
         match load.load_type {

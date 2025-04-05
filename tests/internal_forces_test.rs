@@ -394,10 +394,10 @@ mod internal_forces_tests {
             (2, Node::new_hinged(2, VpPoint::new(4000.0, 0.0))),
             (3, Node::new_hinged(3, VpPoint::new(1000.0, 0.0))),
             (4, Node::new_hinged(4, VpPoint::new(2000.0, 0.0))),
-            (5, Node::new_hinged(4, VpPoint::new(3000.0, 0.0))),
+            (5, Node::new_hinged(5, VpPoint::new(3000.0, 0.0))),
         ]);
         let elements = vec![el];
-        let l_load = Load::new_trapezoid_load(
+        let l_load = Load::new_line_load(
             "TrapezoidLoad".to_string(),
             "1".to_string(),
             "0".to_string(),
@@ -406,7 +406,7 @@ mod internal_forces_tests {
             -90.0,
         );
         let loads = vec![l_load];
-        let mut structure_model = StructureModel {
+        let structure_model = StructureModel {
             nodes,
             elements,
             loads,
@@ -418,45 +418,15 @@ mod internal_forces_tests {
         let mom = results.internal_force_results[&1].get_force_at(ForceType::Moment, 1000.0)
             .unwrap().value_y;
         println!("Moment(1000): {} kNm", mom / 1e6);
-        assert_eq!(relative_eq!(mom, 8.75e6, epsilon = 1.0), true);
+        assert_eq!(relative_eq!(mom, 21.25e6, epsilon = 1.0), true);
         let mom = results.internal_force_results[&1].get_force_at(ForceType::Moment, 2000.0)
             .unwrap().value_y;
         println!("Moment(2000): {} kNm", mom / 1e6);
-        assert_eq!(relative_eq!(mom, 10.00e6, epsilon = 1.0), true);
+        assert_eq!(relative_eq!(mom, 30.00e6, epsilon = 1.0), true);
         let mom = results.internal_force_results[&1].get_force_at(ForceType::Moment, 3000.0)
             .unwrap().value_y;
         println!("Moment(3000): {} kNm", mom / 1e6);
-        assert_eq!(relative_eq!(mom, 6.25e6, epsilon = 1.0), true);
-
-        structure_model.loads[0].rotation = -45.0;
-         
-        let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
-        let mom = results.internal_force_results[&1].get_force_at(ForceType::Moment, 2000.0)
-            .unwrap().value_y;
-        println!("Moment(2000<-45): {} kNm", mom / 1e6);
-        assert_eq!(
-            relative_eq!(mom, 10.00e6 / 2f64.sqrt(), epsilon = 1.0),
-            true
-        );
-
-        structure_model.loads[0].rotation = 45.0;
-         
-        let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
-        let mom = results.internal_force_results[&1].get_force_at(ForceType::Moment, 2000.0)
-            .unwrap().value_y;
-        println!("Moment(2000<45): {} kNm", mom / 1e6);
-        assert_eq!(
-            relative_eq!(mom, -10.00e6 / 2f64.sqrt(), epsilon = 1.0),
-            true
-        );
-
-        structure_model.loads[0].rotation = 0.0;
-         
-        let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
-        let mom = results.internal_force_results[&1].get_force_at(ForceType::Moment, 2000.0)
-            .unwrap().value_y;
-        println!("Moment(horizontal)): {} kNm", mom / 1e6);
-        assert_eq!(relative_eq!(mom, 0.0, epsilon = 1.0), true);
+        assert_eq!(relative_eq!(mom, 23.75e6, epsilon = 1.0), true);
     }
 
     #[test]

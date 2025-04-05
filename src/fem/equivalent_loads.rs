@@ -68,7 +68,7 @@ pub fn get_element_g_eq_loads(
     let mut linked_loads: Vec<&CalculationLoad> = Vec::new();
     // Gather the loads that are linked to the given element
     for l in loads {
-        if l.element_number == element.model_el_num {
+        if l.element_number == element.calc_el_num {
             linked_loads.push(l);
         }
     }

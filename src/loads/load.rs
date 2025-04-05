@@ -190,7 +190,7 @@ impl Default for Load {
     }
 }
 
-#[derive(Debug, Serialize_repr, Deserialize_repr)]
+#[derive(Debug, PartialEq, Serialize_repr, Deserialize_repr)]
 #[repr(u8)]
 pub enum LoadType {
     Point = 0,
@@ -212,6 +212,7 @@ pub enum CalculationLoadType {
     Strain,
 }
 
+#[derive(Debug)]
 pub struct CalculationLoad {
     pub name: String,
     pub load_type: CalculationLoadType,

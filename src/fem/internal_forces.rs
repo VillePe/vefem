@@ -17,6 +17,9 @@ pub fn calculate_moment_at(
     let mut moment = 0.0;
     let local_reactions = results.get_elem_local_reactions(element);
     for load in loads {
+        if load.element_number != element.calc_el_num {
+            continue;
+        }
         // The factor to handle skewed loads
         let z_dir_factor = load.rotation.to_radians().sin();
         match load.load_type {
@@ -68,6 +71,9 @@ pub fn calculate_shear_at(
     let mut shear = 0.0;
     let local_reactions = results.get_elem_local_reactions(element);
     for load in loads {
+        if load.element_number != element.calc_el_num {
+            continue;
+        }
         // The factor to handle skewed loads
         let z_dir_factor = load.rotation.to_radians().sin();
         match load.load_type {
@@ -114,6 +120,9 @@ pub fn calculate_axial_force_at(
     let mut axial_f = 0.0;
     let local_reactions = results.get_elem_local_reactions(element);
     for load in loads {
+        if load.element_number != element.calc_el_num {
+            continue;
+        }
         // The factor to handle skewed loads
         let x_dir_factor = -load.rotation.to_radians().cos();
         match load.load_type {

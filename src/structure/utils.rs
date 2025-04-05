@@ -53,8 +53,9 @@ pub fn get_calc_elements<'a>(
     let mut calc_elements: Vec<CalculationElement> = Vec::new();
     let mut extra_nodes: BTreeMap<i32, Node> = BTreeMap::new();
     let mut el_num = 1001;
+    println!("Node count: {}", nodes.len());
     for e in elements {
-        let mut e_split_set: HashMap<i64, &Node> = HashMap::new();
+        let mut e_split_set: BTreeMap<i64, &Node> = BTreeMap::new();
 
         let e_start = &nodes.get(&e.node_start).unwrap().point;
         let e_end = &nodes.get(&e.node_end).unwrap().point;
@@ -62,8 +63,10 @@ pub fn get_calc_elements<'a>(
         let length = e.get_length(nodes);
         for n in nodes.values() {
             if n.number == e.node_start || n.number == e.node_end {
+                println!("Skip nro {}", n.number);
                 continue;
             }
+            println!("Test nro {}", n.number);
             if geometry2d::point_in_line(e_start, e_end, &n.point, 0.1) {
                 // Get the split position by calculating the length between the node and the start of the element
                 let split_pos = geometry2d::calc_length_between_points(&n.point, e_start)
@@ -71,6 +74,7 @@ pub fn get_calc_elements<'a>(
                     .round() as i64;
                 // Only insert the value if it is not already in the set
                 if !e_split_set.contains_key(&split_pos) {
+                    println!("Insert nro {}", n.number);
                     e_split_set.insert(split_pos, &n);
                 }
             }
@@ -94,44 +98,51 @@ pub fn get_calc_elements<'a>(
                 e_split_set.insert(split_pos, &extra_nodes[&number]);
             }
         }
-        // Create the calculation elements by split set positions
-        let mut count = 0;
-        let mut prev_split_pos: Option<i64> = None;
         if e_split_set.len() == 0 {
             calc_elements.push(CalculationElement::from(&e, nodes, el_num, calc_settings));
-        }
-        for split_pos in e_split_set.iter() {
-            let mut calc_element = CalculationElement::from(&e, nodes, el_num, calc_settings);
-            if count == 0 {
-                // Create the first element                
-                el_num += 1;
-                calc_element.node_end = split_pos.1.number;
-                calc_element.length = *split_pos.0 as f64;
-                calc_element.releases.e_tx = false;
-                calc_element.releases.e_tz = false;
-                calc_element.releases.e_ry = false;
-            } else if count == e_split_set.len() - 1 {
-                // Create the last element
-                el_num += 1;
-                calc_element.node_start = e.node_end;
-                calc_element.offset_from_model_el = prev_split_pos.unwrap() as f64;
-                calc_element.length = (split_pos.0 - prev_split_pos.unwrap()) as f64;
-                calc_element.releases.s_tx = false;
-                calc_element.releases.s_tz = false;
-                calc_element.releases.s_ry = false;
-            } else {
-                // Create the middle element
-                el_num += 1;
-                calc_element.node_start = split_pos.1.number;
-                calc_element.node_end = split_pos.1.number;
-                calc_element.offset_from_model_el = prev_split_pos.unwrap() as f64;
-                calc_element.length = length - prev_split_pos.unwrap() as f64;
-                clear_element_releases(&mut calc_element.releases);
+            el_num += 1;
+        } else {
+            // Create the calculation elements by split set positions
+            let mut count = 0;
+            let mut prev_split_pos: Option<(i64, i32)> = None;
+            for split_pos in e_split_set.iter() {
+                println!("Split pos: {} (nro: {1})", split_pos.0, split_pos.1.number);
+                let mut calc_element = CalculationElement::from(&e, nodes, el_num, calc_settings);
+                if count == 0 {
+                    // Create the first element                
+                    el_num += 1;
+                    calc_element.node_end = split_pos.1.number;
+                    calc_element.length = *split_pos.0 as f64;
+                    calc_element.releases.e_tx = false;
+                    calc_element.releases.e_tz = false;
+                    calc_element.releases.e_ry = false;
+                } else {
+                    // Create the middle element
+                    el_num += 1;
+                    calc_element.node_start = prev_split_pos.unwrap().1;
+                    calc_element.node_end = split_pos.1.number;
+                    calc_element.offset_from_model_el = prev_split_pos.unwrap().0 as f64;
+                    calc_element.length = (split_pos.0 - prev_split_pos.unwrap().0) as f64;
+                    clear_element_releases(&mut calc_element.releases);
+                }
+                prev_split_pos = Some((*split_pos.0, split_pos.1.number));
+                count += 1;
+                println!("Calc elem: nro: {}, L={}, S:{}, E:{})", calc_element.calc_el_num, calc_element.length, calc_element.node_start, calc_element.node_end);
+                calc_elements.push(calc_element);
             }
-            prev_split_pos = Some(*split_pos.0);
-            count += 1;
+            // Create the last element
+            let mut calc_element = CalculationElement::from(&e, nodes, el_num, calc_settings);
+            el_num += 1;
+            calc_element.node_start = prev_split_pos.unwrap().1;
+            calc_element.node_end = e.node_end;
+            calc_element.offset_from_model_el = prev_split_pos.unwrap().0 as f64;
+            calc_element.length = length - prev_split_pos.unwrap().0 as f64;
+            calc_element.releases.s_tx = false;
+            calc_element.releases.s_tz = false;
+            calc_element.releases.s_ry = false;
+            println!("Calc elem: nro: {}, L={}, S:{}, E:{})", calc_element.calc_el_num, calc_element.length, calc_element.node_start, calc_element.node_end);
             calc_elements.push(calc_element);
-        }
+        }        
     }
     (calc_elements, extra_nodes)
 }

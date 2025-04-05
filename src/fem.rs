@@ -51,11 +51,24 @@ pub fn calculate(
         &struct_model.load_combinations
     };
     
+
+    // *****************
+    for el in &calc_model.calc_elements {
+        println!("CAL_EL: {:?}", el);
+    }
+
+    for n in calc_model.structure_nodes.iter() {
+        println!("NODE: {:?}", n);
+    }
+    // *****************
+    
     let mut results: Vec<CalculationResults> = Vec::new();
     for lc in load_combinations {
         let calculation_loads =
-        &loads::utils::extract_calculation_loads(&calc_model, loads, lc, equation_handler);
-
+            &loads::utils::extract_calculation_loads(&calc_model, loads, lc, equation_handler
+        );
+        
+        println!("Calculation loads count: {}", calculation_loads.len());
         let mut global_stiff_matrix = create_joined_stiffness_matrix(&calc_model, calc_settings);
         // The global equivalent loads matrix
         let global_eq_l_matrix = equivalent_loads::create(&calc_model, calculation_loads, calc_settings);
@@ -65,10 +78,25 @@ pub fn calculate(
             &mut global_stiff_matrix,
             &global_eq_l_matrix,
         );
+        
         let reactions = calculate_reactions(&global_stiff_matrix, &displacements, &global_eq_l_matrix);
 
         let displacements = displacements.column(0).as_slice().to_vec();
         let reactions = reactions.column(0).as_slice().to_vec();
+
+        
+
+        // *****************
+        for l in calculation_loads.iter() {
+            println!("LOAD: {:?}", l);
+        }
+        for d in displacements.iter() {
+            println!("DISPLACEMENT: {}", d);
+        }
+        for r in reactions.iter() {
+            println!("REACTION: {}", r);
+        }
+        // *****************
 
         let node_results = NodeResults::new(displacements, reactions, nodes.len(), &equation_handler);
         let internal_force_results = calc_internal_forces(
@@ -116,6 +144,7 @@ fn calc_internal_forces(
         let mut deflections = vec![];
         let mut x = 0.0;
         let mut last = false;
+        let mut counter = 0;        
         while x < element_length || last {
             let moment_force_val =
                 internal_forces::calculate_moment_at(x, element, loads, node_results);
@@ -125,13 +154,18 @@ fn calc_internal_forces(
                 internal_forces::calculate_shear_at(x, element, loads, node_results);
             let deflection_val = deflection::calculate_at(x, element, loads, calc_settings, node_results);
             let axial_deformation_val =
-                axial_deformation::calculate_at(x, element, loads, calc_settings, node_results);
+                axial_deformation::calculate_at(x, element, loads, node_results);
+            
+            if counter % 10 == 0 { 
+                println!("Moment at x: {} is: {}", x, moment_force_val);
+            }
+            counter += 1;
 
             moment_forces.push(InternalForcePoint {
                 force_type: ForceType::Moment,
                 value_x: 0.0,
                 value_y: moment_force_val,
-                pos_on_element: x, // TODO ADD THE OFFSET OF CALC ELEMENT TO MODEL ELEMENT START
+                pos_on_element: x + element.offset_from_model_el,
                 element_number: element.model_el_num,
                 load_comb_number: 0,
             });
@@ -139,7 +173,7 @@ fn calc_internal_forces(
                 force_type: ForceType::Axial,
                 value_x: 0.0,
                 value_y: axial_force_val,
-                pos_on_element: x,
+                pos_on_element: x + element.offset_from_model_el,
                 element_number: element.model_el_num,
                 load_comb_number: 0,
             });
@@ -147,7 +181,7 @@ fn calc_internal_forces(
                 force_type: ForceType::Shear,
                 value_x: 0.0,
                 value_y: shear_force_val,
-                pos_on_element: x,
+                pos_on_element: x + element.offset_from_model_el,
                 element_number: element.model_el_num,
                 load_comb_number: 0,
             });
@@ -155,7 +189,7 @@ fn calc_internal_forces(
                 force_type: ForceType::Deflection,
                 value_x: axial_deformation_val,
                 value_y: deflection_val,
-                pos_on_element: x,
+                pos_on_element: x + element.offset_from_model_el,
                 element_number: element.model_el_num,
                 load_comb_number: 0,
             });
