@@ -513,18 +513,18 @@ mod internal_forces_tests {
             .unwrap()
             .value_y;
         println!("Moment(1000): {} kNm", mom / 1e6);
+        assert_eq!(relative_eq!(mom, -1.1e6, epsilon = 1.0e5), true);
         let mom = results.internal_force_results[&1]
             .get_force_at(ForceType::Moment, 2000.0)
             .unwrap()
             .value_y;
         println!("Moment(2000): {} kNm", mom / 1e6);
+        assert_eq!(relative_eq!(mom, -0.7e6, epsilon = 1.0e5), true);
         let mom = results.internal_force_results[&1]
             .get_force_at(ForceType::Moment, 3000.0)
             .unwrap()
             .value_y;
         println!("Moment(3000): {} kNm", mom / 1e6);
-        assert_eq!(relative_eq!(mom, -1.1e6, epsilon = 1.0e5), true);
-        assert_eq!(relative_eq!(mom, -0.7e6, epsilon = 1.0e5), true);
         assert_eq!(relative_eq!(mom, -1.1e6, epsilon = 1.0e5), true);
     }
 
@@ -582,47 +582,49 @@ mod internal_forces_tests {
             .unwrap()
             .value_y;
         println!("Moment(500): {} kNm", mom / 1e6);
+        assert_eq!(relative_eq!(mom, 0.8e6, epsilon = 1.0e5), true);
         let mom = results.internal_force_results[&1]
             .get_force_at(ForceType::Moment, 1000.0)
             .unwrap()
             .value_y;
         println!("Moment(1000): {} kNm", mom / 1e6);
+        assert_eq!(relative_eq!(mom, -1.3e6, epsilon = 1.0e5), true);
 
         let mom = results.internal_force_results[&1]
             .get_force_at(ForceType::Moment, 1500.0)
             .unwrap()
             .value_y;
         println!("Moment(1500): {} kNm", mom / 1e6);
+        assert_eq!(relative_eq!(mom, 0.5e6, epsilon = 1.0e5), true);
+
         let mom = results.internal_force_results[&1]
             .get_force_at(ForceType::Moment, 2000.0)
             .unwrap()
             .value_y;
         println!("Moment(2000): {} kNm", mom / 1e6);
+        assert_eq!(relative_eq!(mom, -1.1e6, epsilon = 1.0e5), true);
 
         let mom = results.internal_force_results[&1]
             .get_force_at(ForceType::Moment, 2500.0)
             .unwrap()
             .value_y;
         println!("Moment(2500): {} kNm", mom / 1e6);
+        assert_eq!(relative_eq!(mom, 0.6e6, epsilon = 1.0e5), true);
+
         let mom = results.internal_force_results[&1]
             .get_force_at(ForceType::Moment, 3000.0)
             .unwrap()
             .value_y;
         println!("Moment(3000): {} kNm", mom / 1e6);
+        assert_eq!(relative_eq!(mom, -1.9e6, epsilon = 1.0e5), true);
 
         let mom = results.internal_force_results[&1]
             .get_force_at(ForceType::Moment, 3500.0)
             .unwrap()
             .value_y;
         println!("Moment(3500): {} kNm", mom / 1e6);
+        assert_eq!(relative_eq!(mom, 1.4e6, epsilon = 1.0e5), true);
 
-        assert_eq!(relative_eq!(mom, 0.8e6, epsilon = 1.0e5), true);
-        assert_eq!(relative_eq!(mom, -1.3e6, epsilon = 1.0e5), true);
-        assert_eq!(relative_eq!(mom, 0.5e6, epsilon = 1.0e5), true);
-        assert_eq!(relative_eq!(mom, -1.1e6, epsilon = 1.0e5), true);
-        assert_eq!(relative_eq!(mom, 0.6e6, epsilon = 1.0e5), true);
-        assert_eq!(relative_eq!(mom, -1.9e6, epsilon = 1.0e5), true);
-        assert_eq!(relative_eq!(mom, 1.5e6, epsilon = 1.0e5), true);
     }
 
     #[test]

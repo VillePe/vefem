@@ -53,9 +53,10 @@ pub fn load_is_linked(elem_number: i32, load: &Load) -> bool {
 /// line load and the second item is the triangular load.
 pub fn split_trapezoid_load(load: &Load, equation_handler: &EquationHandler) -> (Load, Load) {
     let split: Vec<&str> = load.strength.split(';').collect();
-    if split.len() == 2 || split.len() == 1 {
+    if split.len() == 2 || split.len() == 1 {        
         let start_strength = equation_handler.calculate_formula(split[0]).unwrap_or(0.0);
-        let end_strength = equation_handler.calculate_formula(split[0]).unwrap_or(0.0);
+        let end_strength = equation_handler.calculate_formula(split[1]).unwrap_or(0.0);
+        println!("TÄÄLÄ, start_strength: {}, end_strength: {}", start_strength, end_strength);
         return split_trapezoid_load_with_strengths(load, start_strength, end_strength);
     } else {
         println!("Error while parsing strength of the trapezoid load. Use semicolon ';' to separate the start and end strengths")
@@ -253,6 +254,9 @@ pub fn extract_calculation_loads(
                     let strength = temp_eq_handler
                         .calculate_formula(&ll.strength)
                         .unwrap_or(0.0);
+
+                    println!("LineLoad: {:?}", ll);
+                    println!("TriangularLoad: {:?}", tl);
 
                     let calc_ll_load = handle_line_load_extracting(
                         element,
