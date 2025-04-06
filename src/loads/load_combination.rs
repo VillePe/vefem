@@ -45,18 +45,18 @@ impl Default for LoadCombination {
 pub enum LoadCombinationType {
     /// Ultimate limit state. The bool indicates if the load combination should be automatically
     /// created by load groups.
-    ULS(bool),
+    ULS{is_auto: bool},
     /// Serviceability limit state - characteristic. Should be used when the material calculated
     /// behaves elastically (doesn't return to its original state after unloading, like cracked concrete).
     /// The bool indicates if the load combination should be automatically created by load groups.
-    SLSc(bool),
+    SLSc{is_auto: bool},
     /// Serviceability limit state - frequent. Should be used when the material calculated
     /// behaves elastically (returns to its original state after unloading, like steel).
     /// The bool indicates if the load combination should be automatically created by load groups.
-    SLSf(bool),
+    SLSf{is_auto: bool},
     /// Serviceability limit state - quasi-permanent. Should be used when calculating the
     /// quasi-permanent effects of loading (such as creep on concrete).
     /// The bool indicates if the load combination should be automatically created by load groups.
-    SLSqp(bool),
+    SLSqp{is_auto: bool},
     None,
 }
