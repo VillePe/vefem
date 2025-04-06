@@ -42,6 +42,7 @@ impl Default for LoadCombination {
 /// The load combination type. All types have a bool parameter to control whether the load combinations
 /// should be automatically created (when 'exploding' the load combination).
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(tag = "$type")]
 pub enum LoadCombinationType {
     /// Ultimate limit state. The bool indicates if the load combination should be automatically
     /// created by load groups.
