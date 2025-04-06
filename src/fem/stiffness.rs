@@ -104,7 +104,7 @@ pub fn create_joined_stiffness_matrix(
     let mut i_normalized: usize;
     let mut j_normalized: usize;
 
-    for elem in calc_model.calc_elements.iter() {
+    for elem in calc_model.get_all_calc_elements() {
         let e_glob_stiff_matrix = get_element_global_stiffness_matrix(&elem, settings);
         // The index of the start node
         let s = (elem.node_start - 1) as usize;

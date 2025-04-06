@@ -544,7 +544,7 @@ mod fem_tests {
         let elements = vec![e];
         let calc_model = common::get_calc_model(&elements, &nodes);
         let e_glob_stiff_matrix =
-            vefem::fem::stiffness::get_element_global_stiffness_matrix(&calc_model.calc_elements[0], &calc_settings) / 200.0;
+            vefem::fem::stiffness::get_element_global_stiffness_matrix(&calc_model.get_all_calc_elements()[0], &calc_settings) / 200.0;
         println!("{}", e_glob_stiff_matrix);
         assert!(relative_eq!(
             e_glob_stiff_matrix[(0, 0)],

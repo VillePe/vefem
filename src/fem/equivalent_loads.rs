@@ -26,7 +26,7 @@ pub fn create(
     let mut supp_index: usize;
     let mut i_normalized: usize;
 
-    for elem in calc_model.calc_elements.iter() {
+    for elem in calc_model.get_all_calc_elements() {
         let el_global_eq_loads = get_element_g_eq_loads(&elem, loads, settings);
         // The index of the start node
         let s = (elem.node_start - 1) as usize;

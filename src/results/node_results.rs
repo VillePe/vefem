@@ -154,7 +154,7 @@ mod tests {
         );
         let local_reactions = results[0]
             .node_results
-            .get_elem_local_nodal_force_vectors(&calc_model.calc_elements[0], &calc_loads, &struct_model.calc_settings);
+            .get_elem_local_nodal_force_vectors(&calc_model.get_all_calc_elements()[0], &calc_loads, &struct_model.calc_settings);
         println!("Local reactions: {:.0}", local_reactions);
     }
 }

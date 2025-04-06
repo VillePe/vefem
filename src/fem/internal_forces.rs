@@ -27,7 +27,7 @@ pub fn calc_internal_forces(
     calc_settings: &CalculationSettings,
 ) -> BTreeMap<i32, InternalForceResults> {
     let mut map: BTreeMap<i32, InternalForceResults> = BTreeMap::new();
-    for element in calc_model.calc_elements.iter() {
+    for element in calc_model.get_all_calc_elements() {
         let element_length = element.length;
         let split_interval = match calc_settings.calc_split_interval {
             settings::calc_settings::CalcSplitInterval::Absolute(a) => a,
@@ -52,7 +52,7 @@ pub fn calc_internal_forces(
                 axial_deformation::calculate_at(x, element, loads, node_results, calc_settings);
             
             if counter % 10 == 0 { 
-                println!("Moment at x: {} is: {}", x, moment_force_val);
+                println!("Moment at x: {} is: {:.3} kNm", x, moment_force_val*1e-6);
             }
             counter += 1;
 

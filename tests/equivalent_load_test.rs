@@ -53,7 +53,7 @@ mod equivalent_load_tests {
         );
         let calc_settings = CalculationSettings::default();
         let result =
-            vefem::fem::equivalent_loads::get_element_g_eq_loads(&calc_model.calc_elements[0], &calc_loads, &calc_settings);
+            vefem::fem::equivalent_loads::get_element_g_eq_loads(&calc_model.get_all_calc_elements()[0], &calc_loads, &calc_settings);
         println!("#1 {:?}", result);
         assert!((result[0] - (2e4)).abs() < 0.1);
         assert!((result[1] - (0.0)).abs() < 0.1);
@@ -65,7 +65,7 @@ mod equivalent_load_tests {
         nodes.get_mut(&2).unwrap().point = VpPoint::new(4000.0, 0.0);
         let calc_model = common::get_calc_model(&elements, &nodes);
         let result =
-            vefem::fem::equivalent_loads::get_element_g_eq_loads(&calc_model.calc_elements[0], &calc_loads, &calc_settings);
+            vefem::fem::equivalent_loads::get_element_g_eq_loads(&calc_model.get_all_calc_elements()[0], &calc_loads, &calc_settings);
         println!("#2 {:?}", result);
         assert!((result[0] - (20000.0)).abs() < 0.1);
         assert!((result[1] - (0.0)).abs() < 0.1);
@@ -77,7 +77,7 @@ mod equivalent_load_tests {
         nodes.get_mut(&2).unwrap().point = VpPoint::new(2828.5714, 2828.5714);
         let calc_model = common::get_calc_model(&elements, &nodes);
         let result =
-            vefem::fem::equivalent_loads::get_element_g_eq_loads(&calc_model.calc_elements[0], &calc_loads, &calc_settings);
+            vefem::fem::equivalent_loads::get_element_g_eq_loads(&calc_model.get_all_calc_elements()[0], &calc_loads, &calc_settings);
         println!("#3 {:?}", result);
         assert!((result[0] - (19.995e3)).abs() < 1e1);
         assert!((result[1] - (0.0)).abs() < 1e1);
@@ -90,7 +90,7 @@ mod equivalent_load_tests {
         nodes.get_mut(&2).unwrap().point = VpPoint::new(-2000.0, 3464.10161513775458);
         let calc_model = common::get_calc_model(&elements, &nodes);
         let result =
-            vefem::fem::equivalent_loads::get_element_g_eq_loads(&calc_model.calc_elements[0], &calc_loads, &calc_settings);
+            vefem::fem::equivalent_loads::get_element_g_eq_loads(&calc_model.get_all_calc_elements()[0], &calc_loads, &calc_settings);
         println!("#4 {:?}", result);
         assert!((result[0] - (2.0e4)).abs() < 1e1);
         assert!((result[1] - (0.0)).abs() < 1e1);
@@ -117,7 +117,7 @@ mod equivalent_load_tests {
         nodes.get_mut(&2).unwrap().point = VpPoint::new(0.0, 4000.0);
         let calc_model = common::get_calc_model(&elements, &nodes);
         let result =
-            vefem::fem::equivalent_loads::get_element_g_eq_loads(&calc_model.calc_elements[0], &calc_loads, &calc_settings);
+            vefem::fem::equivalent_loads::get_element_g_eq_loads(&calc_model.get_all_calc_elements()[0], &calc_loads, &calc_settings);
         println!("#5 {:?}", result);
         assert!((result[0] - (10.4736e3)).abs() < 0.1);
         assert!((result[1] - (0.0)).abs() < 0.1);
@@ -129,7 +129,7 @@ mod equivalent_load_tests {
         nodes.get_mut(&2).unwrap().point = VpPoint::new(4000.0, 0.0);
         let calc_model = common::get_calc_model(&elements, &nodes);
         let result =
-            vefem::fem::equivalent_loads::get_element_g_eq_loads(&calc_model.calc_elements[0], &calc_loads, &calc_settings);
+            vefem::fem::equivalent_loads::get_element_g_eq_loads(&calc_model.get_all_calc_elements()[0], &calc_loads, &calc_settings);
         println!("#6 {:?}", result);
         assert!((result[0] - (10.9375e3)).abs() < 0.1);
         assert!((result[1] - (0.0)).abs() < 0.1);
@@ -141,7 +141,7 @@ mod equivalent_load_tests {
         nodes.get_mut(&2).unwrap().point = VpPoint::new(2828.5714, 2828.5714);
         let calc_model = common::get_calc_model(&elements, &nodes);
         let result =
-            vefem::fem::equivalent_loads::get_element_g_eq_loads(&calc_model.calc_elements[0], &calc_loads, &calc_settings);
+            vefem::fem::equivalent_loads::get_element_g_eq_loads(&calc_model.get_all_calc_elements()[0], &calc_loads, &calc_settings);
         println!("#7{:?}", result);
         assert!((result[0] - (10.7024e3)).abs() < 1e1);
         assert!((result[1] - (0.2288e3)).abs() < 1e1);
@@ -154,7 +154,7 @@ mod equivalent_load_tests {
         nodes.get_mut(&2).unwrap().point = VpPoint::new(-2000.0, 3464.10161513775458);
         let calc_model = common::get_calc_model(&elements, &nodes);
         let result =
-            vefem::fem::equivalent_loads::get_element_g_eq_loads(&calc_model.calc_elements[0], &calc_loads, &calc_settings);
+            vefem::fem::equivalent_loads::get_element_g_eq_loads(&calc_model.get_all_calc_elements()[0], &calc_loads, &calc_settings);
         println!("#8 {:?}", result);
         assert!((result[0] - (10.5896e3)).abs() < 1e1);
         assert!((result[1] - (-0.2009e3)).abs() < 1e1);
@@ -194,7 +194,7 @@ mod equivalent_load_tests {
             &EquationHandler::new(),
         );
         let result =
-            vefem::fem::equivalent_loads::get_element_g_eq_loads(&calc_model.calc_elements[0], &calc_loads, &calc_settings);
+            vefem::fem::equivalent_loads::get_element_g_eq_loads(&calc_model.get_all_calc_elements()[0], &calc_loads, &calc_settings);
         println!("#1 {:?}", result);
         assert!((result[0] - (14e3)).abs() < 0.1);
         assert!((result[1] - (0e3)).abs() < 0.1);
@@ -206,7 +206,7 @@ mod equivalent_load_tests {
         nodes.get_mut(&2).unwrap().point = VpPoint::new(4000.0, 0.0);
         let calc_model = common::get_calc_model(&elements, &nodes);
         let result =
-            vefem::fem::equivalent_loads::get_element_g_eq_loads(&calc_model.calc_elements[0], &calc_loads, &calc_settings);
+            vefem::fem::equivalent_loads::get_element_g_eq_loads(&calc_model.get_all_calc_elements()[0], &calc_loads, &calc_settings);
         println!("#2 {:?}", result);
         assert!((result[0] - (13.3333e3)).abs() < 0.1);
         assert!((result[1] - (0.0)).abs() < 0.1);
@@ -218,7 +218,7 @@ mod equivalent_load_tests {
         nodes.get_mut(&2).unwrap().point = VpPoint::new(2828.5714, 2828.5714);
         let calc_model = common::get_calc_model(&elements, &nodes);
         let result =
-            vefem::fem::equivalent_loads::get_element_g_eq_loads(&calc_model.calc_elements[0], &calc_loads, &calc_settings);
+            vefem::fem::equivalent_loads::get_element_g_eq_loads(&calc_model.get_all_calc_elements()[0], &calc_loads, &calc_settings);
         println!("#3 {:?}", result);
         assert!((result[0] - (13.6666e3)).abs() < 1e1);
         assert!((result[1] - (-0.33333e3)).abs() < 1e1);
@@ -231,7 +231,7 @@ mod equivalent_load_tests {
         nodes.get_mut(&2).unwrap().point = VpPoint::new(-2000.0, 3464.10161513775458);
         let calc_model = common::get_calc_model(&elements, &nodes);
         let result =
-            vefem::fem::equivalent_loads::get_element_g_eq_loads(&calc_model.calc_elements[0], &calc_loads, &calc_settings);
+            vefem::fem::equivalent_loads::get_element_g_eq_loads(&calc_model.get_all_calc_elements()[0], &calc_loads, &calc_settings);
         println!("#4{:?}", result);
         assert!((result[0] - (13.8246e3)).abs() < 1e1);
         assert!((result[1] - (0.2856e3)).abs() < 1e1);
@@ -258,7 +258,7 @@ mod equivalent_load_tests {
         nodes.get_mut(&2).unwrap().point = VpPoint::new(0.0, 4000.0);
         let calc_model = common::get_calc_model(&elements, &nodes);
         let result =
-            vefem::fem::equivalent_loads::get_element_g_eq_loads(&calc_model.calc_elements[0], &calc_loads, &calc_settings);
+            vefem::fem::equivalent_loads::get_element_g_eq_loads(&calc_model.get_all_calc_elements()[0], &calc_loads, &calc_settings);
         println!("{:?}", result);
         assert!((result[0] - (7.0068e3)).abs() < 0.1);
         assert!((result[1] - (0.0e3)).abs() < 0.1);
@@ -270,7 +270,7 @@ mod equivalent_load_tests {
         nodes.get_mut(&2).unwrap().point = VpPoint::new(4000.0, 0.0);
         let calc_model = common::get_calc_model(&elements, &nodes);
         let result =
-            vefem::fem::equivalent_loads::get_element_g_eq_loads(&calc_model.calc_elements[0], &calc_loads, &calc_settings);
+            vefem::fem::equivalent_loads::get_element_g_eq_loads(&calc_model.get_all_calc_elements()[0], &calc_loads, &calc_settings);
         println!("{:?}", result);
         assert!((result[0] - (6.7708e3)).abs() < 0.1);
         assert!((result[1] - (0.0)).abs() < 0.1);
@@ -282,7 +282,7 @@ mod equivalent_load_tests {
         nodes.get_mut(&2).unwrap().point = VpPoint::new(2828.5714, 2828.5714);
         let calc_model = common::get_calc_model(&elements, &nodes);
         let result =
-            vefem::fem::equivalent_loads::get_element_g_eq_loads(&calc_model.calc_elements[0], &calc_loads, &calc_settings);
+            vefem::fem::equivalent_loads::get_element_g_eq_loads(&calc_model.get_all_calc_elements()[0], &calc_loads, &calc_settings);
         println!("{:?}", result);
         assert!((result[0] - (6.8839e3)).abs() < 1e1);
         assert!((result[1] - (-0.1162e3)).abs() < 1e1);
@@ -295,7 +295,7 @@ mod equivalent_load_tests {
         nodes.get_mut(&2).unwrap().point = VpPoint::new(-2000.0, 3464.10161513775458);
         let calc_model = common::get_calc_model(&elements, &nodes);
         let result =
-            vefem::fem::equivalent_loads::get_element_g_eq_loads(&calc_model.calc_elements[0], &calc_loads, &calc_settings);
+            vefem::fem::equivalent_loads::get_element_g_eq_loads(&calc_model.get_all_calc_elements()[0], &calc_loads, &calc_settings);
         println!("{:?}", result);
         assert!((result[0] - (6.9392e3)).abs() < 1e1);
         assert!((result[1] - (0.099e3)).abs() < 1e1);
@@ -314,7 +314,7 @@ mod equivalent_load_tests {
             &EquationHandler::new(),
         );
         let result =
-            vefem::fem::equivalent_loads::get_element_g_eq_loads(&calc_model.calc_elements[0], &calc_loads, &calc_settings);
+            vefem::fem::equivalent_loads::get_element_g_eq_loads(&calc_model.get_all_calc_elements()[0], &calc_loads, &calc_settings);
         println!("{:?}", result);
         assert!((result[0] - (3.64176e3)).abs() < 1e1);
         assert!((result[1] - (-0.3042e3)).abs() < 1e1);
@@ -348,7 +348,7 @@ mod equivalent_load_tests {
             &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let result = get_element_g_eq_loads(&calc_model.calc_elements[0], &calc_loads, &calc_settings);
+        let result = get_element_g_eq_loads(&calc_model.get_all_calc_elements()[0], &calc_loads, &calc_settings);
         println!("{:?}", result);
         assert!((result[0] - (0e1)).abs() < 0.1);
         assert!((result[1] - (-5250e3)).abs() < 0.1);
@@ -382,7 +382,7 @@ mod equivalent_load_tests {
             &LoadCombination::default(),
             &EquationHandler::new(),
         );
-        let result = get_element_g_eq_loads(&calc_model.calc_elements[0], &calc_loads, &calc_settings);
+        let result = get_element_g_eq_loads(&calc_model.get_all_calc_elements()[0], &calc_loads, &calc_settings);
         println!("{:?}", result);
         assert!((result[0] - (0e1)).abs() < 0.1);
         assert!((result[1] - (-262.5e3)).abs() < 0.1);

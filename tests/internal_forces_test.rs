@@ -415,6 +415,11 @@ mod internal_forces_tests {
         };
          
         let results = &vefem::fem::fem_handler::calculate(&structure_model, &mut EquationHandler::new())[0];
+        for i in (0..4000).step_by(200) {
+            let mom = results.internal_force_results[&1].get_force_at(ForceType::Moment, i as f64)
+            .unwrap().value_y;
+            println!("Moment({}): {} kNm", i, mom / 1e6);
+        }
         let mom = results.internal_force_results[&1].get_force_at(ForceType::Moment, 1000.0)
             .unwrap().value_y;
         println!("Moment(1000): {} kNm", mom / 1e6);

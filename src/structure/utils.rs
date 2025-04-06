@@ -49,12 +49,13 @@ pub fn get_calc_elements<'a>(
     nodes: &BTreeMap<i32, Node>,
     split_positions: &HashMap<i32, i64>,
     calc_settings: &CalculationSettings,
-) -> (Vec<CalculationElement<'a>>, BTreeMap<i32, Node>) {
-    let mut calc_elements: Vec<CalculationElement> = Vec::new();
+) -> (BTreeMap<i32, Vec<CalculationElement<'a>>>, BTreeMap<i32, Node>) {
+    let mut calc_elements: BTreeMap<i32, Vec<CalculationElement<'a>>> = BTreeMap::new();
     let mut extra_nodes: BTreeMap<i32, Node> = BTreeMap::new();
     let mut el_num = 1001;
     println!("Node count: {}", nodes.len());
     for e in elements {
+        calc_elements.insert(e.number, Vec::new());
         let mut e_split_set: BTreeMap<i64, &Node> = BTreeMap::new();
 
         let e_start = &nodes.get(&e.node_start).unwrap().point;
@@ -99,7 +100,7 @@ pub fn get_calc_elements<'a>(
             }
         }
         if e_split_set.len() == 0 {
-            calc_elements.push(CalculationElement::from(&e, nodes, el_num, calc_settings));
+            calc_elements.get_mut(&e.number).unwrap().push(CalculationElement::from(&e, nodes, el_num, calc_settings));
             el_num += 1;
         } else {
             // Create the calculation elements by split set positions
@@ -128,7 +129,7 @@ pub fn get_calc_elements<'a>(
                 prev_split_pos = Some((*split_pos.0, split_pos.1.number));
                 count += 1;
                 println!("Calc elem: nro: {}, L={}, S:{}, E:{})", calc_element.calc_el_num, calc_element.length, calc_element.node_start, calc_element.node_end);
-                calc_elements.push(calc_element);
+                calc_elements.get_mut(&e.number).unwrap().push(calc_element);
             }
             // Create the last element
             let mut calc_element = CalculationElement::from(&e, nodes, el_num, calc_settings);
@@ -141,7 +142,7 @@ pub fn get_calc_elements<'a>(
             calc_element.releases.s_tz = false;
             calc_element.releases.s_ry = false;
             println!("Calc elem: nro: {}, L={}, S:{}, E:{})", calc_element.calc_el_num, calc_element.length, calc_element.node_start, calc_element.node_end);
-            calc_elements.push(calc_element);
+            calc_elements.get_mut(&e.number).unwrap().push(calc_element);
         }        
     }
     (calc_elements, extra_nodes)

@@ -152,7 +152,7 @@ pub fn extract_calculation_loads(
             }
         }
         let rotation = load.rotation;
-        for element in calc_model.calc_elements.iter() {
+        for element in calc_model.get_all_calc_elements() {
             if !load_is_linked(element.model_el_num, load) {
                 println!(
                     "Load is not linked! Element: {}, Load: {}",
