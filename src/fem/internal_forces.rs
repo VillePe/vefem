@@ -1,10 +1,12 @@
 #![allow(dead_code)]
 
-
 use std::collections::BTreeMap;
 
 use crate::{
-    loads::load::{self, CalculationLoad}, results::{ForceType, InternalForcePoint, InternalForceResults}, settings::{self, CalculationSettings}, structure::CalculationElement
+    loads::load::{self, CalculationLoad},
+    results::{ForceType, InternalForcePoint, InternalForceResults},
+    settings::{self, CalculationSettings},
+    structure::CalculationElement,
 };
 
 use crate::results::NodeResults;
@@ -12,7 +14,7 @@ use crate::results::NodeResults;
 use super::{axial_deformation, deflection, CalcModel};
 
 /// Calculates the internal forces for the elements by support reactions and displacements in node results
-/// 
+///
 /// Parameters:
 /// * 'elements' - the elements of the structure model
 /// * 'nodes' - the nodes of the structure model
@@ -27,88 +29,85 @@ pub fn calc_internal_forces(
     calc_settings: &CalculationSettings,
 ) -> BTreeMap<i32, InternalForceResults> {
     let mut map: BTreeMap<i32, InternalForceResults> = BTreeMap::new();
-    for element in calc_model.get_all_calc_elements() {
-        let element_length = element.length;
-        let split_interval = match calc_settings.calc_split_interval {
-            settings::calc_settings::CalcSplitInterval::Absolute(a) => a,
-            settings::calc_settings::CalcSplitInterval::Relative(r) => element_length * r,
-        };
+    for structure_element in calc_model.structure_elements {
         let mut moment_forces = vec![];
         let mut shear_forces = vec![];
         let mut axial_forces = vec![];
         let mut deflections = vec![];
-        let mut x = 0.0;
-        let mut last = false;
-        let mut counter = 0;        
-        while x < element_length || last {
-            let moment_force_val =
-                calculate_moment_at(x, element, loads, node_results, calc_settings);
-            let axial_force_val =
-                calculate_axial_force_at(x, element, loads, node_results, calc_settings);
-            let shear_force_val =
-                calculate_shear_at(x, element, loads, node_results, calc_settings);
-            let deflection_val = deflection::calculate_at(x, element, loads, calc_settings, node_results);
-            let axial_deformation_val =
-                axial_deformation::calculate_at(x, element, loads, node_results, calc_settings);
-            
-            if counter % 10 == 0 { 
-                println!("Moment at x: {} is: {:.3} kNm", x, moment_force_val*1e-6);
-            }
-            counter += 1;
+        for element in calc_model.calc_elements[&structure_element.number].iter() {
+            let element_length = element.length;
+            let split_interval = match calc_settings.calc_split_interval {
+                settings::calc_settings::CalcSplitInterval::Absolute(a) => a,
+                settings::calc_settings::CalcSplitInterval::Relative(r) => element_length * r,
+            };
+            let mut x = 0.0;
+            let mut last = false;
+            while x < element_length || last {
+                let moment_force_val =
+                    calculate_moment_at(x, element, loads, node_results, calc_settings);
+                let axial_force_val =
+                    calculate_axial_force_at(x, element, loads, node_results, calc_settings);
+                let shear_force_val =
+                    calculate_shear_at(x, element, loads, node_results, calc_settings);
+                let deflection_val =
+                    deflection::calculate_at(x, element, loads, calc_settings, node_results);
+                let axial_deformation_val =
+                    axial_deformation::calculate_at(x, element, loads, node_results, calc_settings);
 
-            moment_forces.push(InternalForcePoint {
-                force_type: ForceType::Moment,
-                value_x: 0.0,
-                value_y: moment_force_val,
-                pos_on_element: x + element.offset_from_model_el,
-                element_number: element.model_el_num,
-                load_comb_number: 0,
-            });
-            axial_forces.push(InternalForcePoint {
-                force_type: ForceType::Axial,
-                value_x: 0.0,
-                value_y: axial_force_val,
-                pos_on_element: x + element.offset_from_model_el,
-                element_number: element.model_el_num,
-                load_comb_number: 0,
-            });
-            shear_forces.push(InternalForcePoint {
-                force_type: ForceType::Shear,
-                value_x: 0.0,
-                value_y: shear_force_val,
-                pos_on_element: x + element.offset_from_model_el,
-                element_number: element.model_el_num,
-                load_comb_number: 0,
-            });
-            deflections.push(InternalForcePoint {
-                force_type: ForceType::Deflection,
-                value_x: axial_deformation_val,
-                value_y: deflection_val,
-                pos_on_element: x + element.offset_from_model_el,
-                element_number: element.model_el_num,
-                load_comb_number: 0,
-            });
+                moment_forces.push(InternalForcePoint {
+                    force_type: ForceType::Moment,
+                    value_x: 0.0,
+                    value_y: moment_force_val,
+                    pos_on_element: x + element.offset_from_model_el,
+                    element_number: element.model_el_num,
+                    load_comb_number: 0,
+                });
+                axial_forces.push(InternalForcePoint {
+                    force_type: ForceType::Axial,
+                    value_x: 0.0,
+                    value_y: axial_force_val,
+                    pos_on_element: x + element.offset_from_model_el,
+                    element_number: element.model_el_num,
+                    load_comb_number: 0,
+                });
+                shear_forces.push(InternalForcePoint {
+                    force_type: ForceType::Shear,
+                    value_x: 0.0,
+                    value_y: shear_force_val,
+                    pos_on_element: x + element.offset_from_model_el,
+                    element_number: element.model_el_num,
+                    load_comb_number: 0,
+                });
+                deflections.push(InternalForcePoint {
+                    force_type: ForceType::Deflection,
+                    value_x: axial_deformation_val,
+                    value_y: deflection_val,
+                    pos_on_element: x + element.offset_from_model_el,
+                    element_number: element.model_el_num,
+                    load_comb_number: 0,
+                });
 
-            x += split_interval;
+                x += split_interval;
 
-            // Make sure that last point is exactly at the end of the element
-            if last {
-                break;
-            }
-            if x >= element_length {
-                x = element_length;
-                last = true;
+                // Make sure that last point is exactly at the end of the element
+                if last {
+                    break;
+                }
+                if x >= element_length {
+                    x = element_length;
+                    last = true;
+                }
             }
         }
 
         let res = InternalForceResults {
-            element_number: element.model_el_num,
+            element_number: structure_element.number,
             axial_forces,
             shear_forces,
             moment_forces,
             deflections,
         };
-        map.insert(element.model_el_num, res);
+        map.insert(structure_element.number, res);
     }
 
     map
@@ -123,9 +122,6 @@ pub fn calculate_moment_at(
 ) -> f64 {
     let mut moment = 0.0;
     let local_reactions = results.get_elem_local_nodal_force_vectors(element, loads, settings);
-    if x == 0.0 {
-        println!("Local reactions: {}", local_reactions);
-    }
     for load in loads {
         if load.element_number != element.calc_el_num {
             continue;
@@ -150,13 +146,8 @@ pub fn calculate_moment_at(
                         load_length = load.offset_end - load.offset_start;
                     } else {
                         load_length = x - load.offset_start;
-                    }                    
-                    let offset = x - (load.offset_start + load_length / 2.0);
-                    if x == 0.0 {
-                        println!("Load length: {}", load_length);
-                        println!("Load strength: {}", load.strength);
-                        println!("Load offset: {}", offset);
                     }
+                    let offset = x - (load.offset_start + load_length / 2.0);
                     moment += load.strength * z_dir_factor * load_length * offset;
                 }
             }

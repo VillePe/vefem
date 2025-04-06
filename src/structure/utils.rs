@@ -53,7 +53,6 @@ pub fn get_calc_elements<'a>(
     let mut calc_elements: BTreeMap<i32, Vec<CalculationElement<'a>>> = BTreeMap::new();
     let mut extra_nodes: BTreeMap<i32, Node> = BTreeMap::new();
     let mut el_num = 1001;
-    println!("Node count: {}", nodes.len());
     for e in elements {
         calc_elements.insert(e.number, Vec::new());
         let mut e_split_set: BTreeMap<i64, &Node> = BTreeMap::new();
@@ -64,10 +63,8 @@ pub fn get_calc_elements<'a>(
         let length = e.get_length(nodes);
         for n in nodes.values() {
             if n.number == e.node_start || n.number == e.node_end {
-                println!("Skip nro {}", n.number);
                 continue;
             }
-            println!("Test nro {}", n.number);
             if geometry2d::point_in_line(e_start, e_end, &n.point, 0.1) {
                 // Get the split position by calculating the length between the node and the start of the element
                 let split_pos = geometry2d::calc_length_between_points(&n.point, e_start)
@@ -75,7 +72,6 @@ pub fn get_calc_elements<'a>(
                     .round() as i64;
                 // Only insert the value if it is not already in the set
                 if !e_split_set.contains_key(&split_pos) {
-                    println!("Insert nro {}", n.number);
                     e_split_set.insert(split_pos, &n);
                 }
             }
