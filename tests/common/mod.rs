@@ -79,8 +79,8 @@ pub fn get_structure_fem_matriisit() -> (Vec<Element>, BTreeMap<i32, Node>) {
     );
     let e3: Element = Element::new(
         3,
-        4,
         3,
+        4,
         Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
         MaterialData::Steel(Steel::new(210e3)),
     );

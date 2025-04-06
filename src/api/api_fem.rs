@@ -16,7 +16,7 @@ pub extern "C" fn vefem_calculate(structure_json: *const c_char) -> *mut c_char 
         }
     };
 
-    let results = fem::calculate(&calc_model, &mut EquationHandler::new());
+    let results = fem::fem_handler::calculate(&calc_model, &mut EquationHandler::new());
 
     let results_json = serde_json::to_string_pretty(&results).unwrap();
     CString::new(results_json).unwrap().into_raw()

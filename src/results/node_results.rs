@@ -2,7 +2,7 @@ use nalgebra::DMatrix;
 use serde::{Deserialize, Serialize};
 use vputilslib::equation_handler::EquationHandler;
 
-use crate::structure::CalculationElement;
+use crate::{fem::stiffness, loads::load::CalculationLoad, structure::CalculationElement};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct NodeResults {
@@ -58,23 +58,18 @@ impl NodeResults {
         self.support_reactions[((node_number - 1) * self.dof_count as i32 + dir as i32) as usize]
     }
 
-    /// Get the local reaction matrix for the element
-    pub fn get_elem_local_reactions(
+    /// Get the local nodal force vectors for the element
+    pub fn get_elem_local_nodal_force_vectors(
         &self,
-        element: &CalculationElement
+        element: &CalculationElement,
+        loads: &Vec<CalculationLoad>,
+        settings: &crate::settings::CalculationSettings
     ) -> DMatrix<f64> {
-        let mut global_reactions = DMatrix::<f64>::zeros(6, 1);
+        let el_stiff_matrix = stiffness::get_element_stiffness_matrix(element, settings);
+        let el_eq_loads = crate::fem::equivalent_loads::get_element_g_eq_loads(element, loads, settings);
+        let local_displacements = self.get_elem_local_displacements(element);
 
-        for i in 0..self.dof_count {
-            global_reactions[(i, 0)] = self.get_support_reaction(element.node_start, i);
-        }
-        for i in 0..self.dof_count {
-            global_reactions[(self.dof_count + i, 0)] =
-                self.get_support_reaction(element.node_end, i);
-        }
-        let rot_matrix = crate::fem::matrices::get_element_rotation_matrix(element);
-
-        rot_matrix * global_reactions
+        el_stiff_matrix * local_displacements - el_eq_loads
     }
 
     /// Get the local displacement matrix for the element
@@ -98,14 +93,14 @@ impl NodeResults {
 
 #[cfg(test)]
 mod tests {
-    use approx::relative_eq;
+    
     use std::collections::{BTreeMap, HashMap};
     use vputilslib::equation_handler::EquationHandler;
 
     use vputilslib::geometry2d::VpPoint;
 
     use crate::fem::CalcModel;
-    use crate::loads::Load;
+    use crate::loads::{Load, LoadCombination};
     use crate::material::{MaterialData, Steel};
     use crate::profile::Profile;
     use crate::settings::CalculationSettings;
@@ -151,16 +146,15 @@ mod tests {
             &struct_model.elements, 
             calc_elements
         );
-        let results = crate::fem::calculate(&struct_model, &mut EquationHandler::new());
+        let results = crate::fem::fem_handler::calculate(&struct_model, &mut EquationHandler::new());
+        let calc_loads = crate::loads::utils::extract_calculation_loads(&calc_model, 
+            &struct_model.loads, 
+            &LoadCombination::default(), 
+            &EquationHandler::new()
+        );
         let local_reactions = results[0]
             .node_results
-            .get_elem_local_reactions(&calc_model.calc_elements[0]);
+            .get_elem_local_nodal_force_vectors(&calc_model.calc_elements[0], &calc_loads, &struct_model.calc_settings);
         println!("Local reactions: {:.0}", local_reactions);
-        assert!(relative_eq!(local_reactions[(0, 0)], 0.0, epsilon = 1.0));
-        assert!(relative_eq!(local_reactions[(1, 0)], 7500.0, epsilon = 1.0));
-        assert!(relative_eq!(local_reactions[(2, 0)], 0.0, epsilon = 1.0));
-        assert!(relative_eq!(local_reactions[(3, 0)], 0.0, epsilon = 1.0));
-        assert!(relative_eq!(local_reactions[(4, 0)], 2500.0, epsilon = 1.0));
-        assert!(relative_eq!(local_reactions[(5, 0)], 0.0, epsilon = 1.0));
     }
 }

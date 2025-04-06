@@ -44,7 +44,7 @@ mod readme_test {
             calc_settings,
             load_combinations: vec![],
         };
-        let results = vefem::fem::calculate(&calc_model, &mut eq_handler);
+        let results = vefem::fem::fem_handler::calculate(&calc_model, &mut eq_handler);
         // The default settings divide the internal force calculation points into 100 intervals.
         // Assert that the value at the middle of the element is ql^2/8
         assert_eq!(
@@ -65,7 +65,7 @@ mod fem_tests {
     use vefem::loads::{self, LoadCombination};
     use vefem::material::{MaterialData, Steel};
     use vefem::profile::{CustomProfile, Profile};
-    use vefem::structure::Element;
+    use vefem::structure::{Element, StructureModel};
     use vefem::structure::Node;
     use vputilslib::equation_handler::EquationHandler;
     use vputilslib::geometry2d;
@@ -347,6 +347,55 @@ mod fem_tests {
             -0.04419,
             max_relative = 0.01
         ));
+    }
+
+    #[test]
+    fn reactions_1() {
+        let (elements, nodes) = common::get_structure_fem_matriisit();
+        let loads = common::get_fem_matriisi_loads();
+        let calc_settings = CalculationSettings::default();
+        let calc_model = common::get_calc_model(&elements, &nodes);
+        let mut gl_stiff_m =
+            vefem::fem::stiffness::create_joined_stiffness_matrix(&calc_model, &calc_settings);
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model,
+            &loads,
+            &LoadCombination::default(),
+            &EquationHandler::new(),
+        );
+        let gl_eq_loads_m = vefem::fem::equivalent_loads::create(&calc_model, &calc_loads, &calc_settings);
+        let displacement = vefem::fem::fem_handler::calculate_displacements(
+            &nodes,
+            vefem::fem::utils::col_height(&nodes, &elements),
+            &mut gl_stiff_m,
+            &gl_eq_loads_m,
+        );
+        let reactions = vefem::fem::fem_handler::calculate_reactions(
+            &gl_stiff_m,
+            &displacement,
+            &gl_eq_loads_m,
+        );
+        println!("{}", reactions);
+        assert!(relative_eq!(
+            reactions[(0, 0)],
+            -2.0427e4,
+            max_relative = 0.01
+        ));
+        assert!(relative_eq!(
+            reactions[(1, 0)],
+            2.3333e4,
+            max_relative = 0.01
+        ));
+        assert!((reactions[(2, 0)].round() == 0.0));
+        assert!((reactions[(3, 0)].round() == 0.0));
+        assert!((reactions[(4, 0)].round() == 0.0));
+        assert!((reactions[(5, 0)].round() == 0.0));
+        assert!(relative_eq!(reactions[(6, 0)], 4.27e2, max_relative = 0.01));
+        assert!(relative_eq!(reactions[(7, 0)], 3.6666e4, max_relative = 0.01));
+        assert!((reactions[(8, 0)].round() == 0.0));
+        assert!((reactions[(9, 0)].round() == 0.0));
+        assert!((reactions[(10, 0)].round() == 0.0));
+        assert!((reactions[(11, 0)].round() == 0.0));
     }
 
     #[test]
@@ -823,5 +872,35 @@ mod fem_tests {
             }
             println!();
         }
+    }
+
+    #[test]
+    fn moments_1() {
+        let (elements, nodes) = common::get_structure_fem_matriisit();
+        let loads = common::get_fem_matriisi_loads();
+        let calc_settings = CalculationSettings::default();
+        let struct_model = StructureModel {
+            elements,
+            nodes,
+            loads,
+            calc_settings,
+            load_combinations: vec![],
+        };
+        let results = vefem::fem::fem_handler::calculate(&struct_model, &EquationHandler::new());
+
+        println!();
+        println!("Moment (el: 1) at L: {} kNm", 
+            results[0].internal_force_results[&1].get_force_at(vefem::results::ForceType::Moment, 4000.0).unwrap().value_y * 1e-6
+        );
+        println!("Moment (el: 2) at 0: {} kNm", 
+            results[0].internal_force_results[&2].get_force_at(vefem::results::ForceType::Moment, 0.0).unwrap().value_y * 1e-6
+        );
+
+        println!("Moment (el: 2) at L: {} kNm", 
+            results[0].internal_force_results[&2].get_force_at(vefem::results::ForceType::Moment, 6000.0).unwrap().value_y * 1e-6
+        );
+        println!("Moment (el: 3) at L: {} kNm", 
+            results[0].internal_force_results[&3].get_force_at(vefem::results::ForceType::Moment, 4000.0).unwrap().value_y * 1e-6
+        );
     }
 }

@@ -48,8 +48,8 @@ pub mod serializing_tests {
             calc_model_deserialized.calc_settings.calc_split_interval
         );
 
-        let results1 = fem::calculate(&calc_model, &mut EquationHandler::new());
-        let results2 = fem::calculate(&calc_model_deserialized, &mut EquationHandler::new());
+        let results1 = fem::fem_handler::calculate(&calc_model, &mut EquationHandler::new());
+        let results2 = fem::fem_handler::calculate(&calc_model_deserialized, &mut EquationHandler::new());
         println!(
             "Support reaction node 1 dir 1: {:.2} = {:.2}",
             results1[0].node_results.get_support_reaction(1, 1),

@@ -46,7 +46,7 @@ mod axial_deformation_tests {
             calc_settings: CalculationSettings::default(),
             load_combinations: vec![],
         };
-        let results = &vefem::fem::calculate(&struct_model, &mut EquationHandler::new())[0];
+        let results = &vefem::fem::fem_handler::calculate(&struct_model, &mut EquationHandler::new())[0];
         let defl = results.internal_force_results[&1]
             .get_force_at(ForceType::Deflection, 1000.0)
             .unwrap()
@@ -73,7 +73,7 @@ mod axial_deformation_tests {
         assert_eq!(relative_eq!(defl, 0.0, epsilon = 0.01), true);
 
         struct_model.loads[0].rotation = -45.0;
-        let results = &vefem::fem::calculate(&struct_model, &mut EquationHandler::new())[0];
+        let results = &vefem::fem::fem_handler::calculate(&struct_model, &mut EquationHandler::new())[0];
         let defl = results.internal_force_results[&1]
             .get_force_at(ForceType::Deflection, 2000.0)
             .unwrap()
@@ -82,7 +82,7 @@ mod axial_deformation_tests {
         assert_eq!(relative_eq!(defl, 0.337, epsilon = 0.01), true);
 
         struct_model.loads[0].rotation = 135.0;
-        let results = &vefem::fem::calculate(&struct_model, &mut EquationHandler::new())[0];
+        let results = &vefem::fem::fem_handler::calculate(&struct_model, &mut EquationHandler::new())[0];
         let defl = results.internal_force_results[&1]
             .get_force_at(ForceType::Deflection, 2000.0)
             .unwrap()
@@ -121,7 +121,7 @@ mod axial_deformation_tests {
             calc_settings: CalculationSettings::default(),
             load_combinations: vec![],
         };
-        let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let results = &vefem::fem::fem_handler::calculate(&structure_model, &mut EquationHandler::new())[0];
         println!("LENGTH: {:?}", results.internal_force_results.len());
         println!("LENGTH2: {:?}", results.internal_force_results[&1].deflections.len());
         let defl = results.internal_force_results[&1]
@@ -144,7 +144,7 @@ mod axial_deformation_tests {
         assert_eq!(relative_eq!(defl, 0.714, epsilon = 0.01), true);
 
         structure_model.loads[0].rotation = -45.0;
-        let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let results = &vefem::fem::fem_handler::calculate(&structure_model, &mut EquationHandler::new())[0];
         let defl = results.internal_force_results[&1]
             .get_force_at(ForceType::Deflection, 2000.0)
             .unwrap()
@@ -153,7 +153,7 @@ mod axial_deformation_tests {
         assert_eq!(relative_eq!(defl, 0.673, epsilon = 0.01), true);
 
         structure_model.loads[0].rotation = -45.0;
-        let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let results = &vefem::fem::fem_handler::calculate(&structure_model, &mut EquationHandler::new())[0];
         let defl = results.internal_force_results[&1]
             .get_force_at(ForceType::Deflection, 2000.0)
             .unwrap()
@@ -164,7 +164,7 @@ mod axial_deformation_tests {
         structure_model.loads[0].offset_start = "500".to_string();
         structure_model.loads[0].offset_end = "1500".to_string();
         structure_model.loads[0].rotation = 0.0;
-        let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let results = &vefem::fem::fem_handler::calculate(&structure_model, &mut EquationHandler::new())[0];
         let defl = results.internal_force_results[&1]
             .get_force_at(ForceType::Deflection, 2000.0)
             .unwrap()
@@ -203,7 +203,7 @@ mod axial_deformation_tests {
             calc_settings: CalculationSettings::default(),
             load_combinations: vec![],
         };
-        let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let results = &vefem::fem::fem_handler::calculate(&structure_model, &mut EquationHandler::new())[0];
         let defl = results.internal_force_results[&1]
             .get_force_at(ForceType::Deflection, 1000.0)
             .unwrap()
@@ -224,7 +224,7 @@ mod axial_deformation_tests {
         assert_eq!(relative_eq!(defl, 0.298, epsilon = 0.01), true);
 
         structure_model.loads[0].rotation = -45.0;
-        let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let results = &vefem::fem::fem_handler::calculate(&structure_model, &mut EquationHandler::new())[0];
         let defl = results.internal_force_results[&1]
             .get_force_at(ForceType::Deflection, 2000.0)
             .unwrap()
@@ -233,7 +233,7 @@ mod axial_deformation_tests {
         assert_eq!(relative_eq!(defl, 0.337, epsilon = 0.01), true);
 
         structure_model.loads[0].rotation = 135.0;
-        let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let results = &vefem::fem::fem_handler::calculate(&structure_model, &mut EquationHandler::new())[0];
         let defl = results.internal_force_results[&1]
             .get_force_at(ForceType::Deflection, 2000.0)
             .unwrap()
@@ -273,7 +273,7 @@ mod axial_deformation_tests {
             calc_settings: CalculationSettings::default(),
             load_combinations: vec![],
         };
-        let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let results = &vefem::fem::fem_handler::calculate(&structure_model, &mut EquationHandler::new())[0];
         let defl = results.internal_force_results[&1]
             .get_force_at(ForceType::Deflection, 2000.0)
             .unwrap()
@@ -288,7 +288,7 @@ mod axial_deformation_tests {
         assert_eq!(relative_eq!(defl, 0.05, epsilon = 0.1), true);
 
         structure_model.loads[0].rotation = -45.0;
-        let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let results = &vefem::fem::fem_handler::calculate(&structure_model, &mut EquationHandler::new())[0];
         let defl = results.internal_force_results[&1]
             .get_force_at(ForceType::Deflection, 2000.0)
             .unwrap()
@@ -297,7 +297,7 @@ mod axial_deformation_tests {
         assert_eq!(relative_eq!(defl, 0.07, epsilon = 0.01), true);
 
         structure_model.loads[0].rotation = 135.0;
-        let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let results = &vefem::fem::fem_handler::calculate(&structure_model, &mut EquationHandler::new())[0];
         let defl = results.internal_force_results[&1]
             .get_force_at(ForceType::Deflection, 2000.0)
             .unwrap()
@@ -336,7 +336,7 @@ mod axial_deformation_tests {
             calc_settings: CalculationSettings::default(),
             load_combinations: vec![],
         };
-        let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let results = &vefem::fem::fem_handler::calculate(&structure_model, &mut EquationHandler::new())[0];
         let defl = results.internal_force_results[&1]
             .get_force_at(ForceType::Deflection, 1000.0)
             .unwrap()
@@ -357,7 +357,7 @@ mod axial_deformation_tests {
         assert_eq!(relative_eq!(defl, 0.417, epsilon = 0.01), true);
 
         structure_model.loads[0].rotation = -45.0;
-        let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let results = &vefem::fem::fem_handler::calculate(&structure_model, &mut EquationHandler::new())[0];
         let defl = results.internal_force_results[&1]
             .get_force_at(ForceType::Deflection, 2000.0)
             .unwrap()
@@ -366,7 +366,7 @@ mod axial_deformation_tests {
         assert_eq!(relative_eq!(defl, 0.337, epsilon = 0.01), true);
 
         structure_model.loads[0].rotation = 135.0;
-        let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let results = &vefem::fem::fem_handler::calculate(&structure_model, &mut EquationHandler::new())[0];
         let defl = results.internal_force_results[&1]
             .get_force_at(ForceType::Deflection, 2000.0)
             .unwrap()
@@ -406,7 +406,7 @@ mod axial_deformation_tests {
             calc_settings: CalculationSettings::default(),
             load_combinations: vec![],
         };
-        let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let results = &vefem::fem::fem_handler::calculate(&structure_model, &mut EquationHandler::new())[0];
         let defl = results.internal_force_results[&1]
             .get_force_at(ForceType::Deflection, 2000.0)
             .unwrap()
@@ -421,7 +421,7 @@ mod axial_deformation_tests {
         assert_eq!(relative_eq!(defl, 0.069, epsilon = 0.1), true);
 
         structure_model.loads[0].rotation = -45.0;
-        let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let results = &vefem::fem::fem_handler::calculate(&structure_model, &mut EquationHandler::new())[0];
         let defl = results.internal_force_results[&1]
             .get_force_at(ForceType::Deflection, 2000.0)
             .unwrap()
@@ -430,7 +430,7 @@ mod axial_deformation_tests {
         assert_eq!(relative_eq!(defl, 0.098, epsilon = 0.01), true);
 
         structure_model.loads[0].rotation = 135.0;
-        let results = &vefem::fem::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let results = &vefem::fem::fem_handler::calculate(&structure_model, &mut EquationHandler::new())[0];
         let defl = results.internal_force_results[&1]
             .get_force_at(ForceType::Deflection, 2000.0)
             .unwrap()

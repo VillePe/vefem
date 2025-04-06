@@ -1,15 +1,79 @@
 ﻿#![allow(dead_code)]
 
 use nalgebra::DMatrix;
-use std::collections::BTreeMap;
+use vputilslib::equation_handler::EquationHandler;
+use std::collections::{BTreeMap, HashMap};
 
 use crate::{
-    fem::matrices::{
+    fem::{equivalent_loads, matrices::{
         get_unknown_translation_eq_loads_rows, get_unknown_translation_rows,
         get_unknown_translation_stiffness_rows,
-    },
-    structure::Node,
+    }, internal_forces::calc_internal_forces, stiffness::create_joined_stiffness_matrix}, loads::LoadCombination, results::{CalculationResults, NodeResults}, structure::{Node, StructureModel}
 };
+
+use super::CalcModel;
+
+/// Calculates the displacements, support reactions and element internal forces.
+/// * 'calc_model' - calculation model that is extracted to calculation objects
+/// * 'equation_handler' - equation handler that can contain custom variables set by the user.
+/// The 'L' variable is reserved for the length of the element.
+pub fn calculate(
+    struct_model: &StructureModel,
+    equation_handler: &EquationHandler,
+) -> Vec<CalculationResults> {
+    let nodes = &struct_model.nodes;
+    let elements = &struct_model.elements;
+    let loads = &struct_model.loads;
+    let calc_settings = &struct_model.calc_settings;
+    let (calc_elements, extra_nodes) = crate::structure::utils::get_calc_elements(elements, nodes, &HashMap::new(), calc_settings);
+    let calc_model = CalcModel::new(&nodes, extra_nodes, &elements, calc_elements);
+
+    let col_height = super::utils::col_height(nodes, elements);
+    
+    let load_combinations = if struct_model.load_combinations.is_empty() {
+        &vec![LoadCombination::default()]
+    } else {
+        &struct_model.load_combinations
+    };
+    
+    let mut results: Vec<CalculationResults> = Vec::new();
+    for lc in load_combinations {
+        let calculation_loads =
+            &crate::loads::utils::extract_calculation_loads(&calc_model, loads, lc, equation_handler
+        );
+        
+        let mut global_stiff_matrix = create_joined_stiffness_matrix(&calc_model, calc_settings);
+        // The global equivalent loads matrix
+        let global_eq_l_matrix = equivalent_loads::create(&calc_model, calculation_loads, calc_settings);
+        let displacements = calculate_displacements(
+            nodes,
+            col_height,
+            &mut global_stiff_matrix,
+            &global_eq_l_matrix,
+        );
+        
+        let reactions = calculate_reactions(&global_stiff_matrix, &displacements, &global_eq_l_matrix);
+
+        let displacements = displacements.column(0).as_slice().to_vec();
+        let reactions = reactions.column(0).as_slice().to_vec();
+
+        let node_results = NodeResults::new(displacements, reactions, nodes.len(), &equation_handler);
+        let internal_force_results = calc_internal_forces(
+            &calc_model,
+            calculation_loads,
+            &node_results,
+            calc_settings,
+        );
+
+        let result = CalculationResults {
+            load_combination: lc.name.clone(),
+            node_results,
+            internal_force_results,
+        };
+        results.push(result);
+    }
+    results
+}
 
 /// Calculates the displacement matrix for given elements, nodes and loads. The displacement matrix
 /// is in global coordinates.
@@ -176,7 +240,7 @@ mod tests {
             calc_settings: CalculationSettings::default(),
             load_combinations: vec![],
         };
-        let results = crate::fem::calculate(&calc_model, &mut EquationHandler::new());
+        let results = crate::fem::fem_handler::calculate(&calc_model, &mut EquationHandler::new());
         println!("Calculation time: {:?}", timer.elapsed().unwrap());
         println!("Element count: {}", calc_model.elements.len());
         println!("Node count: {}", calc_model.nodes.len());

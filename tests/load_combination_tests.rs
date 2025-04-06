@@ -50,7 +50,7 @@ mod tests {
             load_combinations: vec![load_combination, load_combination2],
             calc_settings: CalculationSettings::default()
         };
-        let results = vefem::fem::calculate(&calc_model, &EquationHandler::new());
+        let results = vefem::fem::fem_handler::calculate(&calc_model, &EquationHandler::new());
 
         println!("{0}", results[0].load_combination);
         println!("{0}", results[0].node_results.support_reactions[0]); // Without load combination: 28.8e3

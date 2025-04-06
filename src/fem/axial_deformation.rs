@@ -13,13 +13,14 @@ pub fn calculate_at(
     element: &CalculationElement,
     loads: &Vec<CalculationLoad>,
     results: &NodeResults,
+    calc_settings: &crate::settings::CalculationSettings
 ) -> f64 {
     // See theory files for more information how these values are calculated.
     // Main idea is to gather the first integral of axial force function at x from loads and support reactions in X-axis.
 
     // The sum of integrals from loads and support reactions
     let mut s_integral = 0.0;
-    let local_reactions = results.get_elem_local_reactions(element);
+    let local_reactions = results.get_elem_local_nodal_force_vectors(element, loads, calc_settings);
     let local_displacements = results.get_elem_local_displacements(element);
 
     let e_m = element.elastic_modulus;
