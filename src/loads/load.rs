@@ -121,6 +121,8 @@ impl Load {
         }
     }
 
+    /// Creates new trapezoid load. Note that the strength is separated with a semicolon ';' to
+    /// beginning strength and end strength of the load
     pub fn new_trapezoid_load(
         name: String,
         element_numbers: String,
