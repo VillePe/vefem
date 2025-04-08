@@ -56,7 +56,6 @@ pub fn split_trapezoid_load(load: &Load, equation_handler: &EquationHandler) -> 
     if split.len() == 2 || split.len() == 1 {        
         let start_strength = equation_handler.calculate_formula(split[0]).unwrap_or(0.0);
         let end_strength = equation_handler.calculate_formula(split[1]).unwrap_or(0.0);
-        println!("TÄÄLÄ, start_strength: {}, end_strength: {}", start_strength, end_strength);
         return split_trapezoid_load_with_strengths(load, start_strength, end_strength);
     } else {
         println!("Error while parsing strength of the trapezoid load. Use semicolon ';' to separate the start and end strengths")
@@ -155,10 +154,6 @@ pub fn extract_calculation_loads(
         let rotation = load.rotation;
         for element in calc_model.get_all_calc_elements() {
             if !load_is_linked(element.model_el_num, load) {
-                println!(
-                    "Load is not linked! Element: {}, Load: {}",
-                    element.model_el_num, load.name
-                );
                 continue;
             }
             let name = load.name.clone();
