@@ -27,11 +27,16 @@ pub fn get_calc_load_combinations(
         
         let loads = loads_map.get(load_name).unwrap();
         for load in loads {
+            let factor = if lc.loads_n_factors.contains_key(load_name) {
+                lc.loads_n_factors[load_name]
+            } else {
+                1.0
+            };
             match load.load_group.group_type {
                 GroupType::Permanent => {
                     permanents_only
                         .loads_n_factors
-                        .insert(load.name.clone(), lc.loads_n_factors[load_name] * 1.35);
+                        .insert(load.name.clone(), factor * 1.35);
                 }
                 _ => (),
             }
@@ -40,9 +45,12 @@ pub fn get_calc_load_combinations(
 
     result.push(permanents_only);
 
-    // Gather the loads by group into a map
+    // Create a map of groups from all loads that are included in the load combination
     let mut loads_mapped_by_group: BTreeMap<&LoadGroup, Vec<&Load>> = BTreeMap::new();
     for load in loads.iter() {
+        if !load_is_included(lc, &load.name) {
+            continue;
+        }
         if !loads_mapped_by_group.contains_key(&load.load_group) {
             loads_mapped_by_group.insert(&load.load_group, Vec::new());
         }
@@ -55,9 +63,12 @@ pub fn get_calc_load_combinations(
     // Go through the groups and create load combinations with one group as the 'main' group
     // and others the 'secondary' groups (1.15 * Gk + 1.5 * Qk,1 + sum(1,5 * ψ0,i * Qk,i))
     for group in loads_mapped_by_group.keys() {
+        if matches!(group.group_type, GroupType::Permanent) || matches!(group.group_type, GroupType::PermanentFav) {
+            continue;
+        }
         let mut calc_lc = CalcLoadCombination::new(
             lc.name.clone(),
-            format!("_LL{}", group.get_name()),
+            format!("_LL({})", group.get_name()),
             lc.combination_type,
             BTreeMap::new(),
         );
@@ -65,9 +76,14 @@ pub fn get_calc_load_combinations(
         // Iterate through all load names
         for load_name in loads_map.keys() {
             // If the load is not included in the parent load combination, don't add it into calculation combinations
-            if !lc.loads_n_factors.contains_key(load_name) {
+            if !load_is_included(lc, load_name) {
                 continue;
             }
+            let factor = if lc.loads_n_factors.contains_key(load_name) {
+                lc.loads_n_factors[load_name]
+            } else {
+                1.0
+            };
             // Get the loads with the current load name
             let loads = loads_map.get(load_name).unwrap();
             for load in loads {
@@ -75,13 +91,13 @@ pub fn get_calc_load_combinations(
                     GroupType::Permanent => {
                         calc_lc.loads_n_factors.insert(
                             load.name.clone(),
-                            lc.loads_n_factors[load_name] * load.load_group.uls_factor,
+                            factor * load.load_group.uls_factor,
                         );
                     }
                     GroupType::PermanentFav => {
                         calc_lc.loads_n_factors.insert(
                             load.name.clone(),
-                            lc.loads_n_factors[load_name] * load.load_group.uls_factor,
+                            factor * load.load_group.uls_factor,
                         );
                     }
                     GroupType::LiveLoad => {
@@ -91,12 +107,12 @@ pub fn get_calc_load_combinations(
                         if *group == &load.load_group {
                             calc_lc.loads_n_factors.insert(
                                 load.name.clone(),
-                                lc.loads_n_factors[load_name] * load.load_group.uls_factor,
+                                factor * load.load_group.uls_factor,
                             );
                         } else {
                             calc_lc.loads_n_factors.insert(
                                 load.name.clone(),
-                                lc.loads_n_factors[load_name]
+                                factor
                                     * load.load_group.uls_factor
                                     * load.load_group.psii0,
                             );
@@ -105,6 +121,9 @@ pub fn get_calc_load_combinations(
                     _ => continue,
                 }
             }
+        }
+        if !calc_lc.loads_n_factors.is_empty() {
+            result.push(calc_lc);
         }
     }
 
@@ -192,11 +211,74 @@ mod test {
             ]),
             combination_type: LoadCombinationType::ULS { is_auto: true },
         };
+        test_load_combination(lc, &loads, 4);
 
+        let lc = LoadCombination {
+            name: "TEST".to_string(),
+            loads_n_factors: BTreeMap::from([
+                ("g_oma".to_string(), 1.0),
+            ]),
+            combination_type: LoadCombinationType::ULS { is_auto: true },
+        };
+        test_load_combination(lc, &loads, 1);
+
+        let lc = LoadCombination {
+            name: "TEST".to_string(),
+            loads_n_factors: BTreeMap::from([
+                ("g_oma".to_string(), 1.0),
+                ("g".to_string(), 1.0),
+            ]),
+            combination_type: LoadCombinationType::ULS { is_auto: true },
+        };
+        test_load_combination(lc, &loads, 1);
+
+        let lc = LoadCombination {
+            name: "TEST".to_string(),
+            loads_n_factors: BTreeMap::from([
+                ("g_oma".to_string(), 1.0),
+                ("g".to_string(), 1.0),
+                ("q1".to_string(), 1.0),
+            ]),
+            combination_type: LoadCombinationType::ULS { is_auto: true },
+        };
+        test_load_combination(lc, &loads, 2);
+
+        let lc = LoadCombination {
+            name: "TEST".to_string(),
+            loads_n_factors: BTreeMap::from([
+                ("g_oma".to_string(), 1.0),
+                ("g".to_string(), 1.0),
+                ("q1".to_string(), 1.0),
+                ("qs".to_string(), 1.0),
+            ]),
+            combination_type: LoadCombinationType::ULS { is_auto: true },
+        };
+        test_load_combination(lc, &loads, 3);
+
+        let lc = LoadCombination {
+            name: "TEST".to_string(),
+            loads_n_factors: BTreeMap::from([
+                ("ALL".to_string(), 1.0),
+            ]),
+            combination_type: LoadCombinationType::ULS { is_auto: true },
+        };
+        test_load_combination(lc, &loads, 4);
+
+        let lc = LoadCombination {
+            name: "TEST".to_string(),
+            loads_n_factors: BTreeMap::from([
+            ]),
+            combination_type: LoadCombinationType::ULS { is_auto: true },
+        };
+        test_load_combination(lc, &loads, 4);
+    }
+
+    fn test_load_combination(lc: LoadCombination, loads: &Vec<Load>, assert_count: usize) {
         let result = get_calc_load_combinations(&lc, &loads);
         for r in result.iter() {
             println!("{}", r.sub_name);
         }
-        assert_eq!(result.len(), 4);
+        assert_eq!(result.len(), assert_count);
+        println!()
     }
 }
