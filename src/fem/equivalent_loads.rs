@@ -364,7 +364,7 @@ mod tests {
         handle_line_load, handle_point_load, handle_rotational_load, handle_triangular_load,
     };
     use crate::fem::CalcModel;
-    use crate::loads::{self, Load, LoadCombination};
+    use crate::loads::{self, Load, LoadCombination, LoadGroup};
     use crate::settings::CalculationSettings;
     use crate::structure::{Element, Node};
     use std::collections::{BTreeMap, HashMap};
@@ -403,6 +403,7 @@ mod tests {
             "2000".to_string(),
             "10".to_string(),
             0.0,
+            LoadGroup::PERMANENT,
         );
         let elements = vec![el];
         let loads = &mut vec![load];
@@ -489,6 +490,7 @@ mod tests {
             "0".to_string(),
             "10".to_string(),
             0.0,
+            LoadGroup::PERMANENT,
         );
         let elements = vec![el];
         let loads = &mut vec![load];
@@ -529,6 +531,7 @@ mod tests {
             "L".to_string(),
             "10".to_string(),
             0.0,
+            LoadGroup::PERMANENT,
         );
         let elements = vec![el];
         let loads = &mut vec![load];
@@ -568,6 +571,7 @@ mod tests {
             "1".to_string(),
             "2000".to_string(),
             "10".to_string(),
+            LoadGroup::PERMANENT,
         );
         let elements = vec![el];
         let loads = &mut vec![load];
@@ -619,6 +623,7 @@ mod tests {
             "4000".to_string(),
             "10".to_string(),
             -00.0,
+            LoadGroup::PERMANENT,
         );
         let elements = vec![el];
         let loads = &mut vec![load];
@@ -680,6 +685,7 @@ mod tests {
             "3500".to_string(),
             "10".to_string(),
             0.0,
+            LoadGroup::PERMANENT,
         );
 
         let node_clone = nodes.clone();
@@ -749,6 +755,7 @@ mod tests {
             "4000".to_string(),
             "10".to_string(),
             -00.0,
+            LoadGroup::PERMANENT,
         );
         let elements = vec![el];
         let loads = &mut vec![load];
@@ -808,6 +815,7 @@ mod tests {
             "3500".to_string(),
             "10".to_string(),
             0.0,
+            LoadGroup::PERMANENT,
         );
         let node_clone = nodes.clone();
         let calc_model = get_calc_model(&elements, &node_clone);

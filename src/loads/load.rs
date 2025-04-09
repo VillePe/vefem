@@ -53,6 +53,7 @@ impl Load {
         offset_start: String,
         strength: String,
         rotation: f64,
+        load_group: LoadGroup,
     ) -> Self {
         Self {
             name,
@@ -60,6 +61,7 @@ impl Load {
             offset_start,
             strength,
             rotation,
+            load_group,
             load_type: Point,
             ..Self::default()
         }
@@ -72,6 +74,7 @@ impl Load {
         offset_end: String,
         strength: String,
         rotation: f64,
+        load_group: LoadGroup,
     ) -> Self {
         Self {
             name,
@@ -80,6 +83,7 @@ impl Load {
             offset_end,
             strength,
             rotation,
+            load_group,
             load_type: Line,
             ..Self::default()
         }
@@ -90,12 +94,14 @@ impl Load {
         element_numbers: String,
         offset_start: String,
         strength: String,
+        load_group: LoadGroup,
     ) -> Self {
         Self {
             name,
             element_numbers,
             offset_start,
             strength,
+            load_group,
             load_type: Rotational,
             ..Self::default()
         }
@@ -108,6 +114,7 @@ impl Load {
         offset_end: String,
         strength: String,
         rotation: f64,
+        load_group: LoadGroup,
     ) -> Self {
         Self {
             name,
@@ -116,6 +123,7 @@ impl Load {
             offset_end,
             strength,
             rotation,
+            load_group,
             load_type: Triangular,
             ..Self::default()
         }
@@ -130,6 +138,7 @@ impl Load {
         offset_end: String,
         strength: String,
         rotation: f64,
+        load_group: LoadGroup,
     ) -> Self {
         Self {
             name,
@@ -138,26 +147,29 @@ impl Load {
             offset_end,
             strength,
             rotation,
+            load_group,
             load_type: Trapezoid,
             ..Self::default()
         }
     }
 
-    pub fn new_strain_load(name: String, element_numbers: String, strength: String) -> Self {
+    pub fn new_strain_load(name: String, element_numbers: String, strength: String, load_group: LoadGroup,) -> Self {
         Self {
             name,
             element_numbers,
             strength,
+            load_group,
             load_type: Strain,
             ..Self::default()
         }
     }
 
-    pub fn new_thermal_load(name: String, element_numbers: String, strength: String) -> Self {
+    pub fn new_thermal_load(name: String, element_numbers: String, strength: String, load_group: LoadGroup,) -> Self {
         Self {
             name,
             element_numbers,
             strength,
+            load_group,
             load_type: Thermal,
             ..Self::default()
         }

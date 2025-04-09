@@ -3,7 +3,7 @@
 use std::collections::{BTreeMap, HashMap};
 
 use vefem::{
-    fem::CalcModel, loads::Load, material::{MaterialData, Steel}, profile::Profile, settings::CalculationSettings, structure::{Element, Node}
+    fem::CalcModel, loads::{Load, LoadGroup}, material::{MaterialData, Steel}, profile::Profile, settings::CalculationSettings, structure::{Element, Node}
 };
 use vputilslib::geometry2d::{Polygon, VpPoint};
 
@@ -98,6 +98,7 @@ pub fn get_fem_matriisi_loads() -> Vec<Load> {
         "L".to_string(),
         "10".to_string(),
         0.0,
+        LoadGroup::PERMANENT,
     );
     let line_load_2 = Load::new_line_load(
         "2".to_string(),
@@ -106,6 +107,7 @@ pub fn get_fem_matriisi_loads() -> Vec<Load> {
         "L".to_string(),
         "10".to_string(),
         -90.0,
+        LoadGroup::PERMANENT,
     );
     let line_load_3 = Load::new_line_load(
         "3".to_string(),
@@ -114,6 +116,7 @@ pub fn get_fem_matriisi_loads() -> Vec<Load> {
         "L".to_string(),
         "5".to_string(),
         180.0,
+        LoadGroup::PERMANENT,
     );
     let loads = vec![line_load_1, line_load_2, line_load_3];
     loads

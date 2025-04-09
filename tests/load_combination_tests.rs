@@ -16,11 +16,11 @@ mod tests {
         let calc_model = common::get_calc_model(&elements, &nodes);
         let mut load_combination = vefem::loads::LoadCombination::new(
             String::from("Load combination 1"), 
-            load_combination::LoadCombinationType::ULS(false)
+            load_combination::LoadCombinationType::ULS{is_auto: false}
         );
         let mut load_combination2 = vefem::loads::LoadCombination::new(
             String::from("Load combination 2"), 
-            load_combination::LoadCombinationType::ULS(false)
+            load_combination::LoadCombinationType::ULS{is_auto: false}
         );
         load_combination.add_load_n_factor(String::from("1"), 1.0);
         load_combination.add_load_n_factor(String::from("2"), 1.0);

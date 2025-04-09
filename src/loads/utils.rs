@@ -7,7 +7,7 @@ use crate::loads::load::Load;
 use crate::structure::CalculationElement;
 
 use super::load::CalculationLoad;
-use super::LoadCombination;
+use super::{load_group, LoadCombination, LoadGroup};
 
 /// Gets the element numbers that are linked to given load. Different elements are separated with , (comma).
 ///
@@ -96,6 +96,7 @@ pub fn split_trapezoid_load_with_strengths(
         load.offset_end.clone(),
         ll_strength.to_string(),
         load.rotation,
+        load.load_group.clone(),
     );
     let tri_load = Load::new_triangular_load(
         load.name.clone(),
@@ -104,6 +105,7 @@ pub fn split_trapezoid_load_with_strengths(
         t_load_offset_end.clone(),
         tl_strength.to_string(),
         load.rotation,
+        LoadGroup::PERMANENT,
     );
     (line_load, tri_load)
 }
@@ -111,7 +113,22 @@ pub fn split_trapezoid_load_with_strengths(
 /// Creates a map of loads by load names.
 /// ### Arguments
 /// * `loads` - List of loads
-pub fn get_load_map(loads: Vec<CalculationLoad>) -> BTreeMap<String, Vec<CalculationLoad>> {
+pub fn get_load_map(loads: &Vec<Load>) -> BTreeMap<String, Vec<&Load>> {
+    let mut load_map: BTreeMap<String, Vec<&Load>> = BTreeMap::new();
+    for load in loads {
+        if load_map.contains_key(&load.name) {
+            load_map.get_mut(&load.name).unwrap().push(load);
+        } else {
+            load_map.insert(load.name.clone(), vec![load]);
+        }
+    }
+    load_map
+}
+
+/// Creates a map of loads by load names.
+/// ### Arguments
+/// * `loads` - List of loads
+pub fn get_calc_load_map(loads: Vec<CalculationLoad>) -> BTreeMap<String, Vec<CalculationLoad>> {
     let mut load_map: BTreeMap<String, Vec<CalculationLoad>> = BTreeMap::new();
     for load in loads {
         if load_map.contains_key(&load.name) {
@@ -563,6 +580,7 @@ mod tests {
             "XXX".to_string(),
             "XXX".to_string(),
             -90.0,
+            LoadGroup::PERMANENT,
         );
         // Load starts before and ends after element. Shrinking from left to right
         let (tr, ll) = handle_triang_load_extracting(
@@ -657,6 +675,7 @@ mod tests {
             "0".to_string(),
             "10".to_string(),
             -90.0,
+            LoadGroup::PERMANENT,
         );
         // Load starts before and ends after element. Growing from left to right
         let (tr, ll) = handle_triang_load_extracting(

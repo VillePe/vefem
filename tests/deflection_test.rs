@@ -5,7 +5,7 @@ mod deflection_tests {
     use approx::relative_eq;
     use vputilslib::{equation_handler::EquationHandler, geometry2d::VpPoint};
 
-    use vefem::{loads::Load, material::{MaterialData, Steel}, profile::Profile, results::ForceType, settings::CalculationSettings, structure::{Element, Node, StructureModel}};
+    use vefem::{loads::{Load, LoadGroup}, material::{MaterialData, Steel}, profile::Profile, results::ForceType, settings::CalculationSettings, structure::{Element, Node, StructureModel}};
 
 
 
@@ -29,6 +29,7 @@ mod deflection_tests {
             "L/2".to_string(),
             "10".to_string(),
             -90.0,
+            LoadGroup::PERMANENT,
         );
         let loads = vec![p_load];
         let mut structure_model = StructureModel {
@@ -94,6 +95,7 @@ mod deflection_tests {
             "0".to_string(),
             "10".to_string(),
             0.0,
+            LoadGroup::PERMANENT,
         );
         let loads = vec![p_load];
         let structure_model = StructureModel {
@@ -130,6 +132,7 @@ mod deflection_tests {
             "L".to_string(),
             "10".to_string(),
             0.0,
+            LoadGroup::PERMANENT,
         );
         let loads = vec![p_load];
         let structure_model = StructureModel {
@@ -165,6 +168,7 @@ mod deflection_tests {
             "1".to_string(),
             "0".to_string(),
             "10".to_string(),
+            LoadGroup::PERMANENT,
         );
         let loads = vec![p_load];
         let structure_model = StructureModel {
@@ -200,6 +204,7 @@ mod deflection_tests {
             "1".to_string(),
             "L/2".to_string(),
             "10".to_string(),
+            LoadGroup::PERMANENT,
         );
         let loads = vec![r_load];
         let structure_model = StructureModel {
@@ -245,6 +250,7 @@ mod deflection_tests {
             "L".to_string(),
             "10".to_string(),
             -90.0,
+            LoadGroup::PERMANENT,
         );
         let loads = vec![l_load];
         let mut structure_model = StructureModel {
@@ -320,6 +326,7 @@ mod deflection_tests {
             "L".to_string(),
             "10".to_string(),
             -90.0,
+            LoadGroup::PERMANENT,
         );
         let loads = vec![l_load];
         let mut structure_model = StructureModel {
@@ -387,6 +394,7 @@ mod deflection_tests {
             "1500".to_string(),
             "10".to_string(),
             -90.0,
+            LoadGroup::PERMANENT,
         );
         let loads = vec![l_load];
         let mut structure_model = StructureModel {
@@ -442,6 +450,7 @@ mod deflection_tests {
             "0".to_string(),
             "10".to_string(),
             -90.0,
+            LoadGroup::PERMANENT,
         );
         let loads = vec![l_load];
         let mut structure_model = StructureModel {
@@ -509,6 +518,7 @@ mod deflection_tests {
             "500".to_string(),
             "10".to_string(),
             -90.0,
+            LoadGroup::PERMANENT,
         );
         let loads = vec![l_load];
         let mut structure_model = StructureModel {

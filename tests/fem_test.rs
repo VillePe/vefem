@@ -4,6 +4,7 @@
 mod readme_test {
     use std::collections::BTreeMap;
 
+    use vefem::loads::LoadGroup;
     use vefem::vputilslib::{equation_handler::EquationHandler, geometry2d::VpPoint};
     use vefem::{
         loads,
@@ -33,6 +34,7 @@ mod readme_test {
             "L".to_string(),  // The offset of the loads end from the start of the element
             "10".to_string(), // in N/mm
             -90.0,
+            LoadGroup::PERMANENT,
         ); // 0.0 points towards positive X-axis and goes counter clockwise
         let loads = vec![line_load];
         let mut eq_handler = EquationHandler::new();
