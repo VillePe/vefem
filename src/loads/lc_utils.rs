@@ -1,7 +1,5 @@
 use std::collections::BTreeMap;
 
-use crate::settings::CalculationSettings;
-
 use super::{
     load::Load, load_combination::CalcLoadCombination, load_group::GroupType, LoadCombination,
     LoadGroup,
@@ -118,7 +116,6 @@ pub fn get_calc_load_combinations(
                             );
                         }
                     }
-                    _ => continue,
                 }
             }
         }
@@ -140,9 +137,9 @@ pub fn load_is_included(lc: &LoadCombination, load_name: &str) -> bool {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::loads::load_group::*;
     use crate::loads::load::*;
     use crate::loads::load_combination::*;
+    use crate::loads::load_group::*;
     use std::collections::BTreeMap;
 
     #[test]

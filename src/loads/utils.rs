@@ -7,7 +7,7 @@ use crate::loads::load::Load;
 use crate::structure::CalculationElement;
 
 use super::load::CalculationLoad;
-use super::{load_group, LoadCombination, LoadGroup};
+use super::{LoadCombination, LoadGroup};
 
 /// Gets the element numbers that are linked to given load. Different elements are separated with , (comma).
 ///
@@ -44,9 +44,8 @@ pub fn get_linked_element_numbers(load: &Load) -> Vec<i32> {
 }
 
 /// Checks if the given load is linked to given element by comparing the elements number to 'element_numbers' in [`Load`]
-pub fn load_is_linked(elem_number: i32, load: &Load) -> bool {
-    let linked_elements = get_linked_element_numbers(&load);
-    linked_elements.contains(&-1) || linked_elements.contains(&elem_number)
+pub fn load_is_linked(elem_number: i32, linked_elem_numbers: &Vec<i32>) -> bool {
+    linked_elem_numbers.contains(&-1) || linked_elem_numbers.contains(&elem_number)
 }
 
 /// Splits the trapezoid load into line load and triangular load. The first item in tuple is the
@@ -170,8 +169,9 @@ pub fn extract_calculation_loads(
             }
         }
         let rotation = load.rotation;
+        let linked_elem_numbers = get_linked_element_numbers(load);
         for element in calc_model.get_all_calc_elements() {
-            if !load_is_linked(element.model_el_num, load) {
+            if !load_is_linked(element.model_el_num, &linked_elem_numbers) {
                 println!(
                     "Load is not linked! Element: {}, Load: {}",
                     element.model_el_num, load.name

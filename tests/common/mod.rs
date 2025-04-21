@@ -3,9 +3,34 @@
 use std::collections::{BTreeMap, HashMap};
 
 use vefem::{
-    fem::CalcModel, loads::{Load, LoadGroup}, material::{MaterialData, Steel}, profile::Profile, settings::CalculationSettings, structure::{Element, Node}
+    fem::CalcModel,
+    loads::{Load, LoadGroup},
+    material::{MaterialData, Steel},
+    profile::Profile,
+    settings::CalculationSettings,
+    structure::{Element, Node},
 };
 use vputilslib::geometry2d::{Polygon, VpPoint};
+
+pub fn get_default_profile() -> Profile {
+    Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0)
+}
+
+pub fn get_default_material_steel() -> MaterialData {
+    MaterialData::Steel(Steel::new_s355())
+}
+
+pub fn get_default_line_load(element_numbers: &str) -> Load {
+    Load::new_line_load(
+        "LineLoad".to_string(),
+        element_numbers.to_string(),
+        "0".to_string(),
+        "L".to_string(),
+        "10".to_string(),
+        -90.0,
+        LoadGroup::PERMANENT
+    )
+}
 
 pub fn get_structure_fem_matriisit_releases() -> (Vec<Element>, BTreeMap<i32, Node>) {
     let mut nodes: BTreeMap<i32, Node> = BTreeMap::new();
@@ -90,6 +115,43 @@ pub fn get_structure_fem_matriisit() -> (Vec<Element>, BTreeMap<i32, Node>) {
     (elements, nodes)
 }
 
+pub fn get_structure_three_horizontal_elements() -> (Vec<Element>, BTreeMap<i32, Node>) {
+    let mut nodes: BTreeMap<i32, Node> = BTreeMap::new();
+    nodes.insert(1, Node::new_hinged(1, VpPoint::new(0.0, 0.0)));
+    nodes.insert(2, Node::new_hinged(2, VpPoint::new(4000.0, 0.0)));
+    nodes.insert(3, Node::new_hinged(3, VpPoint::new(4000.0 + 4000.0, 0.0)));
+    nodes.insert(
+        4,
+        Node::new_hinged(4, VpPoint::new(4000.0 + 4000.0 + 4000.0, 0.0)),
+    );
+
+    let e1: Element = Element::new(
+        1,
+        1,
+        2,
+        Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
+        MaterialData::Steel(Steel::new(210e3)),
+    );
+    let e2: Element = Element::new(
+        2,
+        2,
+        3,
+        Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
+        MaterialData::Steel(Steel::new(210e3)),
+    );
+    let e3: Element = Element::new(
+        3,
+        3,
+        4,
+        Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
+        MaterialData::Steel(Steel::new(210e3)),
+    );
+
+    let elements = vec![e1, e2, e3];
+
+    (elements, nodes)
+}
+
 pub fn get_fem_matriisi_loads() -> Vec<Load> {
     let line_load_1 = Load::new_line_load(
         "1".to_string(),
@@ -139,7 +201,10 @@ pub fn get_inversed_t_profile() -> Profile {
     )
 }
 
-pub fn get_calc_model<'a>(elements: &'a Vec<Element>, nodes: &'a BTreeMap<i32, Node>) -> CalcModel<'a> {
+pub fn get_calc_model<'a>(
+    elements: &'a Vec<Element>,
+    nodes: &'a BTreeMap<i32, Node>,
+) -> CalcModel<'a> {
     let (calc_elements, extra_nodes) = vefem::structure::utils::get_calc_elements(
         elements,
         nodes,
