@@ -9,7 +9,7 @@ mod axial_deformation_tests {
     use vputilslib::{equation_handler::EquationHandler, geometry2d::VpPoint};
 
     use vefem::{
-        loads::Load,
+        loads::{Load, LoadGroup},
         material::{MaterialData, Steel},
         profile::Profile,
         results::ForceType,
@@ -37,6 +37,7 @@ mod axial_deformation_tests {
             "L/2".to_string(),
             "1000".to_string(),
             0.0,
+            LoadGroup::PERMANENT,
         );
         let loads = vec![p_load];
         let mut struct_model = StructureModel {
@@ -112,6 +113,7 @@ mod axial_deformation_tests {
             "L".to_string(),
             "1000".to_string(),
             0.0,
+            LoadGroup::PERMANENT,
         );
         let loads = vec![l_load];
         let mut structure_model = StructureModel {
@@ -194,6 +196,7 @@ mod axial_deformation_tests {
             "L".to_string(),
             "1000".to_string(),
             0.0,
+            LoadGroup::PERMANENT,
         );
         let loads = vec![l_load];
         let mut structure_model = StructureModel {
@@ -264,6 +267,7 @@ mod axial_deformation_tests {
             "1500".to_string(),
             "1000".to_string(),
             0.0,
+            LoadGroup::PERMANENT,
         );
         let loads = vec![l_load];
         let mut structure_model = StructureModel {
@@ -327,6 +331,7 @@ mod axial_deformation_tests {
             "0".to_string(),
             "1000".to_string(),
             0.0,
+            LoadGroup::PERMANENT,
         );
         let loads = vec![l_load];
         let mut structure_model = StructureModel {
@@ -397,6 +402,7 @@ mod axial_deformation_tests {
             "500".to_string(),
             "1000".to_string(),
             0.0,
+            LoadGroup::PERMANENT,
         );
         let loads = vec![l_load];
         let mut structure_model = StructureModel {

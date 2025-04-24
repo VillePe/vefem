@@ -201,8 +201,8 @@ mod tests {
 
     use vputilslib::{equation_handler::EquationHandler, geometry2d::VpPoint};
 
-    use crate::{loads::Load, material::{MaterialData, Steel}, profile::Profile, settings::CalculationSettings, 
-        structure::{StructureModel, Element, Node}};
+    use crate::{loads::{Load, LoadGroup}, material::{MaterialData, Steel}, profile::Profile, settings::CalculationSettings, 
+        structure::{Element, Node, StructureModel}};
 
     // #[test]
     fn t_simple_benchmark_calculation() {
@@ -231,6 +231,7 @@ mod tests {
             "L".to_string(),
             "10".to_string(),
             -90.0,
+            LoadGroup::PERMANENT,
         );
 
         let calc_model = StructureModel {

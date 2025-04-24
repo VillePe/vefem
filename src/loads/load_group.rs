@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LoadGroup {
     id: u8,
     name: Cow<'static, str>,
@@ -64,7 +64,26 @@ impl LoadGroup {
     }
 }
 
-#[derive(Debug, Serialize_repr, Deserialize_repr)]
+impl Ord for LoadGroup {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.id.cmp(&other.id)
+    }
+}
+impl PartialOrd for LoadGroup {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl PartialEq for LoadGroup {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
+}
+
+impl Eq for LoadGroup {}
+
+#[derive(Debug, Copy, Clone, Serialize_repr, Deserialize_repr)]
 #[repr(u8)]
 pub enum GroupType {
     Permanent = 0,

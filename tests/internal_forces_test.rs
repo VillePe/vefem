@@ -9,7 +9,7 @@ mod internal_forces_tests {
     use vputilslib::{equation_handler::EquationHandler, geometry2d::VpPoint};
 
     use vefem::{
-        loads::{Load, LoadCombination},
+        loads::{Load, LoadCombination, LoadGroup},
         material::{MaterialData, Steel},
         profile::Profile,
         results::ForceType,
@@ -37,6 +37,7 @@ mod internal_forces_tests {
             "L/2".to_string(),
             "10".to_string(),
             -90.0,
+            LoadGroup::PERMANENT,
         );
         let loads = vec![p_load];
         let mut structure_model = StructureModel {
@@ -120,6 +121,7 @@ mod internal_forces_tests {
             "1".to_string(),
             "L/2".to_string(),
             "10".to_string(),
+            LoadGroup::PERMANENT,
         );
         let loads = vec![r_load];
         let structure_model = StructureModel {
@@ -179,6 +181,7 @@ mod internal_forces_tests {
             "L".to_string(),
             "10".to_string(),
             -90.0,
+            LoadGroup::PERMANENT,
         );
         let loads = vec![l_load];
         let mut structure_model = StructureModel {
@@ -296,6 +299,7 @@ mod internal_forces_tests {
             "L".to_string(),
             "10".to_string(),
             -90.0,
+            LoadGroup::PERMANENT,
         );
         let loads = vec![l_load];
         let mut structure_model = StructureModel {
@@ -388,6 +392,7 @@ mod internal_forces_tests {
             "0".to_string(),
             "10".to_string(),
             -90.0,
+            LoadGroup::PERMANENT,
         );
         let loads = vec![l_load];
         let mut structure_model = StructureModel {
@@ -483,6 +488,7 @@ mod internal_forces_tests {
             "L".to_string(),
             "10,20".to_string(),
             -90.0,
+            LoadGroup::PERMANENT,
         );
         let loads = vec![load];
         let structure_model = StructureModel {
@@ -552,6 +558,7 @@ mod internal_forces_tests {
             "L".to_string(),
             "10;20".to_string(),
             -90.0,
+            LoadGroup::PERMANENT,
         );
         let loads = vec![load];
         let structure_model = StructureModel {
@@ -647,6 +654,7 @@ mod internal_forces_tests {
             "L/2".to_string(),
             "10".to_string(),
             -90.0,
+            LoadGroup::PERMANENT,
         );
         let loads = vec![p_load];
         let mut structure_model = StructureModel {
@@ -731,6 +739,7 @@ mod internal_forces_tests {
             "1".to_string(),
             "L/2".to_string(),
             "10".to_string(),
+            LoadGroup::PERMANENT,
         );
         let loads = vec![r_load];
         let structure_model = StructureModel {
@@ -791,6 +800,7 @@ mod internal_forces_tests {
             "L".to_string(),
             "10".to_string(),
             -90.0,
+            LoadGroup::PERMANENT,
         );
         let loads = vec![l_load];
         let mut structure_model = StructureModel {
@@ -898,6 +908,7 @@ mod internal_forces_tests {
             "L".to_string(),
             "10".to_string(),
             -90.0,
+            LoadGroup::PERMANENT,
         );
         let loads = vec![l_load];
         let mut structure_model = StructureModel {
@@ -1037,6 +1048,7 @@ mod internal_forces_tests {
             "0".to_string(),
             "10".to_string(),
             -90.0,
+            LoadGroup::PERMANENT,
         );
         let loads = vec![l_load];
         let mut structure_model = StructureModel {
@@ -1159,6 +1171,7 @@ mod internal_forces_tests {
             "L/2".to_string(),
             "10".to_string(),
             0.0,
+            LoadGroup::PERMANENT,
         );
         let loads = vec![p_load];
         let mut structure_model = StructureModel {
@@ -1238,6 +1251,7 @@ mod internal_forces_tests {
             "1".to_string(),
             "L/2".to_string(),
             "10000000".to_string(),
+            LoadGroup::PERMANENT,
         );
         let loads = vec![r_load];
         let structure_model = StructureModel {
@@ -1292,6 +1306,7 @@ mod internal_forces_tests {
             "L".to_string(),
             "10".to_string(),
             0.0,
+            LoadGroup::PERMANENT,
         );
         let loads = vec![l_load];
         let mut structure_model = StructureModel {
@@ -1396,6 +1411,7 @@ mod internal_forces_tests {
             "L".to_string(),
             "10".to_string(),
             0.0,
+            LoadGroup::PERMANENT,
         );
         let loads = vec![l_load];
         let mut structure_model = StructureModel {
@@ -1524,6 +1540,7 @@ mod internal_forces_tests {
             "0".to_string(),
             "10".to_string(),
             0.0,
+            LoadGroup::PERMANENT,
         );
         let loads = vec![l_load];
         let mut structure_model = StructureModel {

@@ -4,6 +4,7 @@
 mod equivalent_load_tests {
     use approx::relative_eq;
     use vefem::loads::LoadCombination;
+    use vefem::loads::LoadGroup;
     use vefem::material::MaterialData;
     use vefem::settings::CalculationSettings;
     
@@ -41,6 +42,7 @@ mod equivalent_load_tests {
             "4000".to_string(),
             "10".to_string(),
             -00.0,
+            LoadGroup::PERMANENT,
         );
         let mut loads = vec![load];
         let elements = vec![el];
@@ -106,6 +108,7 @@ mod equivalent_load_tests {
             "3500".to_string(),
             "10".to_string(),
             0.0,
+            LoadGroup::PERMANENT,
         );
         loads[0] = load;
         let calc_loads = loads::utils::extract_calculation_loads(
@@ -183,6 +186,7 @@ mod equivalent_load_tests {
             "4000".to_string(),
             "10".to_string(),
             -00.0,
+            LoadGroup::PERMANENT,
         );
         let mut loads = vec![load];
         let elements = vec![el];
@@ -247,6 +251,7 @@ mod equivalent_load_tests {
             "3500".to_string(),
             "10".to_string(),
             0.0,
+            LoadGroup::PERMANENT,
         );
         loads[0] = load;
         let calc_loads = loads::utils::extract_calculation_loads(
@@ -338,7 +343,7 @@ mod equivalent_load_tests {
         let mut nodes: BTreeMap<i32, Node> = BTreeMap::new();
         nodes.insert(1, Node::new_hinged(1, VpPoint::new(0.0, 0.0)));
         nodes.insert(2, Node::new_hinged(1, VpPoint::new(0.0, 4000.0)));
-        let load = Load::new_strain_load("".to_string(), "1".to_string(), "10".to_string());
+        let load = Load::new_strain_load("".to_string(), "1".to_string(), "10".to_string(), LoadGroup::PERMANENT);
         let loads = vec![load];
         let elements = vec![el];
         let calc_model = common::get_calc_model(&elements, &nodes);
@@ -372,7 +377,7 @@ mod equivalent_load_tests {
         let mut nodes: BTreeMap<i32, Node> = BTreeMap::new();
         nodes.insert(1, Node::new_hinged(1, VpPoint::new(0.0, 0.0)));
         nodes.insert(2, Node::new_hinged(1, VpPoint::new(0.0, 4000.0)));
-        let load = Load::new_thermal_load("".to_string(), "1".to_string(), "10".to_string());
+        let load = Load::new_thermal_load("".to_string(), "1".to_string(), "10".to_string(), LoadGroup::PERMANENT);
         let loads = vec![load];
         let elements = vec![el];
         let calc_model = common::get_calc_model(&elements, &nodes);

@@ -2,19 +2,22 @@ mod common;
 
 #[cfg(test)]
 pub mod serializing_tests {
-    use std::collections::BTreeMap;
-
     use crate::common;
+    use std::collections::BTreeMap;
+    use std::ffi::{CStr, CString};
     use vefem::{
         loads::LoadCombination,
         material::{Concrete, MaterialData},
         profile::Profile,
         reinforcement::{RebarCollection, RebarData, ReinforcementData, ShearRebarGroup},
         settings::CalculationSettings,
-        structure::{StructureModel, Element, Node},
+        structure::{Element, Node, StructureModel},
         *,
     };
-    use vputilslib::{equation_handler::EquationHandler, geometry2d::{Polygon, VpPoint}};
+    use vputilslib::{
+        equation_handler::EquationHandler,
+        geometry2d::{Polygon, VpPoint},
+    };
 
     #[test]
     fn test_serializing() {
@@ -53,7 +56,8 @@ pub mod serializing_tests {
         );
 
         let results1 = fem::fem_handler::calculate(&calc_model, &mut EquationHandler::new());
-        let results2 = fem::fem_handler::calculate(&calc_model_deserialized, &mut EquationHandler::new());
+        let results2 =
+            fem::fem_handler::calculate(&calc_model_deserialized, &mut EquationHandler::new());
         println!(
             "Support reaction node 1 dir 1: {:.2} = {:.2}",
             results1[0].node_results.get_support_reaction(1, 1),
@@ -105,30 +109,28 @@ pub mod serializing_tests {
                         },
                         "30".to_string(),
                     ));
-                concrete.reinforcement.shear_rebars.push(
-                    ShearRebarGroup::new_full(
-                        RebarData { 
-                            yield_strength: 500.0, 
-                            elastic_modulus: 200e3 }, 
-                        reinforcement::RebarDistribution::Spacing { 
-                            diam: 8.0, 
-                            spacing: 300.0, 
-                            cc_start: "150".to_string(), 
-                            cc_end: "150".to_string() }, 
+                concrete
+                    .reinforcement
+                    .shear_rebars
+                    .push(ShearRebarGroup::new_full(
+                        RebarData {
+                            yield_strength: 500.0,
+                            elastic_modulus: 200e3,
+                        },
+                        reinforcement::RebarDistribution::Spacing {
+                            diam: 8.0,
+                            spacing: 300.0,
+                            cc_start: "150".to_string(),
+                            cc_end: "150".to_string(),
+                        },
                         Polygon::new(vec![
                             VpPoint::new(20.0, 20.0),
-                            VpPoint::new(
-                                prof_width-20.0, 
-                                20.0),
-                            VpPoint::new(
-                                prof_width-20.0, 
-                                prof_height-20.0),
-                            VpPoint::new(
-                                20.0, 
-                                prof_height-20.0),
+                            VpPoint::new(prof_width - 20.0, 20.0),
+                            VpPoint::new(prof_width - 20.0, prof_height - 20.0),
+                            VpPoint::new(20.0, prof_height - 20.0),
                             VpPoint::new(20.0, 20.0),
-                        ]))
-                );
+                        ]),
+                    ));
             }
             MaterialData::Steel(_) => panic!(),
             MaterialData::Timber(_) => panic!(),
@@ -145,5 +147,51 @@ pub mod serializing_tests {
         };
         let calc_model_json = serde_json::to_string_pretty(&calc_model).unwrap();
         println!("Calculation model JSON: {}", calc_model_json);
+    }
+
+    #[test]
+    fn test_element_number_extracting() {
+        let elements = vec![
+            Element::new(
+                1,
+                1,
+                2,
+                common::get_default_profile(),
+                common::get_default_material_steel(),
+            ),
+            Element::new(
+                2,
+                2,
+                3,
+                common::get_default_profile(),
+                common::get_default_material_steel(),
+            ),
+            Element::new(
+                3,
+                3,
+                4,
+                common::get_default_profile(),
+                common::get_default_material_steel(),
+            )
+        ];
+        test_diff_load_element_strings(&elements, "-1");
+        test_diff_load_element_strings(&elements, "1,3");
+        test_diff_load_element_strings(&elements, "2");
+        test_diff_load_element_strings(&elements, "1..2");
+        test_diff_load_element_strings(&elements, "2..3");
+        test_diff_load_element_strings(&elements, "1..3");
+    }
+
+    fn test_diff_load_element_strings(elements: &Vec<Element>, element_string: &str) {
+        let load = common::get_default_line_load(element_string);
+        let load_json = serde_json::to_string_pretty(&load).unwrap();
+        let elements = serde_json::to_string_pretty(&elements).unwrap();
+        let load_json = CString::new(load_json).unwrap().into_raw();
+        let elements = CString::new(elements).unwrap().into_raw();
+        let result = api::api_loads::extract_elements_from_load(load_json, elements);
+
+        let result = unsafe { CStr::from_ptr(result).to_str().unwrap() };
+
+        println!("{:?}", result);
     }
 }

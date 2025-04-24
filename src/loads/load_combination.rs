@@ -11,19 +11,19 @@ pub struct LoadCombination {
     pub combination_type: LoadCombinationType,
     /// A map of load names and their factors. This map controls which loads are included in the calculation
     /// If the map is empty, all loads are calculated as such.
-    pub loads_n_factors: BTreeMap<String, f64>,    
+    pub loads_n_factors: BTreeMap<String, f64>,
 }
 impl LoadCombination {
-    const DEFAULT_NAME : &'static str = "DEFAULT_ALL_LOADS_COMBINATION";
+    const DEFAULT_NAME: &'static str = "DEFAULT_ALL_LOADS_COMBINATION";
 
     pub fn new(name: String, combination_type: LoadCombinationType) -> Self {
-        Self { 
-            name, 
-            combination_type, 
-            loads_n_factors: BTreeMap::new() 
+        Self {
+            name,
+            combination_type,
+            loads_n_factors: BTreeMap::new(),
         }
     }
-    
+
     /// Adds the tuple of string and f64 which represent a load name and the factor for the loads
     /// with that name.
     pub fn add_load_n_factor(&mut self, load_name: String, load_factor: f64) {
@@ -33,31 +33,65 @@ impl LoadCombination {
 
 impl Default for LoadCombination {
     fn default() -> Self {
-        Self { name: LoadCombination::DEFAULT_NAME.to_string(), 
-        combination_type: LoadCombinationType::None, 
-        loads_n_factors: Default::default() }
+        Self {
+            name: LoadCombination::DEFAULT_NAME.to_string(),
+            combination_type: LoadCombinationType::None,
+            loads_n_factors: Default::default(),
+        }
     }
 }
 
 /// The load combination type. All types have a bool parameter to control whether the load combinations
 /// should be automatically created (when 'exploding' the load combination).
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 #[serde(tag = "$type")]
 pub enum LoadCombinationType {
     /// Ultimate limit state. The bool indicates if the load combination should be automatically
     /// created by load groups.
-    ULS{is_auto: bool},
+    ULS {
+        is_auto: bool,
+    },
     /// Serviceability limit state - characteristic. Should be used when the material calculated
     /// behaves elastically (doesn't return to its original state after unloading, like cracked concrete).
     /// The bool indicates if the load combination should be automatically created by load groups.
-    SLSc{is_auto: bool},
+    SLSc {
+        is_auto: bool,
+    },
     /// Serviceability limit state - frequent. Should be used when the material calculated
     /// behaves elastically (returns to its original state after unloading, like steel).
     /// The bool indicates if the load combination should be automatically created by load groups.
-    SLSf{is_auto: bool},
+    SLSf {
+        is_auto: bool,
+    },
     /// Serviceability limit state - quasi-permanent. Should be used when calculating the
     /// quasi-permanent effects of loading (such as creep on concrete).
     /// The bool indicates if the load combination should be automatically created by load groups.
-    SLSqp{is_auto: bool},
+    SLSqp {
+        is_auto: bool,
+    },
     None,
+}
+
+pub struct CalcLoadCombination {
+    /// The name of this calc load combination. This name will be suffixed with parent load
+    /// combinations name (if needed)
+    pub sub_name: String,
+    pub combination_type: LoadCombinationType,
+    pub loads_n_factors: BTreeMap<String, f64>,
+    pub parent_load_combination: String,
+}
+impl CalcLoadCombination {
+    pub(crate) fn new(
+        parent_load_comb_name: String,
+        sub_name: String,
+        combination_type: LoadCombinationType,
+        loads_n_factors: BTreeMap<String, f64>,
+    ) -> Self {
+        Self {
+            sub_name,
+            combination_type,
+            loads_n_factors,
+            parent_load_combination: parent_load_comb_name,
+        }
+    }
 }
