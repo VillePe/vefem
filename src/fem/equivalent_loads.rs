@@ -187,7 +187,7 @@ fn handle_line_load(el_length: f64, el_rotation: f64, load: &CalculationLoad) ->
     let rl_end_strength = -load_length.powi(2) / 12.0 * load_strength * local_z_dir;
 
     // If the load is the same length as the element and start offset is zero, just return the equivalent loads
-    if (load_length - el_length) < 0.1 && load.offset_start == 0.0 {
+    if (load_length - el_length).abs() < 0.1 && load.offset_start == 0.0 {
         return DMatrix::from_row_slice(
             6,
             1,

@@ -941,4 +941,57 @@ mod fem_tests {
                  results[0].internal_force_results[&2].get_force_at(vefem::results::ForceType::Moment, 2000.0).unwrap().value_y * 1e-6
         );
     }
+
+    #[test]
+    fn moments_3() {
+        let mut nodes: BTreeMap<i32, Node> = BTreeMap::new();
+        nodes.insert(1, Node::new_hinged(1, VpPoint::new(0.0, 0.0)));
+        nodes.insert(2, Node::new_hinged(2, VpPoint::new(4000.0, 0.0)));
+
+        let e1: Element = Element::new(
+            1,
+            1,
+            2,
+            Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
+            MaterialData::Steel(Steel::new(210e3)),
+        );
+
+        let elements = vec![e1];
+
+        let load = Load::new_line_load(
+            "test".to_string(),
+            "-1".to_string(),
+            "0".to_string(),
+            "1000".to_string(),
+            "10".to_string(),
+            -90.0,
+            LoadGroup::PERMANENT
+        );
+        let loads = vec![load];
+        let calc_settings = CalculationSettings::default();
+        let struct_model = StructureModel {
+            elements,
+            nodes,
+            loads,
+            calc_settings,
+            load_combinations: vec![],
+        };
+        let results = vefem::fem::fem_handler::calculate(&struct_model, &EquationHandler::new());
+        println!();
+        println!("Support reaction start: {}", results[0].node_results.support_reactions[1]);
+        println!("Support reaction end: {}", results[0].node_results.support_reactions[4]);
+        println!("Moment (el: 1) at 1,0 m: {} kNm",
+                 results[0].internal_force_results[&1].get_force_at(vefem::results::ForceType::Moment, 1000.0).unwrap().value_y * 1e-6
+        );
+        println!("Moment (el: 1) at 2,0 m: {} kNm",
+                 results[0].internal_force_results[&1].get_force_at(vefem::results::ForceType::Moment, 2000.0).unwrap().value_y * 1e-6
+        );
+        println!("Moment (el: 1) at 3,0 m: {} kNm",
+                 results[0].internal_force_results[&1].get_force_at(vefem::results::ForceType::Moment, 3000.0).unwrap().value_y * 1e-6
+        );
+        println!("Moment (el: 1) at 4,0 m: {} kNm",
+                 results[0].internal_force_results[&1].get_force_at(vefem::results::ForceType::Moment, 4000.0).unwrap().value_y * 1e-6
+        );
+        assert!((results[0].internal_force_results[&1].get_force_at(vefem::results::ForceType::Moment, 1000.0).unwrap().value_y - 3.75e6).abs() < 0.1);
+    }
 }
