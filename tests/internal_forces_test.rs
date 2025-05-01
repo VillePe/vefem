@@ -8,8 +8,9 @@ mod internal_forces_tests {
     use approx::relative_eq;
     use vputilslib::{equation_handler::EquationHandler, geometry2d::VpPoint};
 
+    use vefem::loads::load_combination::CalcLoadCombination;
     use vefem::{
-        loads::{Load, LoadCombination, LoadGroup},
+        loads::{Load, LoadGroup},
         material::{MaterialData, Steel},
         profile::Profile,
         results::ForceType,
@@ -1648,7 +1649,7 @@ mod internal_forces_tests {
         let calc_loads = vefem::loads::utils::extract_calculation_loads(
             &calc_model,
             &struct_model.loads,
-            &LoadCombination::default(),
+            &CalcLoadCombination::default(),
             &EquationHandler::new(),
         );
         let local_reactions = results[0].node_results.get_elem_local_nodal_force_vectors(

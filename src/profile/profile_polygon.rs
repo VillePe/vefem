@@ -37,6 +37,19 @@ pub struct PolygonProfile {
     pub polygon: Polygon,
 }
 
+impl Clone for PolygonProfile {
+    fn clone(&self) -> Self {
+        Self {
+            name: self.name.clone(),
+            height: self.height,
+            width: self.width,
+            polygon: Polygon {
+                points: self.polygon.points.clone(),
+            },
+        }
+    }
+}
+
 impl PolygonProfile {
     /// Creates new profile with the given polygon. Calculates the height and width from
     /// the bounding box of the polygon

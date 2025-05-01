@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 pub use steel::Steel;
 pub use timber::Timber;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "$type", content = "data")]
 pub enum MaterialData {
     Concrete(Concrete),

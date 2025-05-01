@@ -11,7 +11,7 @@ mod readme_test {
         material::{MaterialData, Steel},
         profile::Profile,
         settings::CalculationSettings,
-        structure::{StructureModel, Node},
+        structure::{Node, StructureModel},
     };
 
     #[test]
@@ -58,22 +58,23 @@ mod readme_test {
 
 #[cfg(test)]
 mod fem_tests {
+    use crate::common;
     use approx::relative_eq;
-    use vefem::settings::CalculationSettings;
     use std::collections::BTreeMap;
+    use std::time::SystemTime;
     use vefem::fem::matrices::{
         get_unknown_translation_rows, get_unknown_translation_stiffness_rows,
     };
+    use vefem::loads::load_combination::{CalcLoadCombination, LoadCombinationType};
     use vefem::loads::{self, Load, LoadCombination, LoadGroup};
     use vefem::material::{MaterialData, Steel};
     use vefem::profile::{CustomProfile, Profile};
-    use vefem::structure::{Element, StructureModel};
+    use vefem::settings::CalculationSettings;
     use vefem::structure::Node;
+    use vefem::structure::{Element, StructureModel};
     use vputilslib::equation_handler::EquationHandler;
     use vputilslib::geometry2d;
     use vputilslib::geometry2d::VpPoint;
-
-    use crate::common;
 
     #[test]
     fn displacement_1() {
@@ -86,7 +87,7 @@ mod fem_tests {
         let calc_loads = loads::utils::extract_calculation_loads(
             &calc_model,
             &loads,
-            &LoadCombination::default(),
+            &CalcLoadCombination::default(),
             &EquationHandler::new(),
         );
         let gl_eq_loads_m = vefem::fem::equivalent_loads::create(&calc_model, &calc_loads, &calc_settings);
@@ -170,7 +171,7 @@ mod fem_tests {
         let calc_loads = loads::utils::extract_calculation_loads(
             &calc_model,
             &loads,
-            &LoadCombination::default(),
+            &CalcLoadCombination::default(),
             &EquationHandler::new(),
         );
         let gl_eq_loads_m = vefem::fem::equivalent_loads::create(&calc_model, &calc_loads, &calc_settings);
@@ -268,7 +269,7 @@ mod fem_tests {
         let calc_loads = loads::utils::extract_calculation_loads(
             &calc_model,
             &loads,
-            &LoadCombination::default(),
+            &CalcLoadCombination::default(),
             &EquationHandler::new(),
         );
         let gl_eq_loads_m = vefem::fem::equivalent_loads::create(&calc_model, &calc_loads, &calc_settings);
@@ -362,7 +363,7 @@ mod fem_tests {
         let calc_loads = loads::utils::extract_calculation_loads(
             &calc_model,
             &loads,
-            &LoadCombination::default(),
+            &CalcLoadCombination::default(),
             &EquationHandler::new(),
         );
         let gl_eq_loads_m = vefem::fem::equivalent_loads::create(&calc_model, &calc_loads, &calc_settings);
@@ -411,7 +412,7 @@ mod fem_tests {
         let calc_loads = loads::utils::extract_calculation_loads(
             &calc_model,
             &loads,
-            &LoadCombination::default(),
+            &CalcLoadCombination::default(),
             &EquationHandler::new(),
         );
         let gl_eq_loads_m = vefem::fem::equivalent_loads::create(&calc_model, &calc_loads, &calc_settings);
@@ -466,7 +467,7 @@ mod fem_tests {
         let calc_loads = loads::utils::extract_calculation_loads(
             &calc_model,
             &loads,
-            &LoadCombination::default(),
+            &CalcLoadCombination::default(),
             &EquationHandler::new(),
         );
         let gl_eq_loads_m = vefem::fem::equivalent_loads::create(&calc_model, &calc_loads, &calc_settings);
@@ -971,8 +972,7 @@ mod fem_tests {
         let calc_settings = CalculationSettings::default();
         let struct_model = StructureModel {
             elements,
-            nodes,
-            loads,
+            nodes, loads,
             calc_settings,
             load_combinations: vec![],
         };
@@ -993,5 +993,68 @@ mod fem_tests {
                  results[0].internal_force_results[&1].get_force_at(vefem::results::ForceType::Moment, 4000.0).unwrap().value_y * 1e-6
         );
         assert!((results[0].internal_force_results[&1].get_force_at(vefem::results::ForceType::Moment, 1000.0).unwrap().value_y - 3.75e6).abs() < 0.1);
+    }
+
+    // #[test]
+    fn moments_non_threaded() {
+        let (elements, nodes) = common::get_structure_fem_matriisit();
+        let loads = common::get_fem_matriisi_loads();
+        let calc_settings = CalculationSettings { calc_threaded: false, ..Default::default() };
+
+        let timer = SystemTime::now();
+        let count = 20;
+        let mut load_combinations = vec![];
+
+        println!("Initializing the load combinations...");
+        for i in 1..count {
+            load_combinations.push(LoadCombination::new(i, format!("{i}"), LoadCombinationType::None));
+        }
+
+        let struct_model = StructureModel {
+            elements,
+            nodes,
+            loads,
+            calc_settings,
+            load_combinations:load_combinations,
+        };
+
+        println!("Starting to calculate...");
+        println!("Time: {:?}", timer.elapsed().unwrap());
+        vefem::fem::fem_handler::calculate(&struct_model, &EquationHandler::new());
+        println!("Calculations done.");
+
+        println!("Time: {:?}", timer.elapsed().unwrap());
+    }
+
+    // Test function to test the speed compared to non-threaded calculations
+    // #[test]
+    fn moments_threaded() {
+        let (elements, nodes) = common::get_structure_fem_matriisit();
+        let loads = common::get_fem_matriisi_loads();
+        let calc_settings = CalculationSettings { calc_threaded: true, ..Default::default() };
+
+        let timer = SystemTime::now();
+        let count = 500;
+        let mut load_combinations = vec![];
+
+        println!("Initializing the load combinations...");
+        for i in 1..count {
+            load_combinations.push(LoadCombination::new(i, format!("{i}"), LoadCombinationType::None));
+        }
+
+        let struct_model = StructureModel {
+            elements,
+            nodes,
+            loads,
+            calc_settings,
+            load_combinations:load_combinations,
+        };
+
+        println!("Starting to calculate...");
+        println!("Time: {:?}", timer.elapsed().unwrap());
+        vefem::fem::fem_handler::calculate(&struct_model, &EquationHandler::new());
+        println!("Calculations done.");
+
+        println!("Time: {:?}", timer.elapsed().unwrap());
     }
 }

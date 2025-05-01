@@ -3,26 +3,25 @@
 #[cfg(test)]
 mod equivalent_load_tests {
     use approx::relative_eq;
-    use vefem::loads::LoadCombination;
     use vefem::loads::LoadGroup;
     use vefem::material::MaterialData;
     use vefem::settings::CalculationSettings;
-    
+
+    use crate::common;
+    use crate::common::get_structure_fem_matriisit_releases;
     use std::collections::BTreeMap;
     use vefem::fem::equivalent_loads::get_element_g_eq_loads;
     use vefem::fem::matrices::get_unknown_translation_eq_loads_rows;
     use vefem::fem::matrices::get_unknown_translation_rows;
     use vefem::loads;
+    use vefem::loads::load_combination::CalcLoadCombination;
     use vefem::loads::Load;
     use vefem::material::Steel;
+    use vefem::profile::Profile;
     use vefem::structure::Element;
     use vefem::structure::Node;
-    use vefem::profile::Profile;
     use vputilslib::equation_handler::EquationHandler;
     use vputilslib::geometry2d::VpPoint;
-
-    use crate::common;
-    use crate::common::get_structure_fem_matriisit_releases;
 
     #[test]
     fn line_load() {
@@ -50,7 +49,7 @@ mod equivalent_load_tests {
         let calc_loads = loads::utils::extract_calculation_loads(
             &calc_model,
             &loads,
-            &LoadCombination::default(),
+            &CalcLoadCombination::default(),
             &EquationHandler::new(),
         );
         let calc_settings = CalculationSettings::default();
@@ -114,7 +113,7 @@ mod equivalent_load_tests {
         let calc_loads = loads::utils::extract_calculation_loads(
             &calc_model,
             &loads,
-            &LoadCombination::default(),
+            &CalcLoadCombination::default(),
             &EquationHandler::new(),
         );
         nodes.get_mut(&2).unwrap().point = VpPoint::new(0.0, 4000.0);
@@ -194,7 +193,7 @@ mod equivalent_load_tests {
         let calc_loads = loads::utils::extract_calculation_loads(
             &calc_model,
             &loads,
-            &LoadCombination::default(),
+            &CalcLoadCombination::default(),
             &EquationHandler::new(),
         );
         let result =
@@ -257,7 +256,7 @@ mod equivalent_load_tests {
         let calc_loads = loads::utils::extract_calculation_loads(
             &calc_model,
             &loads,
-            &LoadCombination::default(),
+            &CalcLoadCombination::default(),
             &EquationHandler::new(),
         );
         nodes.get_mut(&2).unwrap().point = VpPoint::new(0.0, 4000.0);
@@ -315,7 +314,7 @@ mod equivalent_load_tests {
         let calc_loads = loads::utils::extract_calculation_loads(
             &calc_model,
             &loads,
-            &LoadCombination::default(),
+            &CalcLoadCombination::default(),
             &EquationHandler::new(),
         );
         let result =
@@ -350,7 +349,7 @@ mod equivalent_load_tests {
         let calc_loads = loads::utils::extract_calculation_loads(
             &calc_model,
             &loads,
-            &LoadCombination::default(),
+            &CalcLoadCombination::default(),
             &EquationHandler::new(),
         );
         let result = get_element_g_eq_loads(&calc_model.get_all_calc_elements()[0], &calc_loads, &calc_settings);
@@ -384,7 +383,7 @@ mod equivalent_load_tests {
         let calc_loads = loads::utils::extract_calculation_loads(
             &calc_model,
             &loads,
-            &LoadCombination::default(),
+            &CalcLoadCombination::default(),
             &EquationHandler::new(),
         );
         let result = get_element_g_eq_loads(&calc_model.get_all_calc_elements()[0], &calc_loads, &calc_settings);
@@ -407,7 +406,7 @@ mod equivalent_load_tests {
         let calc_loads = loads::utils::extract_calculation_loads(
             &calc_model,
             &loads,
-            &LoadCombination::default(),
+            &CalcLoadCombination::default(),
             &EquationHandler::new(),
         );
 
@@ -459,7 +458,7 @@ mod equivalent_load_tests {
         let calc_loads = loads::utils::extract_calculation_loads(
             &calc_model,
             &loads,
-            &LoadCombination::default(),
+            &CalcLoadCombination::default(),
             &EquationHandler::new(),
         );
         let calc_settings = CalculationSettings::default();
@@ -516,7 +515,7 @@ mod equivalent_load_tests {
         let calc_loads = loads::utils::extract_calculation_loads(
             &calc_model,
             &loads,
-            &LoadCombination::default(),
+            &CalcLoadCombination::default(),
             &EquationHandler::new(),
         );
         let calc_settings = CalculationSettings::default();

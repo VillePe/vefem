@@ -7,7 +7,7 @@ use vputilslib::equation_handler::EquationHandler;
 
 use super::load_group::LoadGroup;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Load {
     /// Name for the load. Does not need to be unique. Load combinations are created by using the load names.
     pub name: String,
@@ -204,7 +204,7 @@ impl Default for Load {
     }
 }
 
-#[derive(Debug, PartialEq, Serialize_repr, Deserialize_repr)]
+#[derive(Debug, Clone, PartialEq, Serialize_repr, Deserialize_repr)]
 #[repr(u8)]
 pub enum LoadType {
     Point = 0,

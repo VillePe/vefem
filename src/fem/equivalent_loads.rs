@@ -364,7 +364,7 @@ mod tests {
         handle_line_load, handle_point_load, handle_rotational_load, handle_triangular_load,
     };
     use crate::fem::CalcModel;
-    use crate::loads::{self, Load, LoadCombination, LoadGroup};
+    use crate::loads::{self, CalcLoadCombination, Load, LoadGroup};
     use crate::settings::CalculationSettings;
     use crate::structure::{Element, Node};
     use std::collections::{BTreeMap, HashMap};
@@ -414,7 +414,7 @@ mod tests {
         let calc_loads = loads::utils::extract_calculation_loads(
             &calc_model,
             loads,
-            &LoadCombination::default(),
+            &CalcLoadCombination::default(),
             &EquationHandler::new(),
         );
         let el_length = elements[0].get_length(&nodes);
@@ -437,7 +437,6 @@ mod tests {
 
         nodes.get_mut(&2).unwrap().point = VpPoint::new(2828.5714, 2828.5714);
         let result = handle_point_load(el_length, elements[0].get_rotation(&nodes), &calc_loads[0]);
-        println!("{:?}", result);
         assert!((result[0] - (3.536e3)).abs() < 1e1);
         assert!((result[1] - (-3.536e3)).abs() < 1e1);
         assert!((result[2] - (-3.536e6)).abs() < 1e3);
@@ -459,12 +458,11 @@ mod tests {
         let calc_loads = loads::utils::extract_calculation_loads(
             &calc_model,
             loads,
-            &LoadCombination::default(),
+            &CalcLoadCombination::default(),
             &EquationHandler::new(),
         );
         nodes.get_mut(&2).unwrap().point = VpPoint::new(4000.0, 0.0);
         let result = handle_point_load(el_length, elements[0].get_rotation(&nodes), &calc_loads[0]);
-        println!("{:?}", result);
         assert!((result[0] - (0.0)).abs() < 0.1);
         assert!((result[1] - (-5000.0)).abs() < 0.1);
         assert!((result[2] - (-5e6)).abs() < 0.1);
@@ -501,7 +499,7 @@ mod tests {
         let calc_loads = loads::utils::extract_calculation_loads(
             &calc_model,
             loads,
-            &LoadCombination::default(),
+            &CalcLoadCombination::default(),
             &EquationHandler::new(),
         );
         let el_length = elements[0].get_length(&nodes);
@@ -542,7 +540,7 @@ mod tests {
         let calc_loads = loads::utils::extract_calculation_loads(
             &calc_model,
             loads,
-            &LoadCombination::default(),
+            &CalcLoadCombination::default(),
             &EquationHandler::new(),
         );
         let el_length = elements[0].get_length(&nodes);
@@ -582,12 +580,11 @@ mod tests {
         let calc_loads = loads::utils::extract_calculation_loads(
             &calc_model,
             loads,
-            &LoadCombination::default(),
+            &CalcLoadCombination::default(),
             &EquationHandler::new(),
         );
         let el_length = elements[0].get_length(&nodes);
         let result = handle_rotational_load(el_length, &calc_loads[0]);
-        println!("#1 {:?}", result);
         assert!((result[0] - (0.0)).abs() < 0.1);
         assert!((result[1] - (-3.75e3)).abs() < 0.1);
         assert!((result[2] - (-2500e3)).abs() < 0.1);
@@ -634,12 +631,11 @@ mod tests {
         let calc_loads = loads::utils::extract_calculation_loads(
             &calc_model,
             loads,
-            &LoadCombination::default(),
+            &CalcLoadCombination::default(),
             &EquationHandler::new(),
         );
         let el_length = elements[0].get_length(&nodes);
         let result = handle_line_load(el_length, elements[0].get_rotation(&nodes), &calc_loads[0]);
-        println!("#1 {:?}", result);
         assert!((result[0] - (0.0)).abs() < 0.1);
         assert!((result[1] - (-20000.0)).abs() < 0.1);
         assert!((result[2] - (-13333333.0)).abs() < 1.0);
@@ -649,7 +645,6 @@ mod tests {
 
         nodes.get_mut(&2).unwrap().point = VpPoint::new(4000.0, 0.0);
         let result = handle_line_load(el_length, elements[0].get_rotation(&nodes), &calc_loads[0]);
-        println!("#2 {:?}", result);
         assert!((result[0] - (20000.0)).abs() < 0.1);
         assert!((result[1] - (0.0)).abs() < 0.1);
         assert!((result[2] - (0.0)).abs() < 0.1);
@@ -694,7 +689,7 @@ mod tests {
         let calc_loads = loads::utils::extract_calculation_loads(
             &calc_model,
             loads,
-            &LoadCombination::default(),
+            &CalcLoadCombination::default(),
             &EquationHandler::new(),
         );
         nodes.get_mut(&2).unwrap().point = VpPoint::new(0.0, 4000.0);
@@ -764,7 +759,7 @@ mod tests {
         let calc_loads = loads::utils::extract_calculation_loads(
             &calc_model,
             loads,
-            &LoadCombination::default(),
+            &CalcLoadCombination::default(),
             &EquationHandler::new(),
         );
         let el_length = elements[0].get_length(&nodes);
@@ -822,7 +817,7 @@ mod tests {
         let calc_loads = loads::utils::extract_calculation_loads(
             &calc_model,
             loads,
-            &LoadCombination::default(),
+            &CalcLoadCombination::default(),
             &EquationHandler::new(),
         );
         nodes.get_mut(&2).unwrap().point = VpPoint::new(0.0, 4000.0);
@@ -876,7 +871,7 @@ mod tests {
         let calc_loads = loads::utils::extract_calculation_loads(
             &calc_model,
             loads,
-            &LoadCombination::default(),
+            &CalcLoadCombination::default(),
             &EquationHandler::new(),
         );
         let result =

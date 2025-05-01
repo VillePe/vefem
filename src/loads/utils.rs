@@ -4,10 +4,11 @@ use vputilslib::equation_handler::EquationHandler;
 
 use crate::fem::CalcModel;
 use crate::loads::load::Load;
+use crate::loads::load_combination::CalcLoadCombination;
 use crate::structure::CalculationElement;
 
 use super::load::CalculationLoad;
-use super::{LoadCombination, LoadGroup};
+use super::LoadGroup;
 
 /// Gets the element numbers that are linked to given load. Different elements are separated with , (comma).
 ///
@@ -147,7 +148,7 @@ pub fn get_calc_load_map(loads: Vec<CalculationLoad>) -> BTreeMap<String, Vec<Ca
 pub fn extract_calculation_loads(
     calc_model: &CalcModel,
     loads: &Vec<Load>,
-    load_combination: &LoadCombination,
+    load_combination: &CalcLoadCombination,
     eq_handler: &EquationHandler,
 ) -> Vec<CalculationLoad> {
     let mut calc_loads: Vec<CalculationLoad> = Vec::new();
@@ -171,10 +172,6 @@ pub fn extract_calculation_loads(
         let linked_elem_numbers = get_linked_element_numbers(load);
         for element in calc_model.get_all_calc_elements() {
             if !load_is_linked(element.model_el_num, &linked_elem_numbers) {
-                println!(
-                    "Load is not linked! Element: {}, Load: {}",
-                    element.model_el_num, load.name
-                );
                 continue;
             }
             let name = load.name.clone();

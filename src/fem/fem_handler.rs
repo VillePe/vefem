@@ -1,17 +1,30 @@
 ﻿#![allow(dead_code)]
 
 use nalgebra::DMatrix;
-use vputilslib::equation_handler::EquationHandler;
 use std::collections::{BTreeMap, HashMap};
-
-use crate::{
-    fem::{equivalent_loads, matrices::{
-        get_unknown_translation_eq_loads_rows, get_unknown_translation_rows,
-        get_unknown_translation_stiffness_rows,
-    }, internal_forces::calc_internal_forces, stiffness::create_joined_stiffness_matrix}, loads::LoadCombination, results::{CalculationResults, NodeResults}, structure::{Node, StructureModel}
-};
+use std::ops::Deref;
+use std::sync::{Arc, Mutex};
+use std::thread;
+use vputilslib::equation_handler::EquationHandler;
 
 use super::CalcModel;
+use crate::loads::{CalcLoadCombination, Load};
+use crate::settings::CalculationSettings;
+use crate::{
+    fem::{
+        equivalent_loads,
+        internal_forces::calc_internal_forces,
+        matrices::{
+            get_unknown_translation_eq_loads_rows, get_unknown_translation_rows,
+            get_unknown_translation_stiffness_rows,
+        },
+        stiffness::create_joined_stiffness_matrix,
+    },
+    loads,
+    loads::LoadCombination,
+    results::{CalculationResults, NodeResults},
+    structure::{Node, StructureModel},
+};
 
 /// Calculates the displacements, support reactions and element internal forces.
 /// * 'calc_model' - calculation model that is extracted to calculation objects
@@ -25,54 +38,93 @@ pub fn calculate(
     let elements = &struct_model.elements;
     let loads = &struct_model.loads;
     let calc_settings = &struct_model.calc_settings;
-    let (calc_elements, extra_nodes) = crate::structure::utils::get_calc_elements(elements, nodes, &HashMap::new(), calc_settings);
+    let (calc_elements, extra_nodes) =
+        crate::structure::utils::get_calc_elements(elements, nodes, &HashMap::new(), calc_settings);
     let calc_model = CalcModel::new(&nodes, extra_nodes, &elements, calc_elements);
 
     let col_height = super::utils::col_height(nodes, elements);
-    
+
     let load_combinations = if struct_model.load_combinations.is_empty() {
         &vec![LoadCombination::default()]
     } else {
         &struct_model.load_combinations
     };
-    
-    let mut results: Vec<CalculationResults> = Vec::new();
-    for lc in load_combinations {
-        let calculation_loads =
-            &crate::loads::utils::extract_calculation_loads(&calc_model, loads, lc, equation_handler
-        );
-        
-        let mut global_stiff_matrix = create_joined_stiffness_matrix(&calc_model, calc_settings);
-        // The global equivalent loads matrix
-        let global_eq_l_matrix = equivalent_loads::create(&calc_model, calculation_loads, calc_settings);
-        let displacements = calculate_displacements(
-            nodes,
-            col_height,
-            &mut global_stiff_matrix,
-            &global_eq_l_matrix,
-        );
-        
-        let reactions = calculate_reactions(&global_stiff_matrix, &displacements, &global_eq_l_matrix);
 
-        let displacements = displacements.column(0).as_slice().to_vec();
-        let reactions = reactions.column(0).as_slice().to_vec();
+    let results: Arc<Mutex<Vec<CalculationResults>>> = Arc::new(Mutex::new(Vec::new()));
 
-        let node_results = NodeResults::new(displacements, reactions, nodes.len(), &equation_handler);
-        let internal_force_results = calc_internal_forces(
-            &calc_model,
-            calculation_loads,
-            &node_results,
-            calc_settings,
-        );
+    let calc_model = &calc_model;
+    let equation_handler = &equation_handler;
+    let result_clone = results.clone();
+    thread::scope(move |s| {
+        for model_lc in load_combinations {
+            let calc_load_combinations = loads::lc_utils::get_calc_load_combinations(
+                model_lc,
+                &Vec::from([Load::default()]),
+            );
+            for lc in calc_load_combinations.into_iter() {
+                let result_clone = result_clone.clone();
+                if calc_settings.calc_threaded {
+                    s.spawn(move || {
+                        calc_lc(calc_model, loads, lc, equation_handler, result_clone, calc_settings, nodes, col_height);
+                    });
+                } else {
+                    calc_lc(calc_model, loads, lc, equation_handler, result_clone, calc_settings, nodes, col_height);
+                }
+            }
+        }
+    });
+    let mut result_list = Arc::try_unwrap(results)
+        .unwrap()
+        .into_inner()
+        .expect("REASON");
 
-        let result = CalculationResults {
-            load_combination: lc.name.clone(),
-            node_results,
-            internal_force_results,
-        };
-        results.push(result);
-    }
-    results
+    // Sort the results by sub load combination number
+    result_list.sort_by(|a, b| a.sub_load_comb_num.cmp(&b.sub_load_comb_num));
+
+    result_list
+}
+
+fn calc_lc(
+    calc_model: &CalcModel,
+    loads: &Vec<Load>,
+    lc: CalcLoadCombination,
+    equation_handler: &EquationHandler,
+    result_clone: Arc<Mutex<Vec<CalculationResults>>>,
+    calc_settings: &CalculationSettings,
+    nodes: &BTreeMap<i32, Node>,
+    col_height: usize,
+) {
+    let calculation_loads =
+        &loads::utils::extract_calculation_loads(calc_model, loads, &lc, equation_handler);
+
+    let mut global_stiff_matrix = create_joined_stiffness_matrix(calc_model, calc_settings);
+    // The global equivalent loads matrix
+    let global_eq_l_matrix =
+        equivalent_loads::create(calc_model, calculation_loads, calc_settings);
+    let displacements = calculate_displacements(
+        nodes,
+        col_height,
+        &mut global_stiff_matrix,
+        &global_eq_l_matrix,
+    );
+
+    let reactions = calculate_reactions(&global_stiff_matrix, &displacements, &global_eq_l_matrix);
+
+    let displacements = displacements.column(0).as_slice().to_vec();
+    let reactions = reactions.column(0).as_slice().to_vec();
+
+    let node_results = NodeResults::new(displacements, reactions, nodes.len(), &equation_handler);
+    let internal_force_results =
+        calc_internal_forces(calc_model, calculation_loads, &node_results, calc_settings);
+
+    let result = CalculationResults {
+        load_combination: lc.parent_load_combination.clone(),
+        load_comb_num: lc.parent_load_combination_number,
+        sub_load_comb_num: lc.sub_number,
+        node_results,
+        internal_force_results,
+    };
+    result_clone.deref().lock().unwrap().push(result);
 }
 
 /// Calculates the displacement matrix for given elements, nodes and loads. The displacement matrix
@@ -128,7 +180,10 @@ pub fn calculate_displacements(
     full_displacement_matrix
 }
 
-fn apply_support_spring_values(nodes: &BTreeMap<i32, Node>, global_stiff_matrix: &mut DMatrix<f64>) {
+fn apply_support_spring_values(
+    nodes: &BTreeMap<i32, Node>,
+    global_stiff_matrix: &mut DMatrix<f64>,
+) {
     let dof = 3;
     for node in nodes.values() {
         for i in 0..dof {
@@ -174,7 +229,7 @@ fn displacements_cholesky(
 /// cholesky decomposition is used for inversion. Otherwise regular inversion is used.
 /// * 'matrix' - matrix to invert (should be the stiffness matrix with uknonwn translations)
 fn invert_stiff_matrix(matrix: DMatrix<f64>) -> Option<DMatrix<f64>> {
-    println!("Using regular inversion...");
+    // println!("Using regular inversion...");
     return matrix.try_inverse();
 }
 
@@ -201,8 +256,13 @@ mod tests {
 
     use vputilslib::{equation_handler::EquationHandler, geometry2d::VpPoint};
 
-    use crate::{loads::{Load, LoadGroup}, material::{MaterialData, Steel}, profile::Profile, settings::CalculationSettings, 
-        structure::{Element, Node, StructureModel}};
+    use crate::{
+        loads::{Load, LoadGroup},
+        material::{MaterialData, Steel},
+        profile::Profile,
+        settings::CalculationSettings,
+        structure::{Element, Node, StructureModel},
+    };
 
     // #[test]
     fn t_simple_benchmark_calculation() {

@@ -12,7 +12,7 @@ use vputilslib::geometry2d::{self, rectangle, Polygon, VpPoint};
 
 use crate::{material::MaterialData, settings::CalculationSettings};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "$type", content = "data")]
 pub enum Profile {
     /// Polygon profile. All the values are calculated from the polygon

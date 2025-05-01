@@ -1,5 +1,4 @@
 use std::collections::BTreeMap;
-
 use super::{
     load::Load, load_combination::CalcLoadCombination, load_group::GroupType, LoadCombination,
     LoadGroup,
@@ -10,13 +9,33 @@ pub fn get_calc_load_combinations(
     loads: &Vec<Load>,
 ) -> Vec<CalcLoadCombination> {
     let mut result: Vec<CalcLoadCombination> = Vec::new();
+    
+    // If the load combination type is not auto, create only one load combination
+    // which is the same as the original load combination
+    if !lc.combination_type.is_auto() {
+        let mut calc_lc = CalcLoadCombination::new(
+            lc.number,
+            lc.name.clone(),
+            lc.number*1000+1,
+            "".to_string(),
+            lc.combination_type,
+        );
+        for l_n_f in lc.loads_n_factors.iter() {
+            calc_lc.loads_n_factors.insert(l_n_f.0.clone(), *l_n_f.1);
+        }
+        
+        result.push(calc_lc);
+        return result;
+    }
+    
     let loads_map = crate::loads::utils::get_load_map(&loads);
 
     let mut permanents_only = CalcLoadCombination::new(
+        lc.number,
         lc.name.clone(),
+        lc.number*1000+1,
         "_PERM".to_string(),
         lc.combination_type,
-        BTreeMap::new(),
     );
     for load_name in loads_map.keys() {
         if !load_is_included(lc, &load_name) {
@@ -58,6 +77,7 @@ pub fn get_calc_load_combinations(
             .push(load);
     }
 
+    let mut combination_number = lc.number*1000+2;
     // Go through the groups and create load combinations with one group as the 'main' group
     // and others the 'secondary' groups (1.15 * Gk + 1.5 * Qk,1 + sum(1,5 * ψ0,i * Qk,i))
     for group in loads_mapped_by_group.keys() {
@@ -65,11 +85,13 @@ pub fn get_calc_load_combinations(
             continue;
         }
         let mut calc_lc = CalcLoadCombination::new(
+            lc.number,
             lc.name.clone(),
+            combination_number,
             format!("_LL({})", group.get_name()),
             lc.combination_type,
-            BTreeMap::new(),
         );
+        combination_number = combination_number+1;
 
         // Iterate through all load names
         for load_name in loads_map.keys() {
@@ -198,6 +220,7 @@ mod test {
         loads.push(qw);
 
         let lc = LoadCombination {
+            number: 1,
             name: "TEST".to_string(),
             loads_n_factors: BTreeMap::from([
                 ("g_oma".to_string(), 1.0),
@@ -211,6 +234,7 @@ mod test {
         test_load_combination(lc, &loads, 4);
 
         let lc = LoadCombination {
+            number: 1,
             name: "TEST".to_string(),
             loads_n_factors: BTreeMap::from([
                 ("g_oma".to_string(), 1.0),
@@ -220,6 +244,7 @@ mod test {
         test_load_combination(lc, &loads, 1);
 
         let lc = LoadCombination {
+            number: 1,
             name: "TEST".to_string(),
             loads_n_factors: BTreeMap::from([
                 ("g_oma".to_string(), 1.0),
@@ -230,6 +255,7 @@ mod test {
         test_load_combination(lc, &loads, 1);
 
         let lc = LoadCombination {
+            number: 1,
             name: "TEST".to_string(),
             loads_n_factors: BTreeMap::from([
                 ("g_oma".to_string(), 1.0),
@@ -241,6 +267,7 @@ mod test {
         test_load_combination(lc, &loads, 2);
 
         let lc = LoadCombination {
+            number: 1,
             name: "TEST".to_string(),
             loads_n_factors: BTreeMap::from([
                 ("g_oma".to_string(), 1.0),
@@ -253,6 +280,7 @@ mod test {
         test_load_combination(lc, &loads, 3);
 
         let lc = LoadCombination {
+            number: 1,
             name: "TEST".to_string(),
             loads_n_factors: BTreeMap::from([
                 ("ALL".to_string(), 1.0),
@@ -262,6 +290,7 @@ mod test {
         test_load_combination(lc, &loads, 4);
 
         let lc = LoadCombination {
+            number: 1,
             name: "TEST".to_string(),
             loads_n_factors: BTreeMap::from([
             ]),

@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use super::Profile;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CustomProfile {
     /// Name for the profile. If profile type is set to CustomProfile, the values are read from profile
     /// database with the name

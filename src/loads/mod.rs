@@ -6,4 +6,5 @@ mod load_group;
 
 pub use load::Load;
 pub use load_combination::LoadCombination;
+pub use load_combination::CalcLoadCombination;
 pub use load_group::LoadGroup;

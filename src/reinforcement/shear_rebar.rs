@@ -36,3 +36,15 @@ impl ShearRebarGroup {
         ])
     }
 }
+
+impl Clone for ShearRebarGroup {
+    fn clone(&self) -> Self {
+        ShearRebarGroup {
+            reinf_data: self.reinf_data.clone(),
+            distribution: self.distribution.clone(),
+            shape: Polygon {
+                points: self.shape.points.clone()
+            },
+        }
+    }
+}

@@ -17,7 +17,7 @@ use super::{
 
 /// A rebar collection for an element. The struct represents a collection of rebars
 /// in a concrete section.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RebarCollection {
     pub reinf_data: ReinforcementData,
     /// The rebar distribution from left to right in any direction (up is towards middle of the polygon)

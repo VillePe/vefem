@@ -23,9 +23,9 @@ pub mod serializing_tests {
     fn test_serializing() {
         let (elements, nodes) = common::get_structure_fem_matriisit_releases();
         let load_combinations: Vec<LoadCombination> = vec![
-            LoadCombination::new("LC_ULS".to_string(), loads::load_combination::LoadCombinationType::ULS{is_auto: false}),
-            LoadCombination::new("LC_ULS_Auto".to_string(), loads::load_combination::LoadCombinationType::ULS{is_auto: false}),
-            LoadCombination::new("LC_SLS".to_string(), loads::load_combination::LoadCombinationType::SLSc{is_auto: false}),
+            LoadCombination::new(1, "LC_ULS".to_string(), loads::load_combination::LoadCombinationType::ULS{is_auto: false}),
+            LoadCombination::new(2, "LC_ULS_Auto".to_string(), loads::load_combination::LoadCombinationType::ULS{is_auto: false}),
+            LoadCombination::new(3, "LC_SLS".to_string(), loads::load_combination::LoadCombinationType::SLSc{is_auto: false}),
         ];
         let loads = common::get_fem_matriisi_loads();
         let calc_settings = CalculationSettings::default();

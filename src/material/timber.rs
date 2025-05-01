@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use super::MaterialTrait;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 pub struct Timber {
     pub elastic_modulus: f64,
     pub thermal_expansion_coefficient: f64,

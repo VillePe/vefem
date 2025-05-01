@@ -6,7 +6,7 @@ use crate::reinforcement;
 
 use super::MaterialTrait;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Concrete {
     pub elastic_modulus: f64,
     pub thermal_expansion_coefficient: f64,
@@ -63,7 +63,7 @@ impl StandardConcrete {
     }
 }
 
-#[derive(Debug, PartialEq, Serialize_repr, Deserialize_repr)]
+#[derive(Debug, Clone, PartialEq, Serialize_repr, Deserialize_repr)]
 #[repr(u8)]
 pub enum ConcreteCalcType {
     // The reinforcement does not have an effect when calculating the area or the second moment of 

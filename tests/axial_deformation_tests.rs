@@ -206,7 +206,9 @@ mod axial_deformation_tests {
             calc_settings: CalculationSettings::default(),
             load_combinations: vec![],
         };
-        let results = &vefem::fem::fem_handler::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let results = &vefem::fem::fem_handler::calculate(&structure_model, &mut EquationHandler::new());
+        println!("Results: {results:?}");
+        let results = &results[0];
         let defl = results.internal_force_results[&1]
             .get_force_at(ForceType::Deflection, 1000.0)
             .unwrap()

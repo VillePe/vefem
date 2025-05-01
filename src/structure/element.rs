@@ -10,7 +10,7 @@ use crate::structure::node::Node;
 use std::collections::BTreeMap;
 use crate::structure::release::Release;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Element {
     pub number: i32,
     pub node_start: i32,

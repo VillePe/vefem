@@ -84,6 +84,28 @@ impl Default for StandardProfile {
     }
 }
 
+
+impl Clone for StandardProfile {
+    fn clone(&self) -> Self {
+        Self {
+            name: self.name.clone(),
+            height: self.height,
+            width: self.width,
+            polygon: Polygon {
+                points: self.polygon.points.clone()
+            },
+            custom_area: self.custom_area,
+            custom_major_sec_mom_of_area: self.custom_major_sec_mom_of_area,
+            custom_minor_sec_mom_of_area: self.custom_minor_sec_mom_of_area,
+            custom_weight_per_meter: self.custom_weight_per_meter,
+            custom_torsional_constant: self.custom_torsional_constant,
+            custom_warping_constant: self.custom_warping_constant,
+            center_of_gravity_x: self.center_of_gravity_x,
+            center_of_gravity_y: self.center_of_gravity_y,
+        }
+    }
+}
+
 impl TryFrom<Profile> for StandardProfile {
     type Error = &'static str;
     fn try_from(value: Profile) -> Result<Self, Self::Error> {

@@ -144,7 +144,6 @@ pub fn calculate_moment_at(
                     let load_length;
                     if load.offset_end <= x {
                         load_length = load.offset_end - load.offset_start;
-                        println!("{:?}", load_length);
                     } else {
                         load_length = x - load.offset_start;
                     }

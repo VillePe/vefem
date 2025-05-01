@@ -7,6 +7,10 @@ pub struct LoadCombination {
     /// The name of the load combination. The name has to be unique (except for default load combination,
     /// which has the name of 'DEFAULT_ALL_LOADS_COMBINATION').
     pub name: String,
+    /// The number of the load combination. For model load combinations the numbers are from 1 to 999.
+    /// 1001...999 999 are reserved for sub load combinations (1001 for 1, 10 001 for 10 999 999 for 999).
+    /// 0 is reserved for load combination that doesn't yet have the correct number assigned
+    pub number: usize,
     /// The combination type
     pub combination_type: LoadCombinationType,
     /// A map of load names and their factors. This map controls which loads are included in the calculation
@@ -16,8 +20,9 @@ pub struct LoadCombination {
 impl LoadCombination {
     const DEFAULT_NAME: &'static str = "DEFAULT_ALL_LOADS_COMBINATION";
 
-    pub fn new(name: String, combination_type: LoadCombinationType) -> Self {
+    pub fn new(number: usize, name: String, combination_type: LoadCombinationType) -> Self {
         Self {
+            number,
             name,
             combination_type,
             loads_n_factors: BTreeMap::new(),
@@ -34,6 +39,7 @@ impl LoadCombination {
 impl Default for LoadCombination {
     fn default() -> Self {
         Self {
+            number: 0,
             name: LoadCombination::DEFAULT_NAME.to_string(),
             combination_type: LoadCombinationType::None,
             loads_n_factors: Default::default(),
@@ -72,26 +78,57 @@ pub enum LoadCombinationType {
     None,
 }
 
+impl LoadCombinationType {
+    pub fn is_auto(&self) -> bool {
+        match self {
+            LoadCombinationType::ULS { is_auto } => *is_auto,
+            LoadCombinationType::SLSc { is_auto } => *is_auto,
+            LoadCombinationType::SLSf { is_auto } => *is_auto,
+            LoadCombinationType::SLSqp { is_auto } => *is_auto,
+            LoadCombinationType::None => false
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
 pub struct CalcLoadCombination {
     /// The name of this calc load combination. This name will be suffixed with parent load
     /// combinations name (if needed)
     pub sub_name: String,
+    pub sub_number: usize,
     pub combination_type: LoadCombinationType,
     pub loads_n_factors: BTreeMap<String, f64>,
     pub parent_load_combination: String,
+    pub parent_load_combination_number: usize,
 }
 impl CalcLoadCombination {
-    pub(crate) fn new(
+    pub fn new(
+        parent_load_comb_number: usize,
         parent_load_comb_name: String,
+        sub_number: usize,
         sub_name: String,
         combination_type: LoadCombinationType,
-        loads_n_factors: BTreeMap<String, f64>,
     ) -> Self {
         Self {
             sub_name,
+            sub_number, 
             combination_type,
-            loads_n_factors,
+            loads_n_factors: BTreeMap::new(),
             parent_load_combination: parent_load_comb_name,
+            parent_load_combination_number: parent_load_comb_number,
+        }
+    }
+}
+
+impl Default for CalcLoadCombination {
+    fn default() -> Self {
+        Self {
+            sub_name: LoadCombination::DEFAULT_NAME.to_string(),
+            sub_number: 1000,
+            combination_type: LoadCombinationType::None,
+            loads_n_factors: Default::default(),
+            parent_load_combination: "LoadCombination::DEFAULT_NAME".to_string(),
+            parent_load_combination_number: 0,
         }
     }
 }
