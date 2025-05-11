@@ -9,7 +9,7 @@ pub fn get_calc_load_combinations(
     loads: &Vec<Load>,
 ) -> Vec<CalcLoadCombination> {
     let mut result: Vec<CalcLoadCombination> = Vec::new();
-    
+        
     // If the load combination type is not auto, create only one load combination
     // which is the same as the original load combination
     if !lc.combination_type.is_auto() {
@@ -44,7 +44,9 @@ pub fn get_calc_load_combinations(
         
         let loads = loads_map.get(load_name).unwrap();
         for load in loads {
-            let factor = if lc.loads_n_factors.contains_key(load_name) {
+            let factor = if lc.loads_n_factors.contains_key("ALL") {
+                lc.loads_n_factors["ALL"]
+            } else if lc.loads_n_factors.contains_key(load_name) {
                 lc.loads_n_factors[load_name]
             } else {
                 1.0
@@ -150,6 +152,13 @@ pub fn get_calc_load_combinations(
 }
 
 pub fn load_is_included(lc: &LoadCombination, load_name: &str) -> bool {
+    if lc.loads_n_factors.is_empty() || lc.loads_n_factors.contains_key("ALL") {
+        return true;
+    }
+    lc.loads_n_factors.contains_key(load_name)
+}
+
+pub fn calc_load_is_included(lc: &CalcLoadCombination, load_name: &str) -> bool {
     if lc.loads_n_factors.is_empty() || lc.loads_n_factors.contains_key("ALL") {
         return true;
     }

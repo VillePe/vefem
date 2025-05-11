@@ -8,7 +8,7 @@ use crate::loads::load_combination::CalcLoadCombination;
 use crate::structure::CalculationElement;
 
 use super::load::CalculationLoad;
-use super::LoadGroup;
+use super::{lc_utils, LoadGroup};
 
 /// Gets the element numbers that are linked to given load. Different elements are separated with , (comma).
 ///
@@ -161,8 +161,14 @@ pub fn extract_calculation_loads(
         // in the loads_n_factor vector
         if !lc_is_empty {
             // Check if the current load is in the loads_n_factor vector
-            if load_combination.loads_n_factors.contains_key(&load.name) {
-                strength_factor = load_combination.loads_n_factors[&load.name];
+            if lc_utils::calc_load_is_included(load_combination, &load.name) {
+                if load_combination.loads_n_factors.contains_key(&load.name) {
+                    strength_factor = load_combination.loads_n_factors[&load.name];
+                } else if load_combination.loads_n_factors.contains_key("ALL") {
+                    strength_factor = load_combination.loads_n_factors["ALL"];
+                } else {
+                    strength_factor = 1.0;
+                }
             } else {
                 // If current load is not in the loads_n_factor vector, skip it
                 continue;

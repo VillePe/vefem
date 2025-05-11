@@ -59,7 +59,7 @@ pub fn calculate(
         for model_lc in load_combinations {
             let calc_load_combinations = loads::lc_utils::get_calc_load_combinations(
                 model_lc,
-                &Vec::from([Load::default()]),
+                &loads
             );
             for lc in calc_load_combinations.into_iter() {
                 let result_clone = result_clone.clone();
