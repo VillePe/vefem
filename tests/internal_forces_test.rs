@@ -1659,11 +1659,11 @@ mod internal_forces_tests {
         );
         println!("Displacements:: {:.4?}", results[0].node_results.displacements);
         println!("Local reactions: {:.0}", local_reactions);
-        assert!((local_reactions[0] - 3.333e3).abs() < 1.0);
-        assert!((local_reactions[1] - 4.277e2).abs() < 1.0);
-        assert!((local_reactions[2] - (0.0e3)).abs() < 1.0);
-        assert!((local_reactions[3] - (-4.3333e4)).abs() < 1.0);
-        assert!((local_reactions[4] - (-4.277e2)).abs() < 1.0);
+        assert!((local_reactions[0] - 2.3333e4).abs() < 1.0);
+        assert!((local_reactions[1] - 2.0428e4).abs() < 1.0);
+        assert!((local_reactions[2] - (-0.0e3)).abs() < 1.0);
+        assert!((local_reactions[3] - (-2.3333e4)).abs() < 1.0);
+        assert!((local_reactions[4] - (1.9572e4)).abs() < 1.0);
         assert!((local_reactions[5] - (1.710897e6)).abs() < 1.0);
     }
 }

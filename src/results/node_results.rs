@@ -67,9 +67,10 @@ impl NodeResults {
     ) -> DMatrix<f64> {
         let el_stiff_matrix = stiffness::get_element_stiffness_matrix(element, settings);
         let el_eq_loads = crate::fem::equivalent_loads::get_element_g_eq_loads(element, loads, settings);
+        let rot_matrix = crate::fem::matrices::get_element_rotation_matrix(element);
         let local_displacements = self.get_elem_local_displacements(element);        
 
-        el_stiff_matrix * local_displacements - el_eq_loads
+        el_stiff_matrix * local_displacements - rot_matrix * el_eq_loads
     }
 
     /// Get the local displacement matrix for the element

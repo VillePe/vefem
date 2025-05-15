@@ -1,5 +1,6 @@
 mod common;
 
+#[allow(non_snake_case)]
 #[cfg(test)]
 mod tests {
     use crate::common;

@@ -995,7 +995,8 @@ mod fem_tests {
         assert!((results[0].internal_force_results[&1].get_force_at(vefem::results::ForceType::Moment, 1000.0).unwrap().value_y - 3.75e6).abs() < 0.1);
     }
 
-    // #[test]
+    #[ignore]
+    #[test]
     fn moments_non_threaded() {
         let (elements, nodes) = common::get_structure_fem_matriisit();
         let loads = common::get_fem_matriisi_loads();
@@ -1027,7 +1028,8 @@ mod fem_tests {
     }
 
     // Test function to test the speed compared to non-threaded calculations
-    // #[test]
+    #[ignore]
+    #[test]
     fn moments_threaded() {
         let (elements, nodes) = common::get_structure_fem_matriisit();
         let loads = common::get_fem_matriisi_loads();
@@ -1056,5 +1058,40 @@ mod fem_tests {
         println!("Calculations done.");
 
         println!("Time: {:?}", timer.elapsed().unwrap());
+    }
+    
+    #[test]
+    fn strain_load() {
+        let el: Element = Element::new(
+            1,
+            1,
+            2,
+            Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
+            MaterialData::Steel(Steel::default()),
+        );
+        let nodes = BTreeMap::from([
+            (1, Node::new_free(1, VpPoint::new(0.0, 0.0))),
+            (2, Node::new_fixed(2, VpPoint::new(2828.57, 2828.57))),
+        ]);
+        let elements = vec![el];
+        let p_load = Load::new_strain_load(
+            "StrainLoad".to_string(),
+            "-1".to_string(),
+            "-10".to_string(),
+            LoadGroup::PERMANENT,
+        );
+        let loads = vec![p_load];
+        let struct_model = StructureModel {
+            nodes,
+            elements,
+            loads,
+            calc_settings: CalculationSettings::default(),
+            load_combinations: vec![],
+        };
+
+        let results = vefem::fem::fem_handler::calculate(&struct_model, &EquationHandler::new());
+        println!();
+        println!("Support reaction start: {}", results[0].node_results.support_reactions[0]);
+        println!("Support reaction start: {}", results[0].node_results.support_reactions[1]);
     }
 }

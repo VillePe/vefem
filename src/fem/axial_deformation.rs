@@ -58,13 +58,22 @@ pub fn calculate_at(
                     s_integral -= handle_triang_rtl(load, x)
                 }
             }
-            load::CalculationLoadType::Strain => {}
+            load::CalculationLoadType::Strain => {
+                let point_load_strength = e_m * area / element.length * load.strength;
+                s_integral += point_load_strength * 1.0 * (x);
+                println!("X: {}", x);
+                println!("Element length: {}", element.length);
+                println!("Point load: {}", point_load_strength * 1.0 * (x));
+                println!("Local displacement: {}", local_displacements[(0, 0)]);
+                println!("Local reaction: {}", local_reactions[(0, 0)]);
+                println!();
+            }
         };
     }
 
     // C1 (the node translation in X-axis times EA)
     s_integral += local_displacements[(0, 0)] * e_m * area;
-    // Double integral from the support reactions at the start of the element
+    // Itegral from the support reactions at the start of the element
     s_integral -= local_reactions[(0, 0)] * x;
 
     // The deflection value
