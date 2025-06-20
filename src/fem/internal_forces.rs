@@ -289,7 +289,7 @@ fn moment_triang_ltr(load: &CalculationLoad, x: f64) -> f64 {
             let strength_tl = load.strength - strength_ll;
             // Moment from triangular load = F * l / 2 * offset
             moment += strength_tl * z_dir_factor * load_length / 2.0 * offset_tl;
-            let offset_ll = x - (load.offset_start + (x - load.offset_start) / 2.0);
+            let offset_ll = x - (load.offset_start + load_length / 2.0);
             moment += strength_ll * z_dir_factor * load_length * offset_ll;
         }
     }

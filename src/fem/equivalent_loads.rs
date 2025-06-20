@@ -254,7 +254,7 @@ fn handle_triangular_load(
     }
 
     // If the load is the same length as the element and start offset is zero, just return the equivalent loads
-    if (load_length - el_length) < 0.1 && load.offset_start == 0.0 {
+    if (load_length - el_length).abs() < 0.1 && load.offset_start == 0.0 {
         return DMatrix::from_row_slice(
             6,
             1,

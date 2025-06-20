@@ -225,10 +225,10 @@ mod equivalent_load_tests {
         println!("#3 {:?}", result);
         assert!((result[0] - (13.6666e3)).abs() < 1e1);
         assert!((result[1] - (-0.33333e3)).abs() < 1e1);
-        assert!((result[2] - (-5.6569e6)).abs() < 1e2);
+        assert!((result[2] - (-5.657238e6)).abs() < 1e2);
         assert!((result[3] - (6.3333e3)).abs() < 1e1);
         assert!((result[4] - (0.3333e3)).abs() < 1e1);
-        assert!((result[5] - (3.7712e6)).abs() < 1e2);
+        assert!((result[5] - (3.771332e6)).abs() < 1e2);
 
         // 120°
         nodes.get_mut(&2).unwrap().point = VpPoint::new(-2000.0, 3464.10161513775458);
