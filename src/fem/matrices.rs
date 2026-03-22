@@ -5,8 +5,8 @@ use nalgebra::DMatrix;
 use std::collections::BTreeMap;
 
 /// Gets the rotation matrix for the element. This matrix is in elements local coordinate system
-pub fn get_element_rotation_matrix(element: &CalculationElement) -> DMatrix<f64> {
-    let angle_radians = element.rotation.to_radians();
+pub fn get_rotation_matrix(rotation: f64) -> DMatrix<f64> {
+    let angle_radians = rotation.to_radians();
     let c = angle_radians.cos();
     let s = angle_radians.sin();
     DMatrix::from_row_slice(

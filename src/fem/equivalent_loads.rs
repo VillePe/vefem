@@ -72,7 +72,7 @@ pub fn get_element_g_eq_loads(
             linked_loads.push(l);
         }
     }
-    let rot_matrix = matrices::get_element_rotation_matrix(&element).transpose();
+    let rot_matrix = matrices::get_rotation_matrix(element.rotation).transpose();
     let el_length = element.length;
     let el_rotation = element.rotation;
     // Iterate through the linked loads and add them to the equivalent load matrix

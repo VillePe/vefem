@@ -196,6 +196,22 @@ fn apply_support_spring_values(
     }
 }
 
+fn apply_support_rotation_values(nodes: &BTreeMap<i32, Node>,
+                                 global_stiff_matrix: &mut DMatrix<f64>,
+) {
+    let dof = 3;
+    for node in nodes.values() {
+        for i in 0..dof {
+            if node.support.rotation != 0.0 && node.number > 0 {
+                let node_number = node.number as usize;
+
+                global_stiff_matrix[((node_number - 1) * dof + i, (node_number - 1) * dof + i)] +=
+                    node.support.get_support_spring(i);
+            }
+        }
+    }
+}
+
 fn remove_support_spring_values(
     nodes: &BTreeMap<i32, Node>,
     global_stiff_matrix: &mut DMatrix<f64>,

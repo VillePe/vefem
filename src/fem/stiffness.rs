@@ -1,6 +1,6 @@
 ﻿#![allow(non_snake_case)]
 
-use crate::fem::matrices::get_element_rotation_matrix;
+use crate::fem::matrices::get_rotation_matrix;
 use crate::material::MaterialData;
 use crate::settings::CalculationSettings;
 use crate::structure::CalculationElement;
@@ -14,7 +14,7 @@ pub fn get_element_global_stiffness_matrix(
     settings: &CalculationSettings
 ) -> DMatrix<f64> {    
     let e_stiff_matrix = get_element_stiffness_matrix(&e, settings);
-    let e_rotation_matrix = get_element_rotation_matrix(&e);
+    let e_rotation_matrix = get_rotation_matrix(e.rotation);
     let e_rot_matrix_t = e_rotation_matrix.transpose();
     let e_glob_stiff_matrix = e_rot_matrix_t * e_stiff_matrix * e_rotation_matrix;
     e_glob_stiff_matrix

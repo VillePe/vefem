@@ -67,7 +67,7 @@ impl NodeResults {
     ) -> DMatrix<f64> {
         let el_stiff_matrix = stiffness::get_element_stiffness_matrix(element, settings);
         let el_eq_loads = crate::fem::equivalent_loads::get_element_g_eq_loads(element, loads, settings);
-        let rot_matrix = crate::fem::matrices::get_element_rotation_matrix(element);
+        let rot_matrix = crate::fem::matrices::get_rotation_matrix(element.rotation);
         let local_displacements = self.get_elem_local_displacements(element);        
 
         el_stiff_matrix * local_displacements - rot_matrix * el_eq_loads
@@ -86,7 +86,7 @@ impl NodeResults {
         for i in 0..self.dof_count {
             global_matrix[(self.dof_count + i, 0)] = self.get_displacement(element.node_end, i);
         }
-        let rot_matrix = crate::fem::matrices::get_element_rotation_matrix(element);
+        let rot_matrix = crate::fem::matrices::get_rotation_matrix(element.rotation);
 
         rot_matrix * global_matrix
     }

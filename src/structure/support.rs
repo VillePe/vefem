@@ -14,6 +14,8 @@ pub struct Support {
     pub z_spring: f64,
     /// The spring constant about global Y-axis
     pub r_spring: f64,
+    /// The rotation of the support about the global Y-axis in degrees.
+    pub rotation: f64,
 }
 impl Support {
     /// Creates new support that has no locks set (translations and rotation are not locked)
@@ -75,6 +77,7 @@ impl Default for Support {
             x_spring: 0.0,
             z_spring: 0.0,
             r_spring: 0.0,
+            rotation: 0.0,
         }
     }
 }
