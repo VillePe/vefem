@@ -7,7 +7,7 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 use vputilslib::equation_handler::EquationHandler;
 
-use super::CalcModel;
+use super::{matrices, CalcModel};
 use crate::loads::{CalcLoadCombination, Load};
 use crate::settings::CalculationSettings;
 use crate::{
@@ -57,18 +57,34 @@ pub fn calculate(
     let result_clone = results.clone();
     thread::scope(move |s| {
         for model_lc in load_combinations {
-            let calc_load_combinations = loads::lc_utils::get_calc_load_combinations(
-                model_lc,
-                &loads
-            );
+            let calc_load_combinations =
+                loads::lc_utils::get_calc_load_combinations(model_lc, &loads);
             for lc in calc_load_combinations.into_iter() {
                 let result_clone = result_clone.clone();
                 if calc_settings.calc_threaded {
                     s.spawn(move || {
-                        calc_lc(calc_model, loads, lc, equation_handler, result_clone, calc_settings, nodes, col_height);
+                        calc_lc(
+                            calc_model,
+                            loads,
+                            lc,
+                            equation_handler,
+                            result_clone,
+                            calc_settings,
+                            nodes,
+                            col_height,
+                        );
                     });
                 } else {
-                    calc_lc(calc_model, loads, lc, equation_handler, result_clone, calc_settings, nodes, col_height);
+                    calc_lc(
+                        calc_model,
+                        loads,
+                        lc,
+                        equation_handler,
+                        result_clone,
+                        calc_settings,
+                        nodes,
+                        col_height,
+                    );
                 }
             }
         }
@@ -99,13 +115,12 @@ fn calc_lc(
 
     let mut global_stiff_matrix = create_joined_stiffness_matrix(calc_model, calc_settings);
     // The global equivalent loads matrix
-    let global_eq_l_matrix =
-        equivalent_loads::create(calc_model, calculation_loads, calc_settings);
+    let global_eq_l_matrix = equivalent_loads::create(calc_model, calculation_loads, calc_settings);
     let displacements = calculate_displacements(
         nodes,
         col_height,
         &mut global_stiff_matrix,
-        &global_eq_l_matrix,
+        &mut global_eq_l_matrix.clone(),
     );
 
     let reactions = calculate_reactions(&global_stiff_matrix, &displacements, &global_eq_l_matrix);
@@ -137,13 +152,16 @@ fn calc_lc(
 /// 1 = translation in Z-axis
 /// 2 = rotation about Y-axis`.
 /// ```
+/// The global equivalent loads matrix is modified and the modifications are not reveresed in this 
+/// function. Clone the matrix if it needs to be kept as is.
 pub fn calculate_displacements(
     nodes: &BTreeMap<i32, Node>,
     col_height: usize,
     global_stiff_matrix: &mut DMatrix<f64>,
-    global_equivalent_loads_matrix: &DMatrix<f64>,
+    global_equivalent_loads_matrix: &mut DMatrix<f64>,
 ) -> DMatrix<f64> {
     apply_support_spring_values(nodes, global_stiff_matrix);
+    apply_support_rotation_values(nodes, global_stiff_matrix, global_equivalent_loads_matrix);
     // Get the rows with unknown translations to calculate the displacements for them.
     let unknown_translation_rows = get_unknown_translation_rows(nodes, &global_stiff_matrix);
     let unknown_translation_stiffness_rows =
@@ -196,17 +214,39 @@ fn apply_support_spring_values(
     }
 }
 
-fn apply_support_rotation_values(nodes: &BTreeMap<i32, Node>,
-                                 global_stiff_matrix: &mut DMatrix<f64>,
+/// Applies the rotations from supports to stiffness matrix and equivalent loads
+fn apply_support_rotation_values(
+    nodes: &BTreeMap<i32, Node>,
+    global_stiff_matrix: &mut DMatrix<f64>,
+    global_equivalent_loads_matrix: &mut DMatrix<f64>,
 ) {
     let dof = 3;
     for node in nodes.values() {
-        for i in 0..dof {
-            if node.support.rotation != 0.0 && node.number > 0 {
-                let node_number = node.number as usize;
+        if node.support.rotation != 0.0 && node.number > 0 {
+            let node_number = node.number as usize;
+            let small_rotation_matrix = matrices::get_small_rotation_matrix(node.support.rotation);
+            let rotation_matrix_transposed = small_rotation_matrix.transpose();
+            let mut small_stiff_matrix = DMatrix::zeros(dof, dof);
+            for i in 0..dof {
+                for j in 0..dof {
+                    small_stiff_matrix[(i, j)] = global_stiff_matrix
+                        [((node_number - 1) * dof + i, (node_number - 1) * dof + i)];
+                }
+            }
+            // T*K*Ttranspose
+            // K*Ttranspose
+            let stiff_and_transposed = &small_stiff_matrix * rotation_matrix_transposed;
+            // T*KTtranspose = TKTtranspose
+            let fully_rotated = &small_rotation_matrix * stiff_and_transposed;
+            for i in 0..dof {
+                for j in 0..dof {
+                    global_stiff_matrix[((node_number - 1) * dof + i, (node_number - 1) * dof + i)] =
+                        fully_rotated[(i, j)];
 
-                global_stiff_matrix[((node_number - 1) * dof + i, (node_number - 1) * dof + i)] +=
-                    node.support.get_support_spring(i);
+                    // Rotate the equivalent loads matrix
+                    global_equivalent_loads_matrix[(node_number - 1) * dof + i] *= 
+                        small_rotation_matrix[(i, j)];
+                }
             }
         }
     }

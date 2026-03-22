@@ -90,12 +90,12 @@ mod fem_tests {
             &CalcLoadCombination::default(),
             &EquationHandler::new(),
         );
-        let gl_eq_loads_m = vefem::fem::equivalent_loads::create(&calc_model, &calc_loads, &calc_settings);
+        let mut gl_eq_loads_m = vefem::fem::equivalent_loads::create(&calc_model, &calc_loads, &calc_settings);
         let displacement = vefem::fem::fem_handler::calculate_displacements(
             &nodes,
             vefem::fem::utils::col_height(&nodes, &elements),
             &mut gl_stiff_m,
-            &gl_eq_loads_m,
+            &mut gl_eq_loads_m,
         );
         println!("{}", displacement);
         assert!(relative_eq!(
@@ -179,7 +179,7 @@ mod fem_tests {
             &nodes,
             vefem::fem::utils::col_height(&nodes, &elements),
             &mut gl_stiff_m,
-            &gl_eq_loads_m,
+            &mut gl_eq_loads_m.clone(),
         );
         println!("{}", displacement);
         assert!(relative_eq!(
@@ -277,7 +277,7 @@ mod fem_tests {
             &nodes,
             vefem::fem::utils::col_height(&nodes, &elements),
             &mut gl_stiff_m,
-            &gl_eq_loads_m,
+            &mut gl_eq_loads_m.clone(),
         );
         println!("{}", displacement);
         assert!(relative_eq!(
@@ -353,6 +353,51 @@ mod fem_tests {
     }
 
     #[test]
+    fn displacement_support_rotated_1() {
+        // TODO IMPLEMENT
+        let (elements, nodes) = common::get_structure_fem_matriisit();
+        let calc_model = common::get_calc_model(&elements, &nodes);
+        let loads = common::get_fem_matriisi_loads();
+        let calc_settings = CalculationSettings::default();
+        let mut gl_stiff_m =
+            vefem::fem::stiffness::create_joined_stiffness_matrix(&calc_model, &calc_settings);
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model,
+            &loads,
+            &CalcLoadCombination::default(),
+            &EquationHandler::new(),
+        );
+        let mut gl_eq_loads_m = vefem::fem::equivalent_loads::create(&calc_model, &calc_loads, &calc_settings);
+        let displacement = vefem::fem::fem_handler::calculate_displacements(
+            &nodes,
+            vefem::fem::utils::col_height(&nodes, &elements),
+            &mut gl_stiff_m,
+            &mut gl_eq_loads_m,
+        );
+        println!("{}", displacement);
+        assert!(relative_eq!(
+            displacement[(0, 0)],
+            0.0000,
+            max_relative = 0.01
+        ));
+        assert!(relative_eq!(
+            displacement[(1, 0)],
+            0.0000,
+            max_relative = 0.01
+        ));
+        assert!(relative_eq!(
+            displacement[(2, 0)],
+            -0.0364,
+            max_relative = 0.01
+        ));
+        assert!(relative_eq!(
+            displacement[(3, 0)],
+            81.9357,
+            max_relative = 0.01
+        ));
+    }
+
+    #[test]
     fn reactions_1() {
         let (elements, nodes) = common::get_structure_fem_matriisit();
         let loads = common::get_fem_matriisi_loads();
@@ -371,7 +416,7 @@ mod fem_tests {
             &nodes,
             vefem::fem::utils::col_height(&nodes, &elements),
             &mut gl_stiff_m,
-            &gl_eq_loads_m,
+            &mut gl_eq_loads_m.clone(),
         );
         let reactions = vefem::fem::fem_handler::calculate_reactions(
             &gl_stiff_m,
@@ -420,7 +465,7 @@ mod fem_tests {
             &nodes,
             vefem::fem::utils::col_height(&nodes, &elements),
             &mut gl_stiff_m,
-            &gl_eq_loads_m,
+            &mut gl_eq_loads_m.clone(),
         );
         let reactions = vefem::fem::fem_handler::calculate_reactions(
             &gl_stiff_m,
@@ -475,7 +520,7 @@ mod fem_tests {
             &nodes,
             vefem::fem::utils::col_height(&nodes, &elements),
             &mut gl_stiff_m,
-            &gl_eq_loads_m,
+            &mut gl_eq_loads_m.clone(),
         );
         let reactions = vefem::fem::fem_handler::calculate_reactions(
             &gl_stiff_m,

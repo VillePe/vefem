@@ -25,6 +25,23 @@ pub fn get_rotation_matrix(rotation: f64) -> DMatrix<f64> {
     )
 }
 
+/// Gets the rotation matrix for the element. This matrix is in elements local coordinate system
+pub fn get_small_rotation_matrix(rotation: f64) -> DMatrix<f64> {
+    let angle_radians = rotation.to_radians();
+    let c = angle_radians.cos();
+    let s = angle_radians.sin();
+    DMatrix::from_row_slice(
+        3,
+        3,
+        &[
+            c, s, 0.0, -s, c, 0.0, 0.0, 0.0, 1.0,
+        ],
+        //     c,   s,   0.0,
+        //     -s,  c,   0.0,
+        //     0.0, 0.0, 1.0,
+    )
+}
+
 pub fn get_unknown_translation_rows(nodes: &BTreeMap<i32, Node>, matrix: &DMatrix<f64>) -> Vec<i32> {
     let node_count = nodes.len();
     let mut result: Vec<i32> = Vec::new();
