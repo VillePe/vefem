@@ -244,28 +244,57 @@ fn apply_support_rotation_values(
             let node_number = node.number as usize;
             let small_rotation_matrix = matrices::get_small_rotation_matrix(node.support.rotation);
             let rotation_matrix_transposed = small_rotation_matrix.transpose();
-            let mut small_stiff_matrix = DMatrix::zeros(dof, dof);
-            for i in 0..dof {
+            let mut small_stiff_matrix_col = DMatrix::zeros(nodes.len() * dof, dof);
+            let mut small_stiff_matrix_row: DMatrix<f64> = DMatrix::zeros(dof, nodes.len() * dof);
+            // Gather the columns (matrix size: nodes*dof, dof)
+            for i in 0..nodes.len() * dof {
                 for j in 0..dof {
-                    small_stiff_matrix[(i, j)] = global_stiff_matrix
-                        [((node_number - 1) * dof + i, (node_number - 1) * dof + i)];
+                    small_stiff_matrix_col[(i, j)] = global_stiff_matrix
+                        [(i, (node_number - 1) * dof + j)];
                 }
             }
             // T*K*Ttranspose
             // K*Ttranspose
-            let stiff_and_transposed = &small_stiff_matrix * rotation_matrix_transposed;
-            // T*KTtranspose = TKTtranspose
-            let fully_rotated = &small_rotation_matrix * stiff_and_transposed;
-            for i in 0..dof {
+            let stiff_and_transposed = &small_stiff_matrix_col * rotation_matrix_transposed;
+            // Update the global stiffness matrix.
+            for i in 0..nodes.len() * dof {
                 for j in 0..dof {
-                    global_stiff_matrix[((node_number - 1) * dof + i, (node_number - 1) * dof + i)] =
-                        fully_rotated[(i, j)];
-
-                    // Rotate the equivalent loads matrix
-                    global_equivalent_loads_matrix[(node_number - 1) * dof + i] *=
-                        small_rotation_matrix[(i, j)];
+                    global_stiff_matrix[(i, (node_number - 1) * dof + j)] =
+                        stiff_and_transposed[(i, j)];
                 }
             }
+
+            // Gather the columns (matrix size: dof, nodes*dof)
+            for i in 0..dof {
+                for j in 0..nodes.len() * dof {
+                    small_stiff_matrix_row[(i, j)] = global_stiff_matrix
+                        [((node_number - 1) * dof + i, j)];
+                }
+            }
+            // T*KTtranspose = TKTtranspose
+            let fully_rotated = &small_rotation_matrix * small_stiff_matrix_row;
+            // Final update of the global stiffness matrix
+            for i in 0..dof {
+                for j in 0..nodes.len() *  dof {
+                    global_stiff_matrix[((node_number - 1) * dof + i, j)] =
+                        fully_rotated[(i, j)];
+                }
+            }
+            println!("{}", (global_equivalent_loads_matrix));
+            // TODO This doesn't yet work!
+            let mut small_equivalent_loads_matrix = DMatrix::zeros(dof, 1);
+            for i in 0..dof {
+                small_equivalent_loads_matrix[(i, 0)] =
+                    global_equivalent_loads_matrix[((node_number - 1) * dof + i, 0)]
+            }
+            // Rotate the equivalent loads matrix
+            let rotated_equivalent_loads_matrix = &small_rotation_matrix * small_equivalent_loads_matrix;
+            for i in 0..dof {
+                global_equivalent_loads_matrix[((node_number - 1) * dof + i, 0)] =
+                    rotated_equivalent_loads_matrix[(i, 0)];
+            }
+
+            println!("{}", (global_equivalent_loads_matrix));
         }
     }
 }

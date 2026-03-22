@@ -1,6 +1,6 @@
 ﻿#![allow(dead_code)]
 
-use crate::structure::{CalculationElement, Node};
+use crate::structure::Node;
 use nalgebra::DMatrix;
 use std::collections::BTreeMap;
 

@@ -11,6 +11,7 @@ use vefem::{
     structure::{Element, Node},
 };
 use vputilslib::geometry2d::{Polygon, VpPoint};
+use vefem::structure::Support;
 
 pub fn get_default_profile() -> Profile {
     Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0)
@@ -152,6 +153,25 @@ pub fn get_structure_three_horizontal_elements() -> (Vec<Element>, BTreeMap<i32,
     (elements, nodes)
 }
 
+pub fn get_structure_for_rotated_support_1() -> (Vec<Element>, BTreeMap<i32, Node>) {
+    let mut nodes: BTreeMap<i32, Node> = BTreeMap::new();
+    nodes.insert(1, Node::new_hinged(1, VpPoint::new(0.0, 0.0)));
+    nodes.insert(2, Node::new(2, VpPoint::new(2828.427125, 2828.427125), Support{tz:true, ..Support::default()}));
+    nodes.get_mut(&2).unwrap().support.rotation = 45.0;
+
+    let e1: Element = Element::new(
+        1,
+        1,
+        2,
+        Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
+        MaterialData::Steel(Steel::new(210e3)),
+    );
+
+    let elements = vec![e1];
+
+    (elements, nodes)
+}
+
 pub fn get_fem_matriisi_loads() -> Vec<Load> {
     let line_load_1 = Load::new_line_load(
         "1".to_string(),
@@ -181,6 +201,20 @@ pub fn get_fem_matriisi_loads() -> Vec<Load> {
         LoadGroup::PERMANENT,
     );
     let loads = vec![line_load_1, line_load_2, line_load_3];
+    loads
+}
+
+pub fn get_loads_for_rotated_support_1()  -> Vec<Load> {
+    let line_load_1 = Load::new_line_load(
+        "1".to_string(),
+        "1".to_string(),
+        "0".to_string(),
+        "L".to_string(),
+        "10".to_string(),
+        -45.0,
+        LoadGroup::PERMANENT,
+    );
+    let loads = vec![line_load_1];
     loads
 }
 

@@ -355,7 +355,7 @@ mod fem_tests {
     #[test]
     fn displacement_support_rotated_1() {
         // TODO IMPLEMENT
-        let (elements, nodes) = common::get_structure_fem_matriisit();
+        let (elements, nodes) = common::get_structure_for_rotated_support_1();
         let calc_model = common::get_calc_model(&elements, &nodes);
         let loads = common::get_fem_matriisi_loads();
         let calc_settings = CalculationSettings::default();
