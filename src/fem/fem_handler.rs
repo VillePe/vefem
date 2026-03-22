@@ -152,7 +152,7 @@ fn calc_lc(
 /// 1 = translation in Z-axis
 /// 2 = rotation about Y-axis`.
 /// ```
-/// The global equivalent loads matrix is modified and the modifications are not reveresed in this 
+/// The global equivalent loads matrix is modified and the modifications are not reveresed in this
 /// function. Clone the matrix if it needs to be kept as is.
 pub fn calculate_displacements(
     nodes: &BTreeMap<i32, Node>,
@@ -194,6 +194,7 @@ pub fn calculate_displacements(
         full_displacement_matrix[(unknown_translation_rows[i] as usize, 0)] = displacement[(i, 0)];
     }
     remove_support_spring_values(nodes, global_stiff_matrix);
+    translate_rotated_displacements_to_global(nodes, &mut full_displacement_matrix);
 
     full_displacement_matrix
 }
@@ -208,6 +209,23 @@ fn apply_support_spring_values(
             if node.support.get_support_spring(i) != 0.0 && node.number > 0 {
                 let node_number = node.number as usize;
                 global_stiff_matrix[((node_number - 1) * dof + i, (node_number - 1) * dof + i)] +=
+                    node.support.get_support_spring(i);
+            }
+        }
+    }
+}
+
+/// Removes the support spring values from the stiffness matrix.
+fn remove_support_spring_values(
+    nodes: &BTreeMap<i32, Node>,
+    global_stiff_matrix: &mut DMatrix<f64>,
+) {
+    let dof = 3;
+    for node in nodes.values() {
+        for i in 0..dof {
+            if node.support.get_support_spring(i) != 0.0 && node.number > 0 {
+                let node_number = node.number as usize;
+                global_stiff_matrix[((node_number - 1) * dof + i, (node_number - 1) * dof + i)] -=
                     node.support.get_support_spring(i);
             }
         }
@@ -244,7 +262,7 @@ fn apply_support_rotation_values(
                         fully_rotated[(i, j)];
 
                     // Rotate the equivalent loads matrix
-                    global_equivalent_loads_matrix[(node_number - 1) * dof + i] *= 
+                    global_equivalent_loads_matrix[(node_number - 1) * dof + i] *=
                         small_rotation_matrix[(i, j)];
                 }
             }
@@ -252,18 +270,23 @@ fn apply_support_rotation_values(
     }
 }
 
-fn remove_support_spring_values(
-    nodes: &BTreeMap<i32, Node>,
-    global_stiff_matrix: &mut DMatrix<f64>,
+/// Translates the rotated displacements to global coordinates by support rotations
+fn translate_rotated_displacements_to_global(nodes: &BTreeMap<i32, Node>,
+                                             displacements: &mut DMatrix<f64>,
 ) {
     let dof = 3;
     for node in nodes.values() {
-        for i in 0..dof {
-            if node.support.get_support_spring(i) != 0.0 && node.number > 0 {
-                let node_number = node.number as usize;
-                global_stiff_matrix[((node_number - 1) * dof + i, (node_number - 1) * dof + i)] -=
-                    node.support.get_support_spring(i);
-            }
+        if node.support.rotation != 0.0 && node.number > 0 {
+            let node_number = node.number as usize;
+            let radians = node.support.rotation.to_radians();
+            let cos = radians.cos();
+            let sin = radians.sin();
+            let displacement_x = displacements[(node_number - 1) * dof + 0];
+            let displacement_y = displacements[(node_number - 1) * dof + 1];
+            let x_value = displacement_x * cos - displacement_y * sin;
+            let y_value = displacement_x * sin + displacement_y * cos;
+            displacements[(node_number - 1) * dof + 0] = x_value;
+            displacements[(node_number - 1) * dof + 1] = y_value;
         }
     }
 }
