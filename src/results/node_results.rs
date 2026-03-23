@@ -87,6 +87,7 @@ impl NodeResults {
             global_matrix[(self.dof_count + i, 0)] = self.get_displacement(element.node_end, i);
         }
         let rot_matrix = crate::fem::matrices::get_rotation_matrix(element.rotation);
+        // TODO Check if we need to take care of the support rotations here. Most likely
 
         rot_matrix * global_matrix
     }
