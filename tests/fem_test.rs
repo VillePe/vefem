@@ -691,10 +691,10 @@ mod fem_tests {
     #[test]
     fn reactions_4() {
         let (elements, mut nodes) = common::get_structure_fem_matriisit();
-        nodes.get_mut(&2).unwrap().support.rotation = 0.0;
-        nodes.get_mut(&2).unwrap().support.tx = true;
-        nodes.get_mut(&4).unwrap().support.rotation = 0.0;
-        nodes.get_mut(&4).unwrap().support.tz = true;
+        nodes.get_mut(&2).unwrap().support.rotation = 90.0;
+        nodes.get_mut(&2).unwrap().support.tz = true;
+        nodes.get_mut(&4).unwrap().support.rotation = 90.0;
+        nodes.get_mut(&4).unwrap().support.tx = true;
         let loads = common::get_fem_matriisi_loads();
         let calc_settings = CalculationSettings::default();
         let calc_model = common::get_calc_model(&elements, &nodes);
@@ -718,7 +718,20 @@ mod fem_tests {
             &displacement,
             &gl_eq_loads_m,
         );
-        println!("{}", reactions);
+        let structure_model = StructureModel {
+            nodes,
+            elements,
+            loads,
+            calc_settings: CalculationSettings::default(),
+            load_combinations: vec![],
+        };
+        let calc_results = vefem::fem::fem_handler::calculate(&structure_model, &EquationHandler::new());
+        println!("Displacements:");
+        println!("{:?}", calc_results[0].node_results.displacements);
+        println!("Displacements (GLOBAL):");
+        println!("{:?}", calc_results[0].node_results.global_displacements);
+        println!("Support reactions:");
+        println!("{:?}", calc_results[0].node_results.support_reactions);
         assert!(relative_eq!(
             reactions[(0, 0)],
             -2.0427e4,

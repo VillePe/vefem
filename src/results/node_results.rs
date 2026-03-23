@@ -1,13 +1,21 @@
+use std::collections::BTreeMap;
 use nalgebra::DMatrix;
 use serde::{Deserialize, Serialize};
 use vputilslib::equation_handler::EquationHandler;
 
 use crate::{fem::stiffness, loads::load::CalculationLoad, structure::CalculationElement};
+use crate::structure::Node;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct NodeResults {
+    /// The displacements at the nodes. Note that the displacements are in the local coordinate system of the nodes.
+    /// If the node is rotated these values are rotated accordingly
     pub displacements: Vec<f64>,
+    /// The support reactions at the nodes. Note that the displacements are in the local coordinate system of the nodes.
+    /// If the node is rotated these values are rotated accordingly
     pub support_reactions: Vec<f64>,
+    /// These displacements are guaranteed to be in the global coordinate system
+    pub global_displacements: Vec<f64>,
     pub node_count: usize,
     pub dof_count: usize,
     pub equation_handler: EquationHandler,
@@ -24,19 +32,47 @@ impl NodeResults {
         support_reactions: Vec<f64>,
         node_count: usize,
         equation_handler: &EquationHandler,
+        nodes: &BTreeMap<i32, Node>,
     ) -> Self {
         let mut copied_eq_handler = EquationHandler::new();
+        let dof: usize = 3;
 
         let variables = equation_handler.get_variables();
         for key in variables.keys() {
             copied_eq_handler.set_variable(key, variables[key]);
         }
+        let mut global_displacements = Vec::with_capacity(displacements.len());
+        for _ in 0..node_count*dof {
+            global_displacements.push(0.0);
+        }
+        for node in nodes.values() {
+            let node_number: usize = node.number as usize;
+            if node.support.rotation != 0.0 {
+                let cos = node.support.rotation.to_radians().cos();
+                let sin = node.support.rotation.to_radians().sin();
+                // Rotation matrix * small_displacement
+                // x = r11 * sm1 + r12 * sm2 (r11 = cos, r12 = sin)
+                // y = r21 * sm1 + r22 * sm2 (r21 = -sin, r22 = cos)
+                let displacement_x = cos * displacements[(node_number-1)*dof] + sin * displacements[(node_number-1)*dof+1];
+                let displacement_y = -sin * displacements[(node_number-1)*dof] + cos * displacements[(node_number-1)*dof+1];
+                // Rotation displacement is not affected by rotation of support
+                global_displacements[(node_number-1)*dof+0] = displacement_x;
+                global_displacements[(node_number-1)*dof+1] = displacement_y;
+                global_displacements[(node_number-1)*dof+2] = displacements[(node_number-1)*dof+2];
+            } else {
+                global_displacements[(node_number-1)*dof] = displacements[(node_number-1)*dof];
+                global_displacements[(node_number-1)*dof+1] = displacements[(node_number-1)*dof+1];
+                global_displacements[(node_number-1)*dof+2] = displacements[(node_number-1)*dof+2];
+            }
+        }
+
         Self {
             displacements,
             support_reactions,
             node_count,
             equation_handler: copied_eq_handler,
             dof_count: 3,
+            global_displacements,
         }
     }
 

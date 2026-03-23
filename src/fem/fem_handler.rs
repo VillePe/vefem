@@ -115,12 +115,13 @@ fn calc_lc(
 
     let mut global_stiff_matrix = create_joined_stiffness_matrix(calc_model, calc_settings);
     // The global equivalent loads matrix
-    let global_eq_l_matrix = equivalent_loads::create(calc_model, calculation_loads, calc_settings);
+    let mut global_eq_l_matrix = equivalent_loads::create(calc_model, calculation_loads, calc_settings);
+    apply_support_rotation_values(nodes, &mut global_stiff_matrix, &mut global_eq_l_matrix);
     let displacements = calculate_displacements(
         nodes,
         col_height,
         &mut global_stiff_matrix,
-        &mut global_eq_l_matrix.clone(),
+        &mut global_eq_l_matrix,
     );
 
     let reactions = calculate_reactions(&global_stiff_matrix, &displacements, &global_eq_l_matrix);
@@ -128,7 +129,7 @@ fn calc_lc(
     let displacements = displacements.column(0).as_slice().to_vec();
     let reactions = reactions.column(0).as_slice().to_vec();
 
-    let node_results = NodeResults::new(displacements, reactions, nodes.len(), &equation_handler);
+    let node_results = NodeResults::new(displacements, reactions, nodes.len(), &equation_handler, &nodes);
     let internal_force_results =
         calc_internal_forces(calc_model, calculation_loads, &node_results, calc_settings);
 
@@ -161,7 +162,6 @@ pub fn calculate_displacements(
     global_equivalent_loads_matrix: &mut DMatrix<f64>,
 ) -> DMatrix<f64> {
     apply_support_spring_values(nodes, global_stiff_matrix);
-    apply_support_rotation_values(nodes, global_stiff_matrix, global_equivalent_loads_matrix);
     // Get the rows with unknown translations to calculate the displacements for them.
     let unknown_translation_rows = get_unknown_translation_rows(nodes, &global_stiff_matrix);
     let unknown_translation_stiffness_rows =
