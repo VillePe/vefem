@@ -70,8 +70,8 @@ mod fem_tests {
     use vefem::material::{MaterialData, Steel};
     use vefem::profile::{CustomProfile, Profile};
     use vefem::settings::CalculationSettings;
-    use vefem::structure::Node;
     use vefem::structure::{Element, StructureModel};
+    use vefem::structure::Node;
     use vputilslib::equation_handler::EquationHandler;
     use vputilslib::geometry2d;
     use vputilslib::geometry2d::VpPoint;
@@ -354,10 +354,9 @@ mod fem_tests {
 
     #[test]
     fn displacement_support_rotated_1() {
-        // TODO IMPLEMENT
         let (elements, nodes) = common::get_structure_for_rotated_support_1();
         let calc_model = common::get_calc_model(&elements, &nodes);
-        let loads = common::get_fem_matriisi_loads();
+        let loads = common::get_loads_for_rotated_support_1();
         let calc_settings = CalculationSettings::default();
         let mut gl_stiff_m =
             vefem::fem::stiffness::create_joined_stiffness_matrix(&calc_model, &calc_settings);
@@ -374,6 +373,7 @@ mod fem_tests {
             &mut gl_stiff_m,
             &mut gl_eq_loads_m,
         );
+        println!("Displacements:");
         println!("{}", displacement);
         assert!(relative_eq!(
             displacement[(0, 0)],
@@ -387,12 +387,77 @@ mod fem_tests {
         ));
         assert!(relative_eq!(
             displacement[(2, 0)],
-            -0.0364,
+            0.0000,
             max_relative = 0.01
         ));
         assert!(relative_eq!(
             displacement[(3, 0)],
-            81.9357,
+            -0.0269,
+            max_relative = 0.01
+        ));
+        assert!(relative_eq!(
+            displacement[(4, 0)],
+            -0.0269,
+            max_relative = 0.01
+        ));
+        assert!(relative_eq!(
+            displacement[(5, 0)],
+            0.0000,
+            max_relative = 0.01
+        ));
+    }
+
+    #[test]
+    fn displacement_support_rotated_2() {
+        let (elements, nodes) = common::get_structure_for_rotated_support_2();
+        let calc_model = common::get_calc_model(&elements, &nodes);
+        let loads = common::get_loads_for_rotated_support_2();
+        let calc_settings = CalculationSettings::default();
+        let mut gl_stiff_m =
+            vefem::fem::stiffness::create_joined_stiffness_matrix(&calc_model, &calc_settings);
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model,
+            &loads,
+            &CalcLoadCombination::default(),
+            &EquationHandler::new(),
+        );
+        let mut gl_eq_loads_m = vefem::fem::equivalent_loads::create(&calc_model, &calc_loads, &calc_settings);
+        let displacement = vefem::fem::fem_handler::calculate_displacements(
+            &nodes,
+            vefem::fem::utils::col_height(&nodes, &elements),
+            &mut gl_stiff_m,
+            &mut gl_eq_loads_m,
+        );
+        println!("Displacements:");
+        println!("{}", displacement);
+        assert!(relative_eq!(
+            displacement[(0, 0)],
+            0.0000,
+            max_relative = 0.01
+        ));
+        assert!(relative_eq!(
+            displacement[(1, 0)],
+            0.0000,
+            max_relative = 0.01
+        ));
+        assert!(relative_eq!(
+            displacement[(2, 0)],
+            0.0000,
+            max_relative = 0.01
+        ));
+        assert!(relative_eq!(
+            displacement[(3, 0)],
+            129.29952,
+            max_relative = 0.01
+        ));
+        assert!(relative_eq!(
+            displacement[(4, 0)],
+            -129.29952,
+            max_relative = 0.01
+        ));
+        assert!(relative_eq!(
+            displacement[(5, 0)],
+            -0.06095,
             max_relative = 0.01
         ));
     }

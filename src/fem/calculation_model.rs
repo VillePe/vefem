@@ -29,8 +29,8 @@ impl<'a> CalcModel<'a> {
         }
     }
 
-    pub fn get_all_calc_elements(&'a self) -> Vec<&CalculationElement> {
-        let mut result: Vec<&CalculationElement> = Vec::new();
+    pub fn get_all_calc_elements(&'a self) -> Vec<&'a CalculationElement<'a>> {
+        let mut result: Vec<&'a CalculationElement> = Vec::new();
         for (_, v) in &self.calc_elements {
             for e in v.iter() {
                 result.push(e);
@@ -39,7 +39,7 @@ impl<'a> CalcModel<'a> {
         result
     }
 
-    pub fn get_all_nodes(&'a self) -> Vec<&Node> {
+    pub fn get_all_nodes(&'a self) -> Vec<&'a Node> {
         let mut result: Vec<&Node> = Vec::new();
         for (_, n) in self.structure_nodes {
             result.push(n);
