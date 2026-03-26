@@ -6,6 +6,7 @@ use crate::{
 };
 
 use crate::results::NodeResults;
+use crate::structure::Element;
 
 /// Calculates the deflection at given point.
 pub fn calculate_at(
@@ -31,7 +32,7 @@ pub fn calculate_at(
             continue;
         }
         // The factor to handle skewed loads
-        let z_dir_factor = load.rotation.to_radians().sin();
+        let z_dir_factor = (load.rotation - element.rotation).to_radians().sin();
         match load.load_type {
             load::CalculationLoadType::Point => {
                 if load.offset_start <= x {
@@ -60,9 +61,9 @@ pub fn calculate_at(
             load::CalculationLoadType::Triangular => {
                 // Triangular load with max load at left hand side
                 if load.offset_start < load.offset_end {
-                    d_integral += handle_triang_ltr(load, x)
+                    d_integral += handle_triang_ltr(element, load, x)
                 } else {
-                    d_integral += handle_triang_rtl(load, x)
+                    d_integral += handle_triang_rtl(element, load, x)
                 }
             }
             load::CalculationLoadType::Strain => {}
@@ -83,8 +84,8 @@ pub fn calculate_at(
 
 /// Calculates the moment at x for a triangular load with the maximum load at the left hand side.
 /// ltr = Left to right
-fn handle_triang_ltr(load: &CalculationLoad, x: f64) -> f64 {
-    let z_dir_factor = load.rotation.to_radians().sin();
+fn handle_triang_ltr(element: &CalculationElement, load: &CalculationLoad, x: f64) -> f64 {
+    let z_dir_factor = (load.rotation - element.rotation).to_radians().sin();
     if load.offset_start <= x {
         if load.offset_end <= x {
             // Load strength shrinks and ends before x
@@ -122,8 +123,8 @@ fn handle_triang_ltr(load: &CalculationLoad, x: f64) -> f64 {
 
 /// Calculates the moment at x for a triangular load with the maximum load at the right hand side.
 /// ltr = Left to right
-fn handle_triang_rtl(load: &CalculationLoad, x: f64) -> f64 {
-    let z_dir_factor = load.rotation.to_radians().sin();
+fn handle_triang_rtl(element: &CalculationElement, load: &CalculationLoad, x: f64) -> f64 {
+    let z_dir_factor = (load.rotation - element.rotation).to_radians().sin();
     // Load offsets at left or right hand side
     let left = load.offset_end;
     let right = load.offset_start;

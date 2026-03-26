@@ -127,7 +127,7 @@ pub fn calculate_moment_at(
             continue;
         }
         // The factor to handle skewed loads
-        let z_dir_factor = load.rotation.to_radians().sin();
+        let z_dir_factor = (load.rotation - element.rotation).to_radians().sin();
         match load.load_type {
             load::CalculationLoadType::Point => {
                 if load.offset_start <= x {
@@ -154,9 +154,9 @@ pub fn calculate_moment_at(
             load::CalculationLoadType::Triangular => {
                 // Triangular load with max load at left hand side
                 if load.offset_start < load.offset_end {
-                    moment += moment_triang_ltr(load, x)
+                    moment += moment_triang_ltr(element, load, x)
                 } else {
-                    moment += moment_triang_rtl(load, x)
+                    moment += moment_triang_rtl(element, load, x)
                 }
             }
             load::CalculationLoadType::Strain => {}
@@ -182,7 +182,7 @@ pub fn calculate_shear_at(
             continue;
         }
         // The factor to handle skewed loads
-        let z_dir_factor = load.rotation.to_radians().sin();
+        let z_dir_factor = (load.rotation - element.rotation).to_radians().sin();
         match load.load_type {
             load::CalculationLoadType::Point => {
                 if load.offset_start <= x {
@@ -270,9 +270,9 @@ pub fn calculate_axial_force_at(
 
 /// Calculates the moment at x for a triangular load with the maximum load at the left hand side.
 /// ltr = Left to right
-fn moment_triang_ltr(load: &CalculationLoad, x: f64) -> f64 {
+fn moment_triang_ltr(element: &CalculationElement, load: &CalculationLoad, x: f64) -> f64 {
     let mut moment = 0.0;
-    let z_dir_factor = load.rotation.to_radians().sin();
+    let z_dir_factor = (load.rotation - element.rotation).to_radians().sin();
     if load.offset_start <= x {
         if load.offset_end <= x {
             let load_length = load.offset_end - load.offset_start;
@@ -298,8 +298,8 @@ fn moment_triang_ltr(load: &CalculationLoad, x: f64) -> f64 {
 
 /// Calculates the moment at x for a triangular load with the maximum load at the right hand side.
 /// ltr = Left to right
-fn moment_triang_rtl(load: &CalculationLoad, x: f64) -> f64 {
-    let z_dir_factor = load.rotation.to_radians().sin();
+fn moment_triang_rtl(element: &CalculationElement, load: &CalculationLoad, x: f64) -> f64 {
+    let z_dir_factor = (load.rotation - element.rotation).to_radians().sin();
     // Load offsets at left or right hand side
     let left = load.offset_end;
     let right = load.offset_start;
