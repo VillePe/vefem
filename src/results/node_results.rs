@@ -76,13 +76,24 @@ impl NodeResults {
         }
     }
 
-    /// Get the displacements at given node number and direction.
+    /// Get the displacements at given node number and direction. If the support is rotated,
+    /// the returned displacement will also be
     /// The direction is as follows:
     /// - 0 = translation in X-axis,
     /// - 1 = translation in Z-axis,
     /// - 2 = rotation about Y-axis.
-    pub fn get_displacement(&self, node_number: i32, dir: usize) -> f64 {
+    pub fn get_local_displacement(&self, node_number: i32, dir: usize) -> f64 {
         self.displacements[((node_number - 1) * self.dof_count as i32 + dir as i32) as usize]
+    }
+
+    /// Get the displacements at given node number and direction. Even if the support is rotated,
+    /// the returned displacements will be in global coordinates
+    /// The direction is as follows:
+    /// - 0 = translation in X-axis,
+    /// - 1 = translation in Z-axis,
+    /// - 2 = rotation about Y-axis.
+    pub fn get_global_displacement(&self, node_number: i32, dir: usize) -> f64 {
+        self.global_displacements[((node_number - 1) * self.dof_count as i32 + dir as i32) as usize]
     }
 
     /// Get the support reactions at given node number and direction.
@@ -117,13 +128,12 @@ impl NodeResults {
         let mut global_matrix = DMatrix::<f64>::zeros(6, 1);
 
         for i in 0..self.dof_count {
-            global_matrix[(i, 0)] = self.get_displacement(element.node_start, i);
+            global_matrix[(i, 0)] = self.get_global_displacement(element.node_start, i);
         }
         for i in 0..self.dof_count {
-            global_matrix[(self.dof_count + i, 0)] = self.get_displacement(element.node_end, i);
+            global_matrix[(self.dof_count + i, 0)] = self.get_global_displacement(element.node_end, i);
         }
         let rot_matrix = crate::fem::matrices::get_rotation_matrix(element.rotation);
-        // TODO Check if we need to take care of the support rotations here. Most likely
 
         rot_matrix * global_matrix
     }

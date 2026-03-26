@@ -17,6 +17,7 @@ mod internal_forces_tests {
         settings::CalculationSettings,
         structure::{Element, Node, StructureModel},
     };
+    use vefem::structure::Support;
 
     #[test]
     fn t_calculate_moment_at_pl() {
@@ -277,6 +278,59 @@ mod internal_forces_tests {
             .value_y;
         println!("Moment(horizontal): {} kNm", mom / 1e6);
         assert_eq!(relative_eq!(mom, 0.0, epsilon = 1.0), true);
+    }
+
+    #[test]
+    fn t_calculate_moment_at_ll_rotated_support() {
+        let el: Element = Element::new(
+            1,
+            1,
+            2,
+            Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0),
+            MaterialData::Steel(Steel::default()),
+        );
+        let nodes = BTreeMap::from([
+            (1, Node::new_hinged(1, VpPoint::new(0.0, 0.0))),
+            (2, Node::new(2, VpPoint::new(2828.427, 2828.427),
+                          Support{tz:true, rotation:45.0, ..Default::default() }
+            )),
+        ]);
+        let elements = vec![el];
+        let l_load = Load::new_line_load(
+            "Lineload".to_string(),
+            "1".to_string(),
+            "0".to_string(),
+            "L".to_string(),
+            "10".to_string(),
+            -45.0,
+            LoadGroup::PERMANENT,
+        );
+        let loads = vec![l_load];
+        let mut structure_model = StructureModel {
+            nodes,
+            elements,
+            loads,
+            calc_settings: CalculationSettings::default(),
+            load_combinations: vec![],
+        };
+
+        let results =
+            &vefem::fem::fem_handler::calculate(&structure_model, &mut EquationHandler::new())[0];
+        let mom = results.internal_force_results[&1]
+            .get_force_at(ForceType::Moment, 1000.0)
+            .unwrap()
+            .value_y;
+        println!("Moment(1000): {} kNm", mom / 1e6);
+        let mom = results.internal_force_results[&1]
+            .get_force_at(ForceType::Moment, 2000.0)
+            .unwrap()
+            .value_y;
+        println!("Moment(2000): {} kNm", mom / 1e6);
+        println!("Compare {}", 10.0 * 4000f64.powi(2) / 8.0);
+        assert_eq!(
+            relative_eq!(mom, 10.0 * 4000f64.powi(2) / 8.0, epsilon = 5.0),
+            true
+        );
     }
 
     #[test]
