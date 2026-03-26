@@ -116,7 +116,6 @@ fn calc_lc(
     let mut global_stiff_matrix = create_joined_stiffness_matrix(calc_model, calc_settings);
     // The global equivalent loads matrix
     let mut global_eq_l_matrix = equivalent_loads::create(calc_model, calculation_loads, calc_settings);
-    apply_support_rotation_values(nodes, &mut global_stiff_matrix, &mut global_eq_l_matrix);
     let displacements = calculate_displacements(
         nodes,
         col_height,
@@ -153,8 +152,8 @@ fn calc_lc(
 /// 1 = translation in Z-axis
 /// 2 = rotation about Y-axis`.
 /// ```
-/// The global equivalent loads matrix is modified and the modifications are not reveresed in this
-/// function. Clone the matrix if it needs to be kept as is.
+/// The global stiffness matrix and the equivalent loads matrix rae modified and the modifications
+/// are not reveresed in this function. Clone the matrixes they need to be kept as is.
 pub fn calculate_displacements(
     nodes: &BTreeMap<i32, Node>,
     col_height: usize,
@@ -162,6 +161,7 @@ pub fn calculate_displacements(
     global_equivalent_loads_matrix: &mut DMatrix<f64>,
 ) -> DMatrix<f64> {
     apply_support_spring_values(nodes, global_stiff_matrix);
+    apply_support_rotation_values(nodes, global_stiff_matrix, global_equivalent_loads_matrix);
     // Get the rows with unknown translations to calculate the displacements for them.
     let unknown_translation_rows = get_unknown_translation_rows(nodes, &global_stiff_matrix);
     let unknown_translation_stiffness_rows =
@@ -279,8 +279,6 @@ fn apply_support_rotation_values(
                         fully_rotated[(i, j)];
                 }
             }
-            println!("{}", (global_equivalent_loads_matrix));
-            // TODO This doesn't yet work!
             let mut small_equivalent_loads_matrix = DMatrix::zeros(dof, 1);
             for i in 0..dof {
                 small_equivalent_loads_matrix[(i, 0)] =
@@ -292,8 +290,6 @@ fn apply_support_rotation_values(
                 global_equivalent_loads_matrix[((node_number - 1) * dof + i, 0)] =
                     rotated_equivalent_loads_matrix[(i, 0)];
             }
-
-            println!("{}", (global_equivalent_loads_matrix));
         }
     }
 }
