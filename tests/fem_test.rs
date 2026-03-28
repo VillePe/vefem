@@ -1483,6 +1483,11 @@ mod fem_tests {
         internal_force_test!(results, vefem::results::ForceType::Moment, 2, 0.0, -2.285e7);
         internal_force_test!(results, vefem::results::ForceType::Moment, 2, 6000.0, -1.372e7);
         internal_force_test!(results, vefem::results::ForceType::Moment, 3, 4000.0, 1.372e7);
+
+        internal_force_test!(results, vefem::results::ForceType::Moment, 1, 1500.0, 1.018e7);
+        internal_force_test!(results, vefem::results::ForceType::Moment, 1, 2000.0, 8.576e6);
+        internal_force_test!(results, vefem::results::ForceType::Moment, 2, 3000.0, 2.671e7);
+        internal_force_test!(results, vefem::results::ForceType::Moment, 3, 2000.0, -3.138e6);
     }
 
     #[ignore]
