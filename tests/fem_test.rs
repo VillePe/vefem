@@ -1437,6 +1437,54 @@ mod fem_tests {
         assert!((results[0].internal_force_results[&1].get_force_at(vefem::results::ForceType::Moment, 1000.0).unwrap().value_y - 3.75e6).abs() < 0.1);
     }
 
+    macro_rules! internal_force_test {
+        ($results:expr, $force_type:expr, $el_num:expr, $location:expr, $expected:expr) => {
+            let force = $results[0].internal_force_results[&$el_num].get_force_at($force_type, $location).unwrap().value_y;
+            println!("{:?} force (el: {}) at L: {}", $force_type, $el_num, $location);
+            println!("{force}");
+            assert!(relative_eq!(
+                force,
+                $expected,
+                max_relative = 0.01
+            ));
+        };
+    }
+
+    #[test]
+    fn internal_forces_rotated_supports_1() {
+        let (elements, mut nodes) = common::get_structure_fem_matriisit();
+        nodes.get_mut(&2).unwrap().support.rotation = 45.0;
+        nodes.get_mut(&2).unwrap().support.tx = true;
+        nodes.get_mut(&4).unwrap().support.rotation = 45.0;
+        nodes.get_mut(&4).unwrap().support.tz = true;
+        let loads = common::get_fem_matriisi_loads();
+        let calc_settings = CalculationSettings::default();
+        let struct_model = StructureModel {
+            elements,
+            nodes,
+            loads,
+            calc_settings,
+            load_combinations: vec![],
+        };
+        let results = vefem::fem::fem_handler::calculate(&struct_model, &EquationHandler::new());
+
+        internal_force_test!(results, vefem::results::ForceType::Axial, 1, 0.0, -2.12e4);
+        internal_force_test!(results, vefem::results::ForceType::Axial, 2, 0.0, -3.61e4);
+        internal_force_test!(results, vefem::results::ForceType::Axial, 3, 0.0, -5.86e3);
+
+        internal_force_test!(results, vefem::results::ForceType::Shear, 1, 0.0, 1.43e4);
+        internal_force_test!(results, vefem::results::ForceType::Shear, 1, 4000.0, -2.57e4);
+        internal_force_test!(results, vefem::results::ForceType::Shear, 2, 0.0, 3.15e4);
+        internal_force_test!(results, vefem::results::ForceType::Shear, 2, 6000.0, -2.85e4);
+        internal_force_test!(results, vefem::results::ForceType::Shear, 3, 0.0, -6.57e3);
+        internal_force_test!(results, vefem::results::ForceType::Shear, 3, 4000.0, 1.34e4);
+
+        internal_force_test!(results, vefem::results::ForceType::Moment, 1, 4000.0, -2.285e7);
+        internal_force_test!(results, vefem::results::ForceType::Moment, 2, 0.0, -2.285e7);
+        internal_force_test!(results, vefem::results::ForceType::Moment, 2, 6000.0, -1.372e7);
+        internal_force_test!(results, vefem::results::ForceType::Moment, 3, 4000.0, 1.372e7);
+    }
+
     #[ignore]
     #[test]
     fn moments_non_threaded() {
