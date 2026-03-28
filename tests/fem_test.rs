@@ -571,72 +571,106 @@ mod fem_tests {
             &EquationHandler::new(),
         );
         let mut gl_eq_loads_m = vefem::fem::equivalent_loads::create(&calc_model, &calc_loads, &calc_settings);
-        let displacement = vefem::fem::fem_handler::calculate_displacements(
-            &nodes,
-            vefem::fem::utils::col_height(&nodes, &elements),
-            &mut gl_stiff_m,
-            &mut gl_eq_loads_m,
-        );
-        println!("Displacements:");
-        println!("{}", displacement);
+        let structure_model = StructureModel {
+            nodes,
+            elements,
+            loads,
+            calc_settings: CalculationSettings::default(),
+            load_combinations: vec![],
+        };
+        let calc_results = vefem::fem::fem_handler::calculate(&structure_model, &EquationHandler::new());
+        let displacement = &calc_results[0].node_results.displacements;
+        let global_displacement = &calc_results[0].node_results.global_displacements;
+        println!("Local displacements:");
+        println!("{:?}", displacement);
+        println!("Global displacements:");
+        println!("{:?}", global_displacement);
         assert!(relative_eq!(
-            displacement[(0, 0)],
+            displacement[0],
             0.0000,
             max_relative = 0.01
         ));
         assert!(relative_eq!(
-            displacement[(1, 0)],
+            displacement[1],
             0.0000,
             max_relative = 0.01
         ));
         assert!(relative_eq!(
-            displacement[(2, 0)],
+            displacement[2],
             -0.0065444,
             max_relative = 0.01
         ));
         assert!(relative_eq!(
-            displacement[(3, 0)],
+            displacement[3],
             0.0000,
             max_relative = 0.01
         ));
+        // LOCAL DISPLACEMENTS
         assert!(relative_eq!(
-            displacement[(4, 0)],
+            displacement[4],
             -0.0571,
             max_relative = 0.01
         ));
+        //
+        // GLOBAL DISPLACEMENTS
         assert!(relative_eq!(
-            displacement[(5, 0)],
+            global_displacement[3],
+            0.04034,
+            max_relative = 0.001
+        ));
+        assert!(relative_eq!(
+            global_displacement[4],
+            -0.04034,
+            max_relative = 0.001
+        ));
+        //
+        assert!(relative_eq!(
+            displacement[5],
             -0.00217946,
             max_relative = 0.01
         ));
 
         assert!(relative_eq!(
-            displacement[(6, 0)],
+            displacement[6],
             0.0000,
             max_relative = 0.01
         ));
         assert!(relative_eq!(
-            displacement[(7, 0)],
+            displacement[7],
             0.0000,
             max_relative = 0.01
         ));
         assert!(relative_eq!(
-            displacement[(8, 0)],
+            displacement[8],
             0.0023933,
             max_relative = 0.01
         ));
+        // GLOBAL DISPLACEMENTS
         assert!(relative_eq!(
-            displacement[(9, 0)],
+            displacement[9],
             -0.0158,
             max_relative = 0.01
         ));
+        //
         assert!(relative_eq!(
-            displacement[(10, 0)],
+            displacement[10],
             0.0000,
             max_relative = 0.01
         ));
+        // GLOBAL DISPLACEMENTS
         assert!(relative_eq!(
-            displacement[(11, 0)],
+            global_displacement[9],
+            -0.01116,
+            max_relative = 0.001
+        ));
+        assert!(relative_eq!(
+            global_displacement[10],
+            -0.01116,
+            max_relative = 0.001
+        ));
+        //
+        assert!(relative_eq!(
+            displacement[11],
             0.0028408,
             max_relative = 0.01
         ));
@@ -679,16 +713,16 @@ mod fem_tests {
             2.3333e4,
             max_relative = 0.01
         ));
-        assert!((reactions[(2, 0)].round() == 0.0));
-        assert!((reactions[(3, 0)].round() == 0.0));
-        assert!((reactions[(4, 0)].round() == 0.0));
-        assert!((reactions[(5, 0)].round() == 0.0));
+        assert!(reactions[(2, 0)].round() == 0.0);
+        assert!(reactions[(3, 0)].round() == 0.0);
+        assert!(reactions[(4, 0)].round() == 0.0);
+        assert!(reactions[(5, 0)].round() == 0.0);
         assert!(relative_eq!(reactions[(6, 0)], 4.27e2, max_relative = 0.01));
         assert!(relative_eq!(reactions[(7, 0)], 3.6666e4, max_relative = 0.01));
-        assert!((reactions[(8, 0)].round() == 0.0));
-        assert!((reactions[(9, 0)].round() == 0.0));
-        assert!((reactions[(10, 0)].round() == 0.0));
-        assert!((reactions[(11, 0)].round() == 0.0));
+        assert!(reactions[(8, 0)].round() == 0.0);
+        assert!(reactions[(9, 0)].round() == 0.0);
+        assert!(reactions[(10, 0)].round() == 0.0);
+        assert!(reactions[(11, 0)].round() == 0.0);
     }
 
     #[test]
@@ -729,17 +763,17 @@ mod fem_tests {
             max_relative = 0.01
         ));
         assert!(relative_eq!(reactions[(2, 0)], 3.50e7, max_relative = 0.01));
-        assert!((reactions[(3, 0)].round() == 0.0));
-        assert!((reactions[(4, 0)].round() == 0.0));
-        assert!((reactions[(5, 0)].round() == 0.0));
+        assert!(reactions[(3, 0)].round() == 0.0);
+        assert!(reactions[(4, 0)].round() == 0.0);
+        assert!(reactions[(5, 0)].round() == 0.0);
         assert!(relative_eq!(reactions[(6, 0)], 8.75e3, max_relative = 0.01));
         assert!(relative_eq!(reactions[(7, 0)], 3.00e4, max_relative = 0.01));
         assert!(relative_eq!(reactions[(8, 0)], 4.99e6, max_relative = 0.01));
-        assert!((reactions[(9, 0)].round() == 0.0));
-        assert!((reactions[(10, 0)].round() == 0.0));
-        assert!((reactions[(11, 0)].round() == 0.0));
-        assert!((reactions[(12, 0)].round() == 0.0));
-        assert!((reactions[(13, 0)].round() == 0.0));
+        assert!(reactions[(9, 0)].round() == 0.0);
+        assert!(reactions[(10, 0)].round() == 0.0);
+        assert!(reactions[(11, 0)].round() == 0.0);
+        assert!(reactions[(12, 0)].round() == 0.0);
+        assert!(reactions[(13, 0)].round() == 0.0);
     }
 
     #[test]
@@ -788,9 +822,9 @@ mod fem_tests {
             2.64878e7,
             max_relative = 0.01
         ));
-        assert!((reactions[(3, 0)].round() == 0.0));
-        assert!((reactions[(4, 0)].round() == 0.0));
-        assert!((reactions[(5, 0)].round() == 0.0));
+        assert!(reactions[(3, 0)].round() == 0.0);
+        assert!(reactions[(4, 0)].round() == 0.0);
+        assert!(reactions[(5, 0)].round() == 0.0);
         assert!(relative_eq!(
             reactions[(6, 0)],
             6.622e3,
@@ -802,11 +836,11 @@ mod fem_tests {
             1.3512158e7,
             max_relative = 0.01
         ));
-        assert!((reactions[(9, 0)].round() == 0.0));
-        assert!((reactions[(10, 0)].round() == 0.0));
-        assert!((reactions[(11, 0)].round() == 0.0));
-        assert!((reactions[(12, 0)].round() == 0.0));
-        assert!((reactions[(13, 0)].round() == 0.0));
+        assert!(reactions[(9, 0)].round() == 0.0);
+        assert!(reactions[(10, 0)].round() == 0.0);
+        assert!(reactions[(11, 0)].round() == 0.0);
+        assert!(reactions[(12, 0)].round() == 0.0);
+        assert!(reactions[(13, 0)].round() == 0.0);
     }
 
     #[test]
@@ -854,18 +888,77 @@ mod fem_tests {
         println!("Support reactions:");
         println!("{:?}", calc_results[0].node_results.support_reactions);
         let reactions = &calc_results[0].node_results.support_reactions;
-        assert!(relative_eq!(reactions[(0)], -1.42838e4, max_relative = 0.01 ));
-        assert!((reactions[(1)].round() == 0.0));
-        assert!((reactions[(2)].round() == 0.0));
-        assert!(relative_eq!(reactions[(3)], 3.1525588e4, max_relative = 0.01 ));
-        assert!((reactions[(4)].round() == 0.0));
-        assert!((reactions[(5)].round() == 0.0));
-        assert!(relative_eq!(reactions[(6)], 6.57220e3, max_relative = 0.01));
-        assert!(relative_eq!(reactions[(7)], 2.847441e4, max_relative = 0.01));
-        assert!((reactions[(8)].round() == 0.0));
-        assert!((reactions[(9)].round() == 0.0));
+        assert!(relative_eq!(reactions[0], -1.42838e4, max_relative = 0.01 ));
+        assert!(reactions[1].round() == 0.0);
+        assert!(reactions[2].round() == 0.0);
+        assert!(relative_eq!(reactions[3], 3.1525588e4, max_relative = 0.01 ));
+        assert!(reactions[4].round() == 0.0);
+        assert!(reactions[5].round() == 0.0);
+        assert!(relative_eq!(reactions[6], 6.57220e3, max_relative = 0.01));
+        assert!(relative_eq!(reactions[7], 2.847441e4, max_relative = 0.01));
+        assert!(reactions[8].round() == 0.0);
+        assert!(reactions[9].round() == 0.0);
         assert!(relative_eq!(reactions[(10)], 1.228838e4, max_relative = 0.01));
-        assert!((reactions[(11)].round() == 0.0));
+        assert!(reactions[11].round() == 0.0);
+    }
+
+    #[test]
+    fn reactions_rotated_2() {
+        let (elements, mut nodes) = common::get_structure_fem_matriisit();
+        nodes.get_mut(&2).unwrap().support.rotation = 45.0;
+        nodes.get_mut(&2).unwrap().support.tx = true;
+        nodes.get_mut(&4).unwrap().support.rotation = 45.0;
+        nodes.get_mut(&4).unwrap().support.tz = true;
+        let loads = common::get_fem_matriisi_loads();
+        let calc_settings = CalculationSettings::default();
+        let calc_model = common::get_calc_model(&elements, &nodes);
+        let mut gl_stiff_m =
+            vefem::fem::stiffness::create_joined_stiffness_matrix(&calc_model, &calc_settings);
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model,
+            &loads,
+            &CalcLoadCombination::default(),
+            &EquationHandler::new(),
+        );
+        let gl_eq_loads_m = vefem::fem::equivalent_loads::create(&calc_model, &calc_loads, &calc_settings);
+        let displacement = vefem::fem::fem_handler::calculate_displacements(
+            &nodes,
+            vefem::fem::utils::col_height(&nodes, &elements),
+            &mut gl_stiff_m,
+            &mut gl_eq_loads_m.clone(),
+        );
+        let reactions = vefem::fem::fem_handler::calculate_reactions(
+            &gl_stiff_m,
+            &displacement,
+            &gl_eq_loads_m,
+        );
+        let structure_model = StructureModel {
+            nodes,
+            elements,
+            loads,
+            calc_settings: CalculationSettings::default(),
+            load_combinations: vec![],
+        };
+        let calc_results = vefem::fem::fem_handler::calculate(&structure_model, &EquationHandler::new());
+        println!("Displacements:");
+        println!("{:?}", calc_results[0].node_results.displacements);
+        println!("Displacements (GLOBAL):");
+        println!("{:?}", calc_results[0].node_results.global_displacements);
+        println!("Support reactions:");
+        println!("{:?}", calc_results[0].node_results.support_reactions);
+        let reactions = &calc_results[0].node_results.support_reactions;
+        assert!(relative_eq!(reactions[0], -1.4288e4, max_relative = 0.01 ));
+        assert!(relative_eq!(reactions[1], 2.11802e4, max_relative = 0.01 ));
+        assert!(reactions[2].round() == 0.0);
+        assert!(relative_eq!(reactions[3], 1.4623e4, max_relative = 0.01 ));
+        assert!(reactions[4].round() == 0.0);
+        assert!(reactions[5].round() == 0.0);
+        assert!(relative_eq!(reactions[6], 6.5688e3, max_relative = 0.01));
+        assert!(relative_eq!(reactions[7], 5.8588e3, max_relative = 0.01));
+        assert!(reactions[8].round() == 0.0);
+        assert!(reactions[9].round() == 0.0);
+        assert!(relative_eq!(reactions[(10)], 3.19906e4, max_relative = 0.01));
+        assert!(reactions[11].round() == 0.0);
     }
 
     #[test]
@@ -1126,9 +1219,9 @@ mod fem_tests {
 
         // Test the matrix cells that overlap (the same node for both elements)
         assert!(relative_eq!(joined[(3, 3)], 7.00e05, max_relative = 0.01));
-        assert!((joined[(4, 3)].round() == 0.0));
+        assert!(joined[(4, 3)].round() == 0.0);
         assert!(relative_eq!(joined[(5, 3)], 6.56e05, max_relative = 0.01));
-        assert!((joined[(3, 4)].round() == 0.0));
+        assert!(joined[(3, 4)].round() == 0.0);
         assert!(relative_eq!(joined[(4, 4)], 5.26e05, max_relative = 0.01));
         assert!(relative_eq!(joined[(5, 4)], 2.33e06, max_relative = 0.01));
         assert!(relative_eq!(joined[(3, 5)], 6.56e05, max_relative = 0.01));
@@ -1136,9 +1229,9 @@ mod fem_tests {
         assert!(relative_eq!(joined[(5, 5)], 1.11e10, max_relative = 0.01));
 
         assert!(relative_eq!(joined[(9, 9)], 7.00e05, max_relative = 0.01));
-        assert!((joined[(10, 9)].round() == 0.0));
+        assert!(joined[(10, 9)].round() == 0.0);
         assert!(relative_eq!(joined[(11, 9)], 6.56e05, max_relative = 0.01));
-        assert!((joined[(9, 10)].round() == 0.0));
+        assert!(joined[(9, 10)].round() == 0.0);
         assert!(relative_eq!(joined[(10, 10)], 5.26e05, max_relative = 0.01));
         assert!(relative_eq!(
             joined[(11, 10)],
@@ -1179,11 +1272,11 @@ mod fem_tests {
         // and the cells that are moved because of the release
         assert!(relative_eq!(joined[(3, 3)], 7.00e05, max_relative = 0.01));
         assert!(relative_eq!(joined[(4, 4)], 5.26e05, max_relative = 0.01));
-        assert!((joined[(3, 4)].round() == 0.0));
+        assert!(joined[(3, 4)].round() == 0.0);
 
         assert!(relative_eq!(joined[(9, 9)], 7.00e05, max_relative = 0.01));
         assert!(relative_eq!(joined[(10, 10)], 5.26e05, max_relative = 0.01));
-        assert!((joined[(9, 10)].round() == 0.0));
+        assert!(joined[(9, 10)].round() == 0.0);
 
         assert!(relative_eq!(joined[(0, 12)], -6.56e05, max_relative = 0.01));
         assert!(relative_eq!(joined[(2, 12)], 8.75e08, max_relative = 0.01));
