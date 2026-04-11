@@ -127,6 +127,7 @@ impl NodeResults {
     ) -> DMatrix<f64> {
         let mut global_matrix = DMatrix::<f64>::zeros(6, 1);
 
+        // TODO Shouldn't this take the releases into account?
         for i in 0..self.dof_count {
             global_matrix[(i, 0)] = self.get_global_displacement(element.node_start, i);
         }

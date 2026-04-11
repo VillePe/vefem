@@ -30,7 +30,7 @@ pub fn get_rotation_matrix(rotation: f64) -> DMatrix<f64> {
     )
 }
 
-/// Gets the rotation matrix for the element. This matrix is in elements local coordinate system
+/// Gets the rotation matrix for the node. This matrix is in elements local coordinate system
 pub fn get_small_rotation_matrix(rotation: f64) -> DMatrix<f64> {
     let angle_radians = rotation.to_radians();
     let c = angle_radians.cos();
