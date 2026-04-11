@@ -129,7 +129,13 @@ impl NodeResults {
 
         // TODO Shouldn't this take the releases into account?
         for i in 0..self.dof_count {
-            global_matrix[(i, 0)] = self.get_global_displacement(element.node_start, i);
+            if element.releases.get_release_value(i).unwrap() {
+                // If the end node is released, the displacement is in a different index than
+                // the node number
+                global_matrix[(i, 0)] = self.get_global_displacement(element.node_start, i);
+            } else {
+                global_matrix[(i, 0)] = self.get_global_displacement(element.node_start, i);
+            }
         }
         for i in 0..self.dof_count {
             global_matrix[(self.dof_count + i, 0)] = self.get_global_displacement(element.node_end, i);

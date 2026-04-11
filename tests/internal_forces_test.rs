@@ -9,15 +9,10 @@ mod internal_forces_tests {
     use vputilslib::{equation_handler::EquationHandler, geometry2d::VpPoint};
 
     use vefem::loads::load_combination::CalcLoadCombination;
-    use vefem::{
-        loads::{Load, LoadGroup},
-        material::{MaterialData, Steel},
-        profile::Profile,
-        results::ForceType,
-        settings::CalculationSettings,
-        structure::{Element, Node, StructureModel},
-    };
+    use vefem::{loads, loads::{Load, LoadGroup}, material::{MaterialData, Steel}, profile::Profile, results::ForceType, settings::CalculationSettings, structure::{Element, Node, StructureModel}};
+    use vefem::loads::load_combination;
     use vefem::structure::Support;
+    use crate::common::internal_force_test;
 
     #[test]
     fn t_calculate_moment_at_pl() {
@@ -1775,5 +1770,30 @@ mod internal_forces_tests {
         assert!((local_reactions[3] - (-2.3333e4)).abs() < 1.0);
         assert!((local_reactions[4] - (1.9572e4)).abs() < 1.0);
         assert!((local_reactions[5] - (1.710897e6)).abs() < 1.0);
+    }
+
+    #[test]
+    fn test_internal_forces_releases() {
+        let loads = common::get_fem_matriisi_loads();
+        let (elements, nodes) = common::get_structure_fem_matriisit_releases();
+        let mut load_combination = vefem::loads::LoadCombination::new(
+            1,
+            String::from("Load combination 1"),
+            load_combination::LoadCombinationType::ULS{is_auto: false}
+        );
+        load_combination.add_load_n_factor(String::from("1"), 1.0);
+        load_combination.add_load_n_factor(String::from("2"), 1.0);
+        load_combination.add_load_n_factor(String::from("3"), 1.0);
+
+        let calc_model = vefem::structure::StructureModel{
+            nodes,
+            elements,
+            loads,
+            load_combinations: vec![load_combination],
+            calc_settings: CalculationSettings::default()
+        };
+        let results = vefem::fem::fem_handler::calculate(&calc_model, &EquationHandler::new());
+
+        internal_force_test!(results, ForceType::Moment, 1, 4000.0, 0.0);
     }
 }

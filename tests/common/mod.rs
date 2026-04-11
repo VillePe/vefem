@@ -1,3 +1,15 @@
+//! ```
+//! This module provides functionality for defining default structural components, 
+//! loads, and example structures, while facilitating finite element method (FEM) 
+//! calculations for engineering simulations and analysis.
+//!
+//! # Functions
+//!
+//! ## get_default_profile
+//! Returns a default structural profile with a rectangular cross-section.
+//!
+//! ### Returns
+//! - [`Profile`]: A profile
 #![allow(dead_code)]
 
 use std::collections::{BTreeMap, HashMap};
@@ -301,6 +313,19 @@ pub fn get_calc_model<'a>(
     CalcModel::new(nodes, extra_nodes, elements, calc_elements)
 }
 
+/// Macro for testing internal forces at specific locations along an element.
+/// 
+/// GENERATED WITH AI BUT CHECKED AND MODIFIED
+///
+/// # Parameters
+///
+/// * `$results` - A reference to the calculation results array. Expected to be indexed
+///   with `[0]` to access the first result set, which contains `internal_force_results`.
+/// * `$force_type` - The type of internal force to retrieve (e.g., axial force, shear force,
+///   bending moment, or deflection). This should be a variant compatible with the `get_force_at` method.
+/// * `$el_num` - The element number for which to retrieve the internal force.
+/// * `$location` - The location along the element length where the force should be evaluated.
+/// * `$expected` - The expected force value to compare against the calculated result.
 macro_rules! internal_force_test {
     ($results:expr, $force_type:expr, $el_num:expr, $location:expr, $expected:expr) => {
         let force = $results[0].internal_force_results[&$el_num]
