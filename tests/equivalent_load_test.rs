@@ -2,17 +2,13 @@
 
 #[cfg(test)]
 mod equivalent_load_tests {
-    use approx::relative_eq;
     use vefem::loads::LoadGroup;
     use vefem::material::MaterialData;
     use vefem::settings::CalculationSettings;
 
     use crate::common;
-    use crate::common::get_structure_fem_matriisit_releases;
     use std::collections::BTreeMap;
     use vefem::fem::equivalent_loads::get_element_g_eq_loads;
-    use vefem::fem::matrices::get_unknown_translation_eq_loads_rows;
-    use vefem::fem::matrices::get_unknown_translation_rows;
     use vefem::loads;
     use vefem::loads::load_combination::CalcLoadCombination;
     use vefem::loads::Load;
@@ -394,152 +390,5 @@ mod equivalent_load_tests {
         assert!((result[3] - (0e3)).abs() < 0.1);
         assert!((result[4] - (262.5e3)).abs() < 0.1);
         assert!((result[5] - (0e6)).abs() < 1.0);
-    }
-
-    #[test]
-    fn joined_equivalent_load_fem_matriisit_1() {
-        // See theory folders xls file (text is in finnish)
-
-        let (elements, nodes) = common::get_structure_fem_matriisit();
-        let calc_model = common::get_calc_model(&elements, &nodes);
-        let loads = common::get_fem_matriisi_loads();
-        let calc_loads = loads::utils::extract_calculation_loads(
-            &calc_model,
-            &loads,
-            &CalcLoadCombination::default(),
-            &EquationHandler::new(),
-        );
-
-        let calc_settings = CalculationSettings::default();
-        let joined = vefem::fem::equivalent_loads::create(&calc_model, &calc_loads, &calc_settings);
-        for i in 0..12 {
-            let val = joined[(i, 0)];
-            if val.abs() < 0.001 {
-                print!("{:>9.0}, ", joined[(i, 0)]);
-            } else {
-                print!("{:>9.03e}, ", joined[(i, 0)]);
-            }
-            println!();
-        }
-
-        assert!(relative_eq!(joined[(0, 0)], 2.00e04, max_relative = 0.01));
-        assert!((joined[(1, 0)].round() == 0.0));
-        assert!(relative_eq!(
-            joined[(2, 0)],
-            -1.33333333e07,
-            max_relative = 0.01
-        ));
-        assert!(relative_eq!(joined[(3, 0)], 2.00e04, max_relative = 0.01));
-        assert!(relative_eq!(joined[(4, 0)], -3e04, max_relative = 0.01));
-        assert!(relative_eq!(
-            joined[(5, 0)],
-            -1.6666667e07,
-            max_relative = 0.01
-        ));
-        assert!(relative_eq!(joined[(6, 0)], -1.00e04, max_relative = 0.01));
-        assert!((joined[(7, 0)].round() == 0.0));
-        assert!(relative_eq!(
-            joined[(8, 0)],
-            6.666667e06,
-            max_relative = 0.01
-        ));
-        assert!(relative_eq!(joined[(9, 0)], -1e04, max_relative = 0.01));
-        assert!(relative_eq!(joined[(10, 0)], -3e04, max_relative = 0.01));
-        assert!(relative_eq!(joined[(11, 0)], 2.333e07, max_relative = 0.01));
-    }
-
-    #[test]
-    fn joined_equivalent_load_fem_matriisit_releases() {
-        // See theory folders xls file (text is in finnish)
-
-        let (elements, nodes) = get_structure_fem_matriisit_releases();
-        let calc_model = common::get_calc_model(&elements, &nodes);
-        let loads = common::get_fem_matriisi_loads();
-        let calc_loads = loads::utils::extract_calculation_loads(
-            &calc_model,
-            &loads,
-            &CalcLoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let calc_settings = CalculationSettings::default();
-
-        let joined = vefem::fem::equivalent_loads::create(&calc_model, &calc_loads, &calc_settings);
-
-        for i in 0..14 {
-            let val = joined[(i, 0)];
-            if val.abs() < 0.001 {
-                print!("{:>9.0}, ", joined[(i, 0)]);
-            } else {
-                print!("{:>9.02e}, ", joined[(i, 0)]);
-            }
-            println!();
-        }
-
-        assert!(relative_eq!(joined[(0, 0)], 2.00e04, max_relative = 0.01));
-        assert!((joined[(1, 0)].round() == 0.0));
-        assert!(relative_eq!(
-            joined[(2, 0)],
-            -1.33333333e07,
-            max_relative = 0.01
-        ));
-        assert!(relative_eq!(joined[(3, 0)], 2.00e04, max_relative = 0.01));
-        assert!(relative_eq!(joined[(4, 0)], -3e04, max_relative = 0.01));
-        assert!(relative_eq!(joined[(5, 0)], -3.0e07, max_relative = 0.01));
-        assert!(relative_eq!(joined[(6, 0)], -1.00e04, max_relative = 0.01));
-        assert!((joined[(7, 0)].round() == 0.0));
-        assert!(relative_eq!(
-            joined[(8, 0)],
-            6.6666667e06,
-            max_relative = 0.01
-        ));
-        assert!(relative_eq!(joined[(9, 0)], -1e04, max_relative = 0.01));
-        assert!(relative_eq!(joined[(10, 0)], -3e04, max_relative = 0.01));
-        assert!(relative_eq!(joined[(11, 0)], 3.0e07, max_relative = 0.01));
-        assert!(relative_eq!(
-            joined[(12, 0)],
-            1.33333333e07,
-            max_relative = 0.01
-        ));
-        assert!(relative_eq!(
-            joined[(13, 0)],
-            -6.666667e06,
-            max_relative = 0.01
-        ));
-    }
-
-    #[test]
-    fn t_get_unknown_translation_rows() {
-        let (elements, nodes) = get_structure_fem_matriisit_releases();
-        let calc_model = common::get_calc_model(&elements, &nodes);
-        let loads = common::get_fem_matriisi_loads();
-        let calc_loads = loads::utils::extract_calculation_loads(
-            &calc_model,
-            &loads,
-            &CalcLoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let calc_settings = CalculationSettings::default();
-        let global_eq_loads_matrix =
-            vefem::fem::equivalent_loads::create(&calc_model, &calc_loads, &calc_settings);
-
-        let unknown_translation_rows =
-            get_unknown_translation_rows(&nodes, &global_eq_loads_matrix);
-        let eq_loads_results = get_unknown_translation_eq_loads_rows(
-            &unknown_translation_rows,
-            &global_eq_loads_matrix,
-        );
-
-        println!("Equivalent loads matrix:");
-        for i in 0..eq_loads_results.nrows() {
-            for j in 0..eq_loads_results.ncols() {
-                let val = eq_loads_results[(i, j)];
-                if val.abs() < 0.001 {
-                    print!("{:>9.0}, ", eq_loads_results[(i, j)]);
-                } else {
-                    print!("{:>9.02e}, ", eq_loads_results[(i, j)]);
-                }
-            }
-            println!();
-        }
     }
 }

@@ -82,7 +82,7 @@ pub fn get_element_stiffness_matrix(element: &CalculationElement,
     )
 }
 
-pub fn create_joined_stiffness_matrix(
+pub(super) fn create_joined_stiffness_matrix(
     calc_model: &CalcModel,
     settings: &CalculationSettings
 ) -> DMatrix<f64> {

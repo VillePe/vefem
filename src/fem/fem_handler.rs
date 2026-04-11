@@ -25,6 +25,8 @@ use crate::{
     results::{CalculationResults, NodeResults},
     structure::{Node, StructureModel},
 };
+use crate::fem::matrices::CalculationMatrix;
+use crate::loads::load::CalculationLoad;
 
 /// Calculates the displacements, support reactions and element internal forces.
 /// * 'calc_model' - calculation model that is extracted to calculation objects
@@ -113,17 +115,15 @@ fn calc_lc(
     let calculation_loads =
         &loads::utils::extract_calculation_loads(calc_model, loads, &lc, equation_handler);
 
-    let mut global_stiff_matrix = create_joined_stiffness_matrix(calc_model, calc_settings);
-    // The global equivalent loads matrix
-    let mut global_eq_l_matrix = equivalent_loads::create(calc_model, calculation_loads, calc_settings);
+    let mut calc_matrices = create_global_calculation_matrix(calc_model, calc_settings, calculation_loads);
     let displacements = calculate_displacements(
         nodes,
         col_height,
-        &mut global_stiff_matrix,
-        &mut global_eq_l_matrix,
+        &mut calc_matrices.stiffness,
+        &mut calc_matrices.equivalent_loads,
     );
 
-    let reactions = calculate_reactions(&global_stiff_matrix, &displacements, &global_eq_l_matrix);
+    let reactions = calculate_reactions(&calc_matrices.stiffness, &displacements, &calc_matrices.equivalent_loads);
 
     let displacements = displacements.column(0).as_slice().to_vec();
     let reactions = reactions.column(0).as_slice().to_vec();
@@ -140,6 +140,19 @@ fn calc_lc(
         internal_force_results,
     };
     result_clone.deref().lock().unwrap().push(result);
+}
+
+pub fn create_global_calculation_matrix(
+    calc_model: &CalcModel, calc_settings: &CalculationSettings, calculation_loads: &Vec<CalculationLoad>
+) -> CalculationMatrix {
+    let mut global_stiff_matrix = create_joined_stiffness_matrix(calc_model, calc_settings);
+    // The global equivalent loads matrix
+    let mut global_eq_l_matrix = equivalent_loads::create(calc_model, calculation_loads, calc_settings);
+    apply_support_rotation_values(calc_model.structure_nodes, &mut global_stiff_matrix, &mut global_eq_l_matrix);
+    CalculationMatrix {
+        stiffness: global_stiff_matrix,
+        equivalent_loads: global_eq_l_matrix,
+    }
 }
 
 /// Calculates the displacement matrix for given elements, nodes and loads. The displacement matrix
@@ -161,7 +174,6 @@ pub fn calculate_displacements(
     global_equivalent_loads_matrix: &mut DMatrix<f64>,
 ) -> DMatrix<f64> {
     apply_support_spring_values(nodes, global_stiff_matrix);
-    apply_support_rotation_values(nodes, global_stiff_matrix, global_equivalent_loads_matrix);
     // Get the rows with unknown translations to calculate the displacements for them.
     let unknown_translation_rows = get_unknown_translation_rows(nodes, &global_stiff_matrix);
     let unknown_translation_stiffness_rows =

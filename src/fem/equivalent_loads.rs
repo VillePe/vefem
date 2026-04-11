@@ -6,7 +6,7 @@ use nalgebra::DMatrix;
 
 use super::CalcModel;
 
-pub fn create(
+pub(super) fn create(
     calc_model: &CalcModel,
     loads: &Vec<CalculationLoad>,
     settings: &CalculationSettings,

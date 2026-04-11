@@ -4,6 +4,11 @@ use crate::structure::Node;
 use nalgebra::DMatrix;
 use std::collections::BTreeMap;
 
+pub struct CalculationMatrix {
+    pub stiffness: DMatrix<f64>,
+    pub equivalent_loads: DMatrix<f64>,
+}
+
 /// Gets the rotation matrix for the element. This matrix is in elements local coordinate system
 pub fn get_rotation_matrix(rotation: f64) -> DMatrix<f64> {
     let angle_radians = rotation.to_radians();
