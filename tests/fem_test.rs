@@ -544,15 +544,7 @@ mod fem_tests {
         nodes.get_mut(&2).unwrap().support.tx = true;
         nodes.get_mut(&4).unwrap().support.rotation = 45.0;
         nodes.get_mut(&4).unwrap().support.tz = true;
-        let calc_model = common::get_calc_model(&elements, &nodes);
         let loads = common::get_fem_matriisi_loads();
-        let calc_settings = CalculationSettings::default();
-        let calc_loads = loads::utils::extract_calculation_loads(
-            &calc_model,
-            &loads,
-            &CalcLoadCombination::default(),
-            &EquationHandler::new(),
-        );
 
         let structure_model = StructureModel {
             nodes,
@@ -887,25 +879,23 @@ mod fem_tests {
         let loads = common::get_fem_matriisi_loads();
         let calc_settings = CalculationSettings::default();
         let calc_model = common::get_calc_model(&elements, &nodes);
-        let mut gl_stiff_m =
-            vefem::fem::stiffness::create_joined_stiffness_matrix(&calc_model, &calc_settings);
         let calc_loads = loads::utils::extract_calculation_loads(
             &calc_model,
             &loads,
             &CalcLoadCombination::default(),
             &EquationHandler::new(),
         );
-        let gl_eq_loads_m = vefem::fem::equivalent_loads::create(&calc_model, &calc_loads, &calc_settings);
+        let mut calc_matrices = vefem::fem::fem_handler::create_global_calculation_matrix(&calc_model, &calc_settings, &calc_loads);
         let displacement = vefem::fem::fem_handler::calculate_displacements(
             &nodes,
             vefem::fem::utils::col_height(&nodes, &elements),
-            &mut gl_stiff_m,
-            &mut gl_eq_loads_m.clone(),
+            &mut calc_matrices.stiffness,
+            &mut calc_matrices.equivalent_loads,
         );
-        let reactions = vefem::fem::fem_handler::calculate_reactions(
-            &gl_stiff_m,
+        let _reactions = vefem::fem::fem_handler::calculate_reactions(
+            &calc_matrices.stiffness,
             &displacement,
-            &gl_eq_loads_m,
+            &calc_matrices.equivalent_loads,
         );
         let structure_model = StructureModel {
             nodes,
@@ -924,16 +914,16 @@ mod fem_tests {
         let reactions = &calc_results[0].node_results.support_reactions;
         assert!(relative_eq!(reactions[0], -1.4288e4, max_relative = 0.01 ));
         assert!(relative_eq!(reactions[1], 2.11802e4, max_relative = 0.01 ));
-        assert!(reactions[2].round() == 0.0);
+        assert_eq!(reactions[2].round(), 0.0);
         assert!(relative_eq!(reactions[3], 1.4623e4, max_relative = 0.01 ));
-        assert!(reactions[4].round() == 0.0);
-        assert!(reactions[5].round() == 0.0);
+        assert_eq!(reactions[4].round(), 0.0);
+        assert_eq!(reactions[5].round(), 0.0);
         assert!(relative_eq!(reactions[6], 6.5688e3, max_relative = 0.01));
         assert!(relative_eq!(reactions[7], 5.8588e3, max_relative = 0.01));
-        assert!(reactions[8].round() == 0.0);
-        assert!(reactions[9].round() == 0.0);
-        assert!(relative_eq!(reactions[(10)], 3.19906e4, max_relative = 0.01));
-        assert!(reactions[11].round() == 0.0);
+        assert_eq!(reactions[8].round(), 0.0);
+        assert_eq!(reactions[9].round(), 0.0);
+        assert!(relative_eq!(reactions[10], 3.19906e4, max_relative = 0.01));
+        assert_eq!(reactions[11].round(), 0.0);
     }
 
     #[test]

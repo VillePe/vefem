@@ -306,7 +306,7 @@ mod internal_forces_tests {
             LoadGroup::PERMANENT,
         );
         let loads = vec![l_load];
-        let mut structure_model = StructureModel {
+        let structure_model = StructureModel {
             nodes,
             elements,
             loads,
