@@ -50,11 +50,11 @@ impl NodeResults {
             if node.support.rotation != 0.0 {
                 let cos = node.support.rotation.to_radians().cos();
                 let sin = node.support.rotation.to_radians().sin();
-                // Rotation matrix * small_displacement
-                // x = r11 * sm1 + r12 * sm2 (r11 = cos, r12 = sin)
-                // y = r21 * sm1 + r22 * sm2 (r21 = -sin, r22 = cos)
-                let displacement_x = cos * displacements[(node_number-1)*dof] + sin * displacements[(node_number-1)*dof+1];
-                let displacement_y = -sin * displacements[(node_number-1)*dof] + cos * displacements[(node_number-1)*dof+1];
+                // Transpose of rotation matrix * small_displacement
+                // x = r11 * sm1 + r12 * sm2 (r11 = cos, r12 = -sin)
+                // y = r21 * sm1 + r22 * sm2 (r21 = sin, r22 = cos)
+                let displacement_x = cos * displacements[(node_number-1)*dof] + -sin * displacements[(node_number-1)*dof+1];
+                let displacement_y = sin * displacements[(node_number-1)*dof] + cos * displacements[(node_number-1)*dof+1];
                 // Rotation displacement is not affected by rotation of support
                 global_displacements[(node_number-1)*dof+0] = displacement_x;
                 global_displacements[(node_number-1)*dof+1] = displacement_y;

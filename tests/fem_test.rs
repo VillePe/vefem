@@ -554,73 +554,106 @@ mod fem_tests {
             &EquationHandler::new(),
         );
 
-        let mut calc_matrices = vefem::fem::fem_handler::create_global_calculation_matrix(&calc_model, &calc_settings, &calc_loads);
-        let displacement = vefem::fem::fem_handler::calculate_displacements(
-            &nodes,
-            vefem::fem::utils::col_height(&nodes, &elements),
-            &mut calc_matrices.stiffness,
-            &mut calc_matrices.equivalent_loads,
-        );
-        println!("Displacements:");
-        println!("{}", displacement);
+        let structure_model = StructureModel {
+            nodes,
+            elements,
+            loads,
+            calc_settings: CalculationSettings::default(),
+            load_combinations: vec![],
+        };
+        let calc_results = vefem::fem::fem_handler::calculate(&structure_model, &EquationHandler::new());
+        let displacement = &calc_results[0].node_results.displacements;
+        let global_displacement = &calc_results[0].node_results.global_displacements;
+        println!("Local displacements:");
+        println!("{:?}", displacement);
+        println!("Global displacements:");
+        println!("{:?}", global_displacement);
         assert!(relative_eq!(
-            displacement[(0, 0)],
+            displacement[0],
             0.0000,
             max_relative = 0.01
         ));
         assert!(relative_eq!(
-            displacement[(1, 0)],
+            displacement[1],
             0.0000,
             max_relative = 0.01
         ));
         assert!(relative_eq!(
-            displacement[(2, 0)],
+            displacement[2],
             -0.0065444,
             max_relative = 0.01
         ));
         assert!(relative_eq!(
-            displacement[(3, 0)],
+            displacement[3],
             0.0000,
             max_relative = 0.01
         ));
+        // LOCAL DISPLACEMENTS
         assert!(relative_eq!(
-            displacement[(4, 0)],
+            displacement[4],
             -0.0571,
             max_relative = 0.01
         ));
+        //
+        // GLOBAL DISPLACEMENTS
         assert!(relative_eq!(
-            displacement[(5, 0)],
+            global_displacement[3],
+            0.04034,
+            max_relative = 0.001
+        ));
+        assert!(relative_eq!(
+            global_displacement[4],
+            -0.04034,
+            max_relative = 0.001
+        ));
+        //
+        assert!(relative_eq!(
+            displacement[5],
             -0.00217946,
             max_relative = 0.01
         ));
 
         assert!(relative_eq!(
-            displacement[(6, 0)],
+            displacement[6],
             0.0000,
             max_relative = 0.01
         ));
         assert!(relative_eq!(
-            displacement[(7, 0)],
+            displacement[7],
             0.0000,
             max_relative = 0.01
         ));
         assert!(relative_eq!(
-            displacement[(8, 0)],
+            displacement[8],
             0.0023933,
             max_relative = 0.01
         ));
+        // GLOBAL DISPLACEMENTS
         assert!(relative_eq!(
-            displacement[(9, 0)],
+            displacement[9],
             -0.0158,
             max_relative = 0.01
         ));
+        //
         assert!(relative_eq!(
-            displacement[(10, 0)],
+            displacement[10],
             0.0000,
             max_relative = 0.01
         ));
+        // GLOBAL DISPLACEMENTS
         assert!(relative_eq!(
-            displacement[(11, 0)],
+            global_displacement[9],
+            -0.01116,
+            max_relative = 0.001
+        ));
+        assert!(relative_eq!(
+            global_displacement[10],
+            -0.01116,
+            max_relative = 0.001
+        ));
+        //
+        assert!(relative_eq!(
+            displacement[11],
             0.0028408,
             max_relative = 0.01
         ));
@@ -842,6 +875,65 @@ mod fem_tests {
         assert_eq!(reactions[9].round(), 0.0);
         assert!(relative_eq!(reactions[10], 1.228838e4, max_relative = 0.01));
         assert_eq!(reactions[11].round(), 0.0);
+    }
+
+    #[test]
+    fn reactions_rotated_2() {
+        let (elements, mut nodes) = common::get_structure_fem_matriisit();
+        nodes.get_mut(&2).unwrap().support.rotation = 45.0;
+        nodes.get_mut(&2).unwrap().support.tx = true;
+        nodes.get_mut(&4).unwrap().support.rotation = 45.0;
+        nodes.get_mut(&4).unwrap().support.tz = true;
+        let loads = common::get_fem_matriisi_loads();
+        let calc_settings = CalculationSettings::default();
+        let calc_model = common::get_calc_model(&elements, &nodes);
+        let mut gl_stiff_m =
+            vefem::fem::stiffness::create_joined_stiffness_matrix(&calc_model, &calc_settings);
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model,
+            &loads,
+            &CalcLoadCombination::default(),
+            &EquationHandler::new(),
+        );
+        let gl_eq_loads_m = vefem::fem::equivalent_loads::create(&calc_model, &calc_loads, &calc_settings);
+        let displacement = vefem::fem::fem_handler::calculate_displacements(
+            &nodes,
+            vefem::fem::utils::col_height(&nodes, &elements),
+            &mut gl_stiff_m,
+            &mut gl_eq_loads_m.clone(),
+        );
+        let reactions = vefem::fem::fem_handler::calculate_reactions(
+            &gl_stiff_m,
+            &displacement,
+            &gl_eq_loads_m,
+        );
+        let structure_model = StructureModel {
+            nodes,
+            elements,
+            loads,
+            calc_settings: CalculationSettings::default(),
+            load_combinations: vec![],
+        };
+        let calc_results = vefem::fem::fem_handler::calculate(&structure_model, &EquationHandler::new());
+        println!("Displacements:");
+        println!("{:?}", calc_results[0].node_results.displacements);
+        println!("Displacements (GLOBAL):");
+        println!("{:?}", calc_results[0].node_results.global_displacements);
+        println!("Support reactions:");
+        println!("{:?}", calc_results[0].node_results.support_reactions);
+        let reactions = &calc_results[0].node_results.support_reactions;
+        assert!(relative_eq!(reactions[0], -1.4288e4, max_relative = 0.01 ));
+        assert!(relative_eq!(reactions[1], 2.11802e4, max_relative = 0.01 ));
+        assert!(reactions[2].round() == 0.0);
+        assert!(relative_eq!(reactions[3], 1.4623e4, max_relative = 0.01 ));
+        assert!(reactions[4].round() == 0.0);
+        assert!(reactions[5].round() == 0.0);
+        assert!(relative_eq!(reactions[6], 6.5688e3, max_relative = 0.01));
+        assert!(relative_eq!(reactions[7], 5.8588e3, max_relative = 0.01));
+        assert!(reactions[8].round() == 0.0);
+        assert!(reactions[9].round() == 0.0);
+        assert!(relative_eq!(reactions[(10)], 3.19906e4, max_relative = 0.01));
+        assert!(reactions[11].round() == 0.0);
     }
 
     #[test]
@@ -1095,6 +1187,59 @@ mod fem_tests {
                  results[0].internal_force_results[&1].get_force_at(vefem::results::ForceType::Moment, 4000.0).unwrap().value_y * 1e-6
         );
         assert!((results[0].internal_force_results[&1].get_force_at(vefem::results::ForceType::Moment, 1000.0).unwrap().value_y - 3.75e6).abs() < 0.1);
+    }
+
+    macro_rules! internal_force_test {
+        ($results:expr, $force_type:expr, $el_num:expr, $location:expr, $expected:expr) => {
+            let force = $results[0].internal_force_results[&$el_num].get_force_at($force_type, $location).unwrap().value_y;
+            println!("{:?} force (el: {}) at L: {}", $force_type, $el_num, $location);
+            println!("{force}");
+            assert!(relative_eq!(
+                force,
+                $expected,
+                max_relative = 0.01
+            ));
+        };
+    }
+
+    #[test]
+    fn internal_forces_rotated_supports_1() {
+        let (elements, mut nodes) = common::get_structure_fem_matriisit();
+        nodes.get_mut(&2).unwrap().support.rotation = 45.0;
+        nodes.get_mut(&2).unwrap().support.tx = true;
+        nodes.get_mut(&4).unwrap().support.rotation = 45.0;
+        nodes.get_mut(&4).unwrap().support.tz = true;
+        let loads = common::get_fem_matriisi_loads();
+        let calc_settings = CalculationSettings::default();
+        let struct_model = StructureModel {
+            elements,
+            nodes,
+            loads,
+            calc_settings,
+            load_combinations: vec![],
+        };
+        let results = vefem::fem::fem_handler::calculate(&struct_model, &EquationHandler::new());
+
+        internal_force_test!(results, vefem::results::ForceType::Axial, 1, 0.0, -2.12e4);
+        internal_force_test!(results, vefem::results::ForceType::Axial, 2, 0.0, -3.61e4);
+        internal_force_test!(results, vefem::results::ForceType::Axial, 3, 0.0, -5.86e3);
+
+        internal_force_test!(results, vefem::results::ForceType::Shear, 1, 0.0, 1.43e4);
+        internal_force_test!(results, vefem::results::ForceType::Shear, 1, 4000.0, -2.57e4);
+        internal_force_test!(results, vefem::results::ForceType::Shear, 2, 0.0, 3.15e4);
+        internal_force_test!(results, vefem::results::ForceType::Shear, 2, 6000.0, -2.85e4);
+        internal_force_test!(results, vefem::results::ForceType::Shear, 3, 0.0, -6.57e3);
+        internal_force_test!(results, vefem::results::ForceType::Shear, 3, 4000.0, 1.34e4);
+
+        internal_force_test!(results, vefem::results::ForceType::Moment, 1, 4000.0, -2.285e7);
+        internal_force_test!(results, vefem::results::ForceType::Moment, 2, 0.0, -2.285e7);
+        internal_force_test!(results, vefem::results::ForceType::Moment, 2, 6000.0, -1.372e7);
+        internal_force_test!(results, vefem::results::ForceType::Moment, 3, 4000.0, 1.372e7);
+
+        internal_force_test!(results, vefem::results::ForceType::Moment, 1, 1500.0, 1.018e7);
+        internal_force_test!(results, vefem::results::ForceType::Moment, 1, 2000.0, 8.576e6);
+        internal_force_test!(results, vefem::results::ForceType::Moment, 2, 3000.0, 2.671e7);
+        internal_force_test!(results, vefem::results::ForceType::Moment, 3, 2000.0, -3.138e6);
     }
 
     #[ignore]
