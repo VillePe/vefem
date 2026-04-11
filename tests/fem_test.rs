@@ -72,6 +72,7 @@ mod fem_tests {
     use vputilslib::equation_handler::EquationHandler;
     use vputilslib::geometry2d;
     use vputilslib::geometry2d::VpPoint;
+    use crate::common::internal_force_test;
 
     #[test]
     fn displacement_1() {
@@ -1177,19 +1178,6 @@ mod fem_tests {
                  results[0].internal_force_results[&1].get_force_at(vefem::results::ForceType::Moment, 4000.0).unwrap().value_y * 1e-6
         );
         assert!((results[0].internal_force_results[&1].get_force_at(vefem::results::ForceType::Moment, 1000.0).unwrap().value_y - 3.75e6).abs() < 0.1);
-    }
-
-    macro_rules! internal_force_test {
-        ($results:expr, $force_type:expr, $el_num:expr, $location:expr, $expected:expr) => {
-            let force = $results[0].internal_force_results[&$el_num].get_force_at($force_type, $location).unwrap().value_y;
-            println!("{:?} force (el: {}) at L: {}", $force_type, $el_num, $location);
-            println!("{force}");
-            assert!(relative_eq!(
-                force,
-                $expected,
-                max_relative = 0.01
-            ));
-        };
     }
 
     #[test]

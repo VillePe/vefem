@@ -2,6 +2,7 @@
 
 use std::collections::{BTreeMap, HashMap};
 
+use vefem::structure::Support;
 use vefem::{
     fem::CalcModel,
     loads::{Load, LoadGroup},
@@ -11,7 +12,6 @@ use vefem::{
     structure::{Element, Node},
 };
 use vputilslib::geometry2d::{Polygon, VpPoint};
-use vefem::structure::Support;
 
 pub fn get_default_profile() -> Profile {
     Profile::new_rectangle("R100x100".to_string(), 100.0, 100.0)
@@ -29,7 +29,7 @@ pub fn get_default_line_load(element_numbers: &str) -> Load {
         "L".to_string(),
         "10".to_string(),
         -90.0,
-        LoadGroup::PERMANENT
+        LoadGroup::PERMANENT,
     )
 }
 
@@ -156,11 +156,17 @@ pub fn get_structure_three_horizontal_elements() -> (Vec<Element>, BTreeMap<i32,
 pub fn get_structure_for_rotated_support_1() -> (Vec<Element>, BTreeMap<i32, Node>) {
     let mut nodes: BTreeMap<i32, Node> = BTreeMap::new();
     nodes.insert(1, Node::new_hinged(1, VpPoint::new(0.0, 0.0)));
-    nodes.insert(2, Node::new(2, VpPoint::new(2828.427125, 2828.427125), 
-                              Support{ 
-                                  tz:true, ..Support::default() 
-                              }
-    ));
+    nodes.insert(
+        2,
+        Node::new(
+            2,
+            VpPoint::new(2828.427125, 2828.427125),
+            Support {
+                tz: true,
+                ..Support::default()
+            },
+        ),
+    );
     nodes.get_mut(&2).unwrap().support.rotation = 45.0;
 
     let e1: Element = Element::new(
@@ -179,11 +185,17 @@ pub fn get_structure_for_rotated_support_1() -> (Vec<Element>, BTreeMap<i32, Nod
 pub fn get_structure_for_rotated_support_2() -> (Vec<Element>, BTreeMap<i32, Node>) {
     let mut nodes: BTreeMap<i32, Node> = BTreeMap::new();
     nodes.insert(1, Node::new_fixed(1, VpPoint::new(0.0, 0.0)));
-    nodes.insert(2, Node::new(2, VpPoint::new(2828.427125, 2828.427125),
-                              Support{
-                                  tx:true, ..Support::default()
-                              }
-    ));
+    nodes.insert(
+        2,
+        Node::new(
+            2,
+            VpPoint::new(2828.427125, 2828.427125),
+            Support {
+                tx: true,
+                ..Support::default()
+            },
+        ),
+    );
     nodes.get_mut(&2).unwrap().support.rotation = 45.0;
 
     let e1: Element = Element::new(
@@ -231,7 +243,7 @@ pub fn get_fem_matriisi_loads() -> Vec<Load> {
     loads
 }
 
-pub fn get_loads_for_rotated_support_1()  -> Vec<Load> {
+pub fn get_loads_for_rotated_support_1() -> Vec<Load> {
     let line_load_1 = Load::new_line_load(
         "1".to_string(),
         "1".to_string(),
@@ -245,7 +257,7 @@ pub fn get_loads_for_rotated_support_1()  -> Vec<Load> {
     loads
 }
 
-pub fn get_loads_for_rotated_support_2()  -> Vec<Load> {
+pub fn get_loads_for_rotated_support_2() -> Vec<Load> {
     let line_load_1 = Load::new_line_load(
         "1".to_string(),
         "1".to_string(),
@@ -288,3 +300,20 @@ pub fn get_calc_model<'a>(
     );
     CalcModel::new(nodes, extra_nodes, elements, calc_elements)
 }
+
+macro_rules! internal_force_test {
+    ($results:expr, $force_type:expr, $el_num:expr, $location:expr, $expected:expr) => {
+        let force = $results[0].internal_force_results[&$el_num]
+            .get_force_at($force_type, $location)
+            .unwrap()
+            .value_y;
+        println!(
+            "{:?} force (el: {}) at L: {}",
+            $force_type, $el_num, $location
+        );
+        println!("{force}");
+        assert!(relative_eq!(force, $expected, max_relative = 0.01));
+    };
+}
+
+pub(crate) use internal_force_test;
