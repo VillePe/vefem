@@ -3,10 +3,90 @@
 use crate::structure::Node;
 use nalgebra::DMatrix;
 use std::collections::BTreeMap;
+use crate::fem::{equivalent_loads, matrices, CalcModel};
+use crate::fem::stiffness::create_joined_stiffness_matrix;
+use crate::loads::load::CalculationLoad;
+use crate::settings::CalculationSettings;
 
 pub struct CalculationMatrix {
     pub stiffness: DMatrix<f64>,
     pub equivalent_loads: DMatrix<f64>,
+}
+
+pub fn create_global_calculation_matrix(
+    calc_model: &CalcModel, calc_settings: &CalculationSettings, calculation_loads: &Vec<CalculationLoad>
+) -> CalculationMatrix {
+    let mut global_stiff_matrix = create_joined_stiffness_matrix(calc_model, calc_settings);
+    // The global equivalent loads matrix
+    let mut global_eq_l_matrix = equivalent_loads::create(calc_model, calculation_loads, calc_settings);
+    apply_support_rotation_values(calc_model.structure_nodes, &mut global_stiff_matrix, &mut global_eq_l_matrix);
+    CalculationMatrix {
+        stiffness: global_stiff_matrix,
+        equivalent_loads: global_eq_l_matrix,
+    }
+}
+
+/// Applies the rotations from supports to stiffness matrix and equivalent loads
+fn apply_support_rotation_values(
+    nodes: &BTreeMap<i32, Node>,
+    global_stiff_matrix: &mut DMatrix<f64>,
+    global_equivalent_loads_matrix: &mut DMatrix<f64>,
+) {
+    let dof = 3;
+    for node in nodes.values() {
+        if node.support.rotation != 0.0 && node.number > 0 {
+            let node_number = node.number as usize;
+            let small_rotation_matrix = matrices::get_small_rotation_matrix(node.support.rotation);
+            let rotation_matrix_transposed = small_rotation_matrix.transpose();
+            let mut small_stiff_matrix_col = DMatrix::zeros(nodes.len() * dof, dof);
+            let mut small_stiff_matrix_row: DMatrix<f64> = DMatrix::zeros(dof, nodes.len() * dof);
+            // Gather the columns (matrix size: nodes*dof, dof)
+            for i in 0..nodes.len() * dof {
+                for j in 0..dof {
+                    small_stiff_matrix_col[(i, j)] = global_stiff_matrix
+                        [(i, (node_number - 1) * dof + j)];
+                }
+            }
+            // T*K*Ttranspose
+            // K*Ttranspose
+            let stiff_and_transposed = &small_stiff_matrix_col * rotation_matrix_transposed;
+            // Update the global stiffness matrix.
+            for i in 0..nodes.len() * dof {
+                for j in 0..dof {
+                    global_stiff_matrix[(i, (node_number - 1) * dof + j)] =
+                        stiff_and_transposed[(i, j)];
+                }
+            }
+
+            // Gather the columns (matrix size: dof, nodes*dof)
+            for i in 0..dof {
+                for j in 0..nodes.len() * dof {
+                    small_stiff_matrix_row[(i, j)] = global_stiff_matrix
+                        [((node_number - 1) * dof + i, j)];
+                }
+            }
+            // T*KTtranspose = TKTtranspose
+            let fully_rotated = &small_rotation_matrix * small_stiff_matrix_row;
+            // Final update of the global stiffness matrix
+            for i in 0..dof {
+                for j in 0..nodes.len() *  dof {
+                    global_stiff_matrix[((node_number - 1) * dof + i, j)] =
+                        fully_rotated[(i, j)];
+                }
+            }
+            let mut small_equivalent_loads_matrix = DMatrix::zeros(dof, 1);
+            for i in 0..dof {
+                small_equivalent_loads_matrix[(i, 0)] =
+                    global_equivalent_loads_matrix[((node_number - 1) * dof + i, 0)]
+            }
+            // Rotate the equivalent loads matrix
+            let rotated_equivalent_loads_matrix = &small_rotation_matrix * small_equivalent_loads_matrix;
+            for i in 0..dof {
+                global_equivalent_loads_matrix[((node_number - 1) * dof + i, 0)] =
+                    rotated_equivalent_loads_matrix[(i, 0)];
+            }
+        }
+    }
 }
 
 /// Gets the rotation matrix for the element. This matrix is in elements local coordinate system

@@ -86,7 +86,7 @@ mod fem_tests {
             &CalcLoadCombination::default(),
             &EquationHandler::new(),
         );
-        let mut calc_matrices = vefem::fem::fem_handler::create_global_calculation_matrix(&calc_model, &calc_settings, &calc_loads);
+        let mut calc_matrices = vefem::fem::matrices::create_global_calculation_matrix(&calc_model, &calc_settings, &calc_loads);
         let displacement = vefem::fem::fem_handler::calculate_displacements(
             &nodes,
             vefem::fem::utils::col_height(&nodes, &elements),
@@ -168,7 +168,7 @@ mod fem_tests {
             &CalcLoadCombination::default(),
             &EquationHandler::new(),
         );
-        let mut calc_matrices = vefem::fem::fem_handler::create_global_calculation_matrix(&calc_model, &calc_settings, &calc_loads);
+        let mut calc_matrices = vefem::fem::matrices::create_global_calculation_matrix(&calc_model, &calc_settings, &calc_loads);
         let displacement = vefem::fem::fem_handler::calculate_displacements(
             &nodes,
             vefem::fem::utils::col_height(&nodes, &elements),
@@ -264,7 +264,7 @@ mod fem_tests {
             &CalcLoadCombination::default(),
             &EquationHandler::new(),
         );
-        let mut calc_matrices = vefem::fem::fem_handler::create_global_calculation_matrix(&calc_model, &calc_settings, &calc_loads);
+        let mut calc_matrices = vefem::fem::matrices::create_global_calculation_matrix(&calc_model, &calc_settings, &calc_loads);
         let displacement = vefem::fem::fem_handler::calculate_displacements(
             &nodes,
             vefem::fem::utils::col_height(&nodes, &elements),
@@ -356,7 +356,7 @@ mod fem_tests {
             &CalcLoadCombination::default(),
             &EquationHandler::new(),
         );
-        let mut calc_matrices = vefem::fem::fem_handler::create_global_calculation_matrix(&calc_model, &calc_settings, &calc_loads);
+        let mut calc_matrices = vefem::fem::matrices::create_global_calculation_matrix(&calc_model, &calc_settings, &calc_loads);
         let displacement = vefem::fem::fem_handler::calculate_displacements(
             &nodes,
             vefem::fem::utils::col_height(&nodes, &elements),
@@ -409,7 +409,7 @@ mod fem_tests {
             &CalcLoadCombination::default(),
             &EquationHandler::new(),
         );
-        let mut calc_matrices = vefem::fem::fem_handler::create_global_calculation_matrix(&calc_model, &calc_settings, &calc_loads);
+        let mut calc_matrices = vefem::fem::matrices::create_global_calculation_matrix(&calc_model, &calc_settings, &calc_loads);
         let displacement = vefem::fem::fem_handler::calculate_displacements(
             &nodes,
             vefem::fem::utils::col_height(&nodes, &elements),
@@ -466,7 +466,7 @@ mod fem_tests {
             &CalcLoadCombination::default(),
             &EquationHandler::new(),
         );
-        let mut calc_matrices = vefem::fem::fem_handler::create_global_calculation_matrix(&calc_model, &calc_settings, &calc_loads);
+        let mut calc_matrices = vefem::fem::matrices::create_global_calculation_matrix(&calc_model, &calc_settings, &calc_loads);
         let displacement = vefem::fem::fem_handler::calculate_displacements(
             &nodes,
             vefem::fem::utils::col_height(&nodes, &elements),
@@ -664,7 +664,7 @@ mod fem_tests {
             &CalcLoadCombination::default(),
             &EquationHandler::new(),
         );
-        let mut calc_matrices = vefem::fem::fem_handler::create_global_calculation_matrix(&calc_model, &calc_settings, &calc_loads);
+        let mut calc_matrices = vefem::fem::matrices::create_global_calculation_matrix(&calc_model, &calc_settings, &calc_loads);
         let displacement = vefem::fem::fem_handler::calculate_displacements(
             &nodes,
             vefem::fem::utils::col_height(&nodes, &elements),
@@ -711,7 +711,7 @@ mod fem_tests {
             &CalcLoadCombination::default(),
             &EquationHandler::new(),
         );
-        let mut calc_matrices = vefem::fem::fem_handler::create_global_calculation_matrix(&calc_model, &calc_settings, &calc_loads);
+        let mut calc_matrices = vefem::fem::matrices::create_global_calculation_matrix(&calc_model, &calc_settings, &calc_loads);
         let displacement = vefem::fem::fem_handler::calculate_displacements(
             &nodes,
             vefem::fem::utils::col_height(&nodes, &elements),
@@ -764,7 +764,7 @@ mod fem_tests {
             &CalcLoadCombination::default(),
             &EquationHandler::new(),
         );
-        let mut calc_matrices = vefem::fem::fem_handler::create_global_calculation_matrix(&calc_model, &calc_settings, &calc_loads);
+        let mut calc_matrices = vefem::fem::matrices::create_global_calculation_matrix(&calc_model, &calc_settings, &calc_loads);
         let displacement = vefem::fem::fem_handler::calculate_displacements(
             &nodes,
             vefem::fem::utils::col_height(&nodes, &elements),
@@ -829,7 +829,7 @@ mod fem_tests {
             &CalcLoadCombination::default(),
             &EquationHandler::new(),
         );
-        let mut calc_matrices = vefem::fem::fem_handler::create_global_calculation_matrix(&calc_model, &calc_settings, &calc_loads);
+        let mut calc_matrices = vefem::fem::matrices::create_global_calculation_matrix(&calc_model, &calc_settings, &calc_loads);
         let displacement = vefem::fem::fem_handler::calculate_displacements(
             &nodes,
             vefem::fem::utils::col_height(&nodes, &elements),
@@ -886,7 +886,7 @@ mod fem_tests {
             &CalcLoadCombination::default(),
             &EquationHandler::new(),
         );
-        let mut calc_matrices = vefem::fem::fem_handler::create_global_calculation_matrix(&calc_model, &calc_settings, &calc_loads);
+        let mut calc_matrices = vefem::fem::matrices::create_global_calculation_matrix(&calc_model, &calc_settings, &calc_loads);
         let displacement = vefem::fem::fem_handler::calculate_displacements(
             &nodes,
             vefem::fem::utils::col_height(&nodes, &elements),
