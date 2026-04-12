@@ -7,22 +7,26 @@ use crate::fem::{equivalent_loads, matrices, CalcModel};
 use crate::fem::stiffness::create_joined_stiffness_matrix;
 use crate::loads::load::CalculationLoad;
 use crate::settings::CalculationSettings;
+use crate::structure::element::ReleaseIndexMap;
 
 pub struct CalculationMatrix {
     pub stiffness: DMatrix<f64>,
     pub equivalent_loads: DMatrix<f64>,
+    pub release_index_map: BTreeMap<i32, ReleaseIndexMap>,
 }
 
 pub fn create_global_calculation_matrix(
     calc_model: &CalcModel, calc_settings: &CalculationSettings, calculation_loads: &Vec<CalculationLoad>
 ) -> CalculationMatrix {
-    let mut global_stiff_matrix = create_joined_stiffness_matrix(calc_model, calc_settings);
+    let mut stiff_matrix_and_release_map = create_joined_stiffness_matrix(calc_model, calc_settings);
+    let mut global_stiff_matrix = stiff_matrix_and_release_map.0;
     // The global equivalent loads matrix
     let mut global_eq_l_matrix = equivalent_loads::create(calc_model, calculation_loads, calc_settings);
     apply_support_rotation_values(calc_model.structure_nodes, &mut global_stiff_matrix, &mut global_eq_l_matrix);
     CalculationMatrix {
         stiffness: global_stiff_matrix,
         equivalent_loads: global_eq_l_matrix,
+        release_index_map: stiff_matrix_and_release_map.1
     }
 }
 

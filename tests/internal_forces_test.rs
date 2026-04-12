@@ -8,11 +8,12 @@ mod internal_forces_tests {
     use approx::relative_eq;
     use vputilslib::{equation_handler::EquationHandler, geometry2d::VpPoint};
 
-    use vefem::loads::load_combination::CalcLoadCombination;
-    use vefem::{loads, loads::{Load, LoadGroup}, material::{MaterialData, Steel}, profile::Profile, results::ForceType, settings::CalculationSettings, structure::{Element, Node, StructureModel}};
-    use vefem::loads::load_combination;
-    use vefem::structure::Support;
     use crate::common::internal_force_test;
+    use vefem::loads::load_combination;
+    use vefem::loads::load_combination::CalcLoadCombination;
+    use vefem::structure::element::ReleaseIndexMap;
+    use vefem::structure::Support;
+    use vefem::{loads::{Load, LoadGroup}, material::{MaterialData, Steel}, profile::Profile, results::ForceType, settings::CalculationSettings, structure::{Element, Node, StructureModel}};
 
     #[test]
     fn t_calculate_moment_at_pl() {
@@ -1760,6 +1761,7 @@ mod internal_forces_tests {
         let local_reactions = results[0].node_results.get_elem_local_nodal_force_vectors(
             &calc_model.get_all_calc_elements()[0],
             &calc_loads,
+            &ReleaseIndexMap::default(),
             &struct_model.calc_settings,
         );
         println!("Displacements:: {:.4?}", results[0].node_results.displacements);

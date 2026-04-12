@@ -1,11 +1,12 @@
 ﻿#![allow(non_snake_case)]
 
+use std::collections::BTreeMap;
 use crate::fem::matrices::get_rotation_matrix;
 use crate::material::MaterialData;
 use crate::settings::CalculationSettings;
 use crate::structure::CalculationElement;
 use nalgebra::DMatrix;
-
+use crate::structure::element::ReleaseIndexMap;
 use super::CalcModel;
 
 /// Gets the elements stiffness matrix in the global coordinate system.
@@ -85,7 +86,7 @@ pub fn get_element_stiffness_matrix(element: &CalculationElement,
 pub(super) fn create_joined_stiffness_matrix(
     calc_model: &CalcModel,
     settings: &CalculationSettings
-) -> DMatrix<f64> {
+) -> (DMatrix<f64>, BTreeMap<i32, ReleaseIndexMap>) {
     let supp_count = calc_model.structure_nodes.len() + calc_model.extra_nodes.len();    
     // Increase the joined stiffness matrix size by release count. Releases are set into their
     // own rows and columns at the end of the joined matrix
@@ -104,7 +105,12 @@ pub(super) fn create_joined_stiffness_matrix(
     let mut i_normalized: usize;
     let mut j_normalized: usize;
 
+    // A map to store the index of the release column for each row. The key is the element number
+    // and the ReleaseIndexMap contains the indexes for different releases
+    let mut release_index_map: BTreeMap<i32, ReleaseIndexMap > = BTreeMap::new();
+
     for elem in calc_model.get_all_calc_elements() {
+        release_index_map.insert(elem.model_el_num, ReleaseIndexMap::default());
         let e_glob_stiff_matrix = get_element_global_stiffness_matrix(&elem, settings);
         // The index of the start node
         let s = (elem.node_start - 1) as usize;
@@ -148,6 +154,7 @@ pub(super) fn create_joined_stiffness_matrix(
                         // If current row and column have release, place the value in the intersection of the current
                         // release row and column
                         matrix_vector[rel_row * row_width + rel_col] += e_glob_stiff_matrix[(i, j)];
+                        release_index_map.get_mut(&elem.model_el_num).unwrap().set(i, rel_col);
                         rel_col += 1;
                         rel_increment_count += 1;
                     } else if elem.releases.get_release_value(i).unwrap() {
@@ -180,6 +187,6 @@ pub(super) fn create_joined_stiffness_matrix(
         }
     }
 
-    DMatrix::from_vec(row_width, row_width, matrix_vector)
+    (DMatrix::from_vec(row_width, row_width, matrix_vector), release_index_map)
     // DMatrix::from_row_slice(row_width, row_width, &matrix_vector)
 }

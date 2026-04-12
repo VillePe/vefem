@@ -20,8 +20,13 @@ pub fn calculate_at(
 
     // The sum of double integrals from loads and support reactions
     let mut d_integral = 0.0;
-    let local_reactions = results.get_elem_local_nodal_force_vectors(element, loads, settings);
-    let local_displacements = results.get_elem_local_displacements(element);
+    let local_reactions = results.get_elem_local_nodal_force_vectors(
+        element, loads, 
+        &results.release_index_map[&element.model_el_num], settings
+    );
+    let local_displacements = results.get_elem_local_displacements(
+        element, &results.release_index_map[&element.model_el_num]
+    );
 
     let e_m = element.elastic_modulus;
     let s_mom_area = element.profile.get_major_second_mom_of_area(&element.material, settings);

@@ -10,7 +10,7 @@ use crate::{
 };
 
 use crate::results::NodeResults;
-
+use crate::structure::element::ReleaseIndexMap;
 use super::{axial_deformation, deflection, CalcModel};
 
 /// Calculates the internal forces for the elements by support reactions and displacements in node results
@@ -36,6 +36,7 @@ pub fn calc_internal_forces(
         let mut deflections = vec![];
         for element in calc_model.calc_elements[&structure_element.number].iter() {
             let element_length = element.length;
+            let release_index_map = &node_results.release_index_map[&element.model_el_num];
             let split_interval = match calc_settings.calc_split_interval {
                 settings::calc_settings::CalcSplitInterval::Absolute(a) => a,
                 settings::calc_settings::CalcSplitInterval::Relative(r) => element_length * r,
@@ -44,11 +45,11 @@ pub fn calc_internal_forces(
             let mut last = false;
             while x < element_length || last {
                 let moment_force_val =
-                    calculate_moment_at(x, element, loads, node_results, calc_settings);
+                    calculate_moment_at(x, element, loads, node_results, release_index_map, calc_settings);
                 let axial_force_val =
-                    calculate_axial_force_at(x, element, loads, node_results, calc_settings);
+                    calculate_axial_force_at(x, element, loads, node_results, release_index_map, calc_settings);
                 let shear_force_val =
-                    calculate_shear_at(x, element, loads, node_results, calc_settings);
+                    calculate_shear_at(x, element, loads, node_results, release_index_map, calc_settings);
                 let deflection_val =
                     deflection::calculate_at(x, element, loads, calc_settings, node_results);
                 let axial_deformation_val =
@@ -118,10 +119,13 @@ pub fn calculate_moment_at(
     element: &CalculationElement,
     loads: &Vec<CalculationLoad>,
     results: &NodeResults,
+    release_index_map: &ReleaseIndexMap,
     settings: &CalculationSettings,
 ) -> f64 {
     let mut moment = 0.0;
-    let local_reactions = results.get_elem_local_nodal_force_vectors(element, loads, settings);
+    let local_reactions = results.get_elem_local_nodal_force_vectors(
+        element, loads, release_index_map, settings
+    );
     for load in loads {
         if load.element_number != element.calc_el_num {
             continue;
@@ -173,10 +177,13 @@ pub fn calculate_shear_at(
     element: &CalculationElement,
     loads: &Vec<CalculationLoad>,
     results: &NodeResults,
+    release_index_map: &ReleaseIndexMap,
     settings: &CalculationSettings,
 ) -> f64 {
     let mut shear = 0.0;
-    let local_reactions = results.get_elem_local_nodal_force_vectors(element, loads, settings);
+    let local_reactions = results.get_elem_local_nodal_force_vectors(
+        element, loads, release_index_map, settings
+    );
     for load in loads {
         if load.element_number != element.calc_el_num {
             continue;
@@ -223,10 +230,13 @@ pub fn calculate_axial_force_at(
     element: &CalculationElement,
     loads: &Vec<CalculationLoad>,
     results: &NodeResults,
+    release_index_map: &ReleaseIndexMap,
     settings: &CalculationSettings,
 ) -> f64 {
     let mut axial_f = 0.0;
-    let local_reactions = results.get_elem_local_nodal_force_vectors(element, loads, settings);
+    let local_reactions = results.get_elem_local_nodal_force_vectors(
+        element, loads, release_index_map, settings
+    );
     for load in loads {
         if load.element_number != element.calc_el_num {
             continue;

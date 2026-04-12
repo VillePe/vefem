@@ -70,6 +70,60 @@ impl Default for Element {
     }
 }
 
+/// A map to hold the indexes pointing to joined matrix rows for release values
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ReleaseIndexMap {
+    pub s_tx: usize,
+    pub s_tz: usize,
+    pub s_ry: usize,
+    pub e_tx: usize,
+    pub e_tz: usize,
+    pub e_ry: usize,
+}
+
+impl ReleaseIndexMap {
+    pub fn set(&mut self, i: usize, value: usize) {
+        match i { 
+            0 => {self.s_tx = value}
+            1 => {self.s_tz = value}
+            2 => {self.s_ry = value}
+            3 => {self.e_tx = value}
+            4 => {self.e_tz = value}
+            5 => {self.e_ry = value}
+            _ => panic!(
+                "Tried to set value to release map outside of degrees of freedom count!"
+            ),
+        }
+    }
+
+    pub fn get(&self, i: usize) -> usize{
+        match i {
+            0 => {self.s_tx}
+            1 => {self.s_tz}
+            2 => {self.s_ry}
+            3 => {self.e_tx}
+            4 => {self.e_tz}
+            5 => {self.e_ry}
+            _ => panic!(
+                "Tried to get value of an index from release map outside of degrees of freedom count!"
+            ),
+        }
+    }
+}
+
+impl Default for ReleaseIndexMap {
+    fn default() -> Self {
+        Self {
+            s_tx: usize::MAX,
+            s_tz: usize::MAX,
+            s_ry: usize::MAX,
+            e_tx: usize::MAX,
+            e_tz: usize::MAX,
+            e_ry: usize::MAX,
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct CalculationElement<'a> {
     pub calc_el_num: i32,

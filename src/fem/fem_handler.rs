@@ -12,13 +12,11 @@ use crate::loads::{CalcLoadCombination, Load};
 use crate::settings::CalculationSettings;
 use crate::{
     fem::{
-        equivalent_loads,
         internal_forces::calc_internal_forces,
         matrices::{
             get_unknown_translation_eq_loads_rows, get_unknown_translation_rows,
             get_unknown_translation_stiffness_rows,
         },
-        stiffness::create_joined_stiffness_matrix,
     },
     loads,
     loads::LoadCombination,
@@ -116,7 +114,8 @@ fn calc_lc(
     let calculation_loads =
         &loads::utils::extract_calculation_loads(calc_model, loads, &lc, equation_handler);
 
-    let mut calc_matrices = matrices::create_global_calculation_matrix(calc_model, calc_settings, calculation_loads);
+    let mut calc_matrices = matrices::create_global_calculation_matrix(calc_model, calc_settings, 
+                                                                       calculation_loads);
     let displacements = calculate_displacements(
         nodes,
         col_height,
@@ -124,12 +123,14 @@ fn calc_lc(
         &mut calc_matrices.equivalent_loads,
     );
 
-    let reactions = calculate_reactions(&calc_matrices.stiffness, &displacements, &calc_matrices.equivalent_loads);
+    let reactions = calculate_reactions(&calc_matrices.stiffness, &displacements, 
+                                        &calc_matrices.equivalent_loads);
 
     let displacements = displacements.column(0).as_slice().to_vec();
     let reactions = reactions.column(0).as_slice().to_vec();
 
-    let node_results = NodeResults::new(displacements, reactions, nodes.len(), &equation_handler, &nodes);
+    let node_results = NodeResults::new(displacements, reactions, nodes.len(), &equation_handler, 
+                                        &nodes, calc_matrices.release_index_map);
     let internal_force_results =
         calc_internal_forces(calc_model, calculation_loads, &node_results, calc_settings);
 

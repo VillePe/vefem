@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use vputilslib::equation_handler::EquationHandler;
 
 use crate::{fem::stiffness, loads::load::CalculationLoad, structure::CalculationElement};
+use crate::structure::element::ReleaseIndexMap;
 use crate::structure::Node;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -19,6 +20,7 @@ pub struct NodeResults {
     pub node_count: usize,
     pub dof_count: usize,
     pub equation_handler: EquationHandler,
+    pub release_index_map: BTreeMap<i32, ReleaseIndexMap>,
 }
 
 impl NodeResults {
@@ -33,6 +35,7 @@ impl NodeResults {
         node_count: usize,
         equation_handler: &EquationHandler,
         nodes: &BTreeMap<i32, Node>,
+        release_index_map: BTreeMap<i32, ReleaseIndexMap>,
     ) -> Self {
         let mut copied_eq_handler = EquationHandler::new();
         let dof: usize = 3;
@@ -42,9 +45,10 @@ impl NodeResults {
             copied_eq_handler.set_variable(key, variables[key]);
         }
         let mut global_displacements = Vec::with_capacity(displacements.len());
-        for _ in 0..node_count*dof {
+        for _ in 0..displacements.len() {
             global_displacements.push(0.0);
         }
+        // Add the rotated values to global displacement matrix
         for node in nodes.values() {
             let node_number: usize = node.number as usize;
             if node.support.rotation != 0.0 {
@@ -65,6 +69,14 @@ impl NodeResults {
                 global_displacements[(node_number-1)*dof+2] = displacements[(node_number-1)*dof+2];
             }
         }
+        // Add possible release values to global displacement matrix
+        for i in nodes.len()*dof..displacements.len() {
+            // TODO should these be rotated to be truly global? Now they will just be copied and might be in element local coordinates. But does that matter?
+            // Would probably need a reverse map for release index map to get the element rotation
+            // and apply that to this displacement value.
+            global_displacements[i] = displacements[i];
+        }
+
 
         Self {
             displacements,
@@ -73,6 +85,7 @@ impl NodeResults {
             equation_handler: copied_eq_handler,
             dof_count: 3,
             global_displacements,
+            release_index_map,
         }
     }
 
@@ -110,12 +123,13 @@ impl NodeResults {
         &self,
         element: &CalculationElement,
         loads: &Vec<CalculationLoad>,
+        release_index_map: &ReleaseIndexMap,
         settings: &crate::settings::CalculationSettings
     ) -> DMatrix<f64> {
         let el_stiff_matrix = stiffness::get_element_stiffness_matrix(element, settings);
         let el_eq_loads = crate::fem::equivalent_loads::get_element_g_eq_loads(element, loads, settings);
         let rot_matrix = crate::fem::matrices::get_rotation_matrix(element.rotation);
-        let local_displacements = self.get_elem_local_displacements(element);        
+        let local_displacements = self.get_elem_local_displacements(element, release_index_map);
 
         el_stiff_matrix * local_displacements - rot_matrix * el_eq_loads
     }
@@ -124,6 +138,7 @@ impl NodeResults {
     pub fn get_elem_local_displacements(
         &self,
         element: &CalculationElement,
+        release_index_map: &ReleaseIndexMap
     ) -> DMatrix<f64> {
         let mut global_matrix = DMatrix::<f64>::zeros(6, 1);
 
@@ -132,16 +147,18 @@ impl NodeResults {
             if element.releases.get_release_value(i).unwrap() {
                 // If the start node is released, the displacement is in a different index than
                 // the node number
-                global_matrix[(i, 0)] = self.get_global_displacement(element.node_start, i);
+                global_matrix[(i, 0)] = self.global_displacements[(release_index_map.get(i)) as usize]
             } else {
                 global_matrix[(i, 0)] = self.get_global_displacement(element.node_start, i);
             }
         }
         for i in 0..self.dof_count {
-            if element.releases.get_release_value(i).unwrap() {
+            if element.releases.get_release_value(i+self.dof_count).unwrap() {
                 // If the end node is released, the displacement is in a different index than
                 // the node number
-                global_matrix[(self.dof_count + i, 0)] = self.get_global_displacement(element.node_end, i);
+                global_matrix[(self.dof_count + i, 0)] = self.global_displacements[
+                    release_index_map.get(i+self.dof_count) as usize
+                ]
             } else {
                 global_matrix[(self.dof_count + i, 0)] = self.get_global_displacement(element.node_end, i);
             }

@@ -20,8 +20,13 @@ pub fn calculate_at(
 
     // The sum of integrals from loads and support reactions
     let mut s_integral = 0.0;
-    let local_reactions = results.get_elem_local_nodal_force_vectors(element, loads, calc_settings);
-    let local_displacements = results.get_elem_local_displacements(element);
+    let local_reactions = results.get_elem_local_nodal_force_vectors(
+        element, loads,
+        &results.release_index_map[&element.model_el_num], calc_settings
+    );
+    let local_displacements = results.get_elem_local_displacements(
+        element, &results.release_index_map[&element.model_el_num]
+    );
 
     let e_m = element.elastic_modulus;
     let area = element.profile_area;
