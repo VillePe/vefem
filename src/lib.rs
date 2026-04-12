@@ -9,3 +9,4 @@ pub mod settings;
 pub mod api;
 pub mod profile;
 pub mod reinforcement;
+pub mod printing;

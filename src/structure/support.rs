@@ -1,3 +1,4 @@
+use std::fmt::{write, Display, Formatter};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize)]
@@ -67,6 +68,16 @@ impl Support {
             ),
         }
     }
+
+    pub fn to_short_string(&self) -> String {
+        let mut result = String::with_capacity(6);
+
+        result.push(if self.tx {'x'} else if self.x_spring.abs() > 1e-2 {'s'} else {'f'});
+        result.push(if self.tz {'x'} else if self.z_spring.abs() > 1e-2 {'s'} else {'f'});
+        result.push(if self.ry {'x'} else if self.r_spring.abs() > 1e-2 {'s'} else {'f'});
+
+        result
+    }
 }
 impl Default for Support {
     fn default() -> Self {
@@ -79,5 +90,11 @@ impl Default for Support {
             r_spring: 0.0,
             rotation: 0.0,
         }
+    }
+}
+
+impl Display for Support{
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.to_short_string())
     }
 }
