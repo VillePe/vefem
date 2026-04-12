@@ -1,5 +1,6 @@
 ﻿#![allow(dead_code)]
 
+use std::fmt::Display;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize)]
@@ -59,6 +60,20 @@ impl Release {
         let ry = if self.e_ry { 1 } else { 0 };
         tx + tz + ry
     }
+
+    pub fn to_string(&self) -> String {
+        let mut result = String::with_capacity(6);
+
+        result.push(if self.s_tx {'f'} else {'x'});
+        result.push(if self.s_tz {'f'} else {'x'});
+        result.push(if self.s_ry {'f'} else {'x'});
+        result.push(if self.e_tx {'f'} else {'x'});
+        result.push(if self.e_tz {'f'} else {'x'});
+        result.push(if self.e_ry {'f'} else {'x'});
+
+        result
+
+    }
 }
 impl Default for Release {
     fn default() -> Self {
@@ -70,5 +85,11 @@ impl Default for Release {
             e_tz: false,
             e_ry: false,
         }
+    }
+}
+
+impl Display for Release {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.to_string())
     }
 }

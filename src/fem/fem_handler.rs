@@ -27,6 +27,7 @@ use crate::{
 };
 use crate::fem::matrices::CalculationMatrix;
 use crate::loads::load::CalculationLoad;
+use crate::structure::NodeCollection;
 
 /// Calculates the displacements, support reactions and element internal forces.
 /// * 'calc_model' - calculation model that is extracted to calculation objects
@@ -109,7 +110,7 @@ fn calc_lc(
     equation_handler: &EquationHandler,
     result_clone: Arc<Mutex<Vec<CalculationResults>>>,
     calc_settings: &CalculationSettings,
-    nodes: &BTreeMap<i32, Node>,
+    nodes: &NodeCollection,
     col_height: usize,
 ) {
     let calculation_loads =

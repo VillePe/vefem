@@ -1,12 +1,11 @@
-use std::collections::BTreeMap;
-use serde::{Deserialize, Serialize};
+use super::{Element, NodeCollection};
 use crate::{loads::{Load, LoadCombination}, settings::CalculationSettings};
-use super::{Element, Node};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct StructureModel {
     /// All the nodes in the model. The key is the node number
-    pub nodes: BTreeMap<i32, Node>,
+    pub nodes: NodeCollection,
     /// All the elements in the model
     pub elements: Vec<Element>,
     /// All the load combinations for the calculation model. If it is empty, all the loads
