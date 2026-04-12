@@ -345,6 +345,82 @@ mod fem_tests {
     }
 
     #[test]
+    fn test_release_rotated_x_axis_1() {
+        let (mut elements, mut nodes) = common::get_structure_for_rotated_support_1();
+        nodes.get_mut(&2).unwrap().support.rotation = 0.0;
+        nodes.get_mut(&2).unwrap().support.tx = true;
+        nodes.get_mut(&2).unwrap().support.tz = true;
+        elements[0].releases.e_tx = true;
+        let calc_model = common::get_calc_model(&elements, &nodes);
+        let loads = common::get_loads_for_rotated_support_1();
+        let calc_settings = CalculationSettings::default();
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model,
+            &loads,
+            &CalcLoadCombination::default(),
+            &EquationHandler::new(),
+        );
+        let mut calc_matrices = vefem::fem::matrices::create_global_calculation_matrix(&calc_model, &calc_settings, &calc_loads);
+    }
+
+    #[test]
+    fn test_release_rotated_x_axis_2() {
+        let (mut elements, mut nodes) = common::get_structure_for_rotated_support_1();
+        nodes.get_mut(&2).unwrap().support.rotation = 0.0;
+        nodes.get_mut(&2).unwrap().support.tx = true;
+        nodes.get_mut(&2).unwrap().support.tz = true;
+        elements[0].releases.s_tx = true;
+        let calc_model = common::get_calc_model(&elements, &nodes);
+        let loads = common::get_loads_for_rotated_support_1();
+        let calc_settings = CalculationSettings::default();
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model,
+            &loads,
+            &CalcLoadCombination::default(),
+            &EquationHandler::new(),
+        );
+        let mut calc_matrices = vefem::fem::matrices::create_global_calculation_matrix(&calc_model, &calc_settings, &calc_loads);
+    }
+
+    #[test]
+    fn test_release_rotated_z_axis_1() {
+        let (mut elements, mut nodes) = common::get_structure_for_rotated_support_1();
+        nodes.get_mut(&2).unwrap().support.rotation = 0.0;
+        nodes.get_mut(&2).unwrap().support.tx = true;
+        nodes.get_mut(&2).unwrap().support.tz = true;
+        elements[0].releases.e_tz = true;
+        let calc_model = common::get_calc_model(&elements, &nodes);
+        let loads = common::get_loads_for_rotated_support_1();
+        let calc_settings = CalculationSettings::default();
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model,
+            &loads,
+            &CalcLoadCombination::default(),
+            &EquationHandler::new(),
+        );
+        let mut calc_matrices = vefem::fem::matrices::create_global_calculation_matrix(&calc_model, &calc_settings, &calc_loads);
+    }
+
+    #[test]
+    fn test_release_rotated_z_axis_2() {
+        let (mut elements, mut nodes) = common::get_structure_for_rotated_support_1();
+        nodes.get_mut(&2).unwrap().support.rotation = 0.0;
+        nodes.get_mut(&2).unwrap().support.tx = true;
+        nodes.get_mut(&2).unwrap().support.tz = true;
+        elements[0].releases.s_tz = true;
+        let calc_model = common::get_calc_model(&elements, &nodes);
+        let loads = common::get_loads_for_rotated_support_1();
+        let calc_settings = CalculationSettings::default();
+        let calc_loads = loads::utils::extract_calculation_loads(
+            &calc_model,
+            &loads,
+            &CalcLoadCombination::default(),
+            &EquationHandler::new(),
+        );
+        let mut calc_matrices = vefem::fem::matrices::create_global_calculation_matrix(&calc_model, &calc_settings, &calc_loads);
+    }
+
+    #[test]
     fn displacement_support_rotated_1() {
         let (elements, nodes) = common::get_structure_for_rotated_support_1();
         let calc_model = common::get_calc_model(&elements, &nodes);

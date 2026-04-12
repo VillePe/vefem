@@ -1,8 +1,9 @@
 ﻿#![allow(dead_code)]
 
-use crate::structure::Node;
+use crate::structure::{Element, Node};
 use nalgebra::DMatrix;
 use std::collections::BTreeMap;
+use std::ffi::c_uint;
 use crate::fem::{equivalent_loads, matrices, CalcModel};
 use crate::fem::stiffness::create_joined_stiffness_matrix;
 use crate::loads::load::CalculationLoad;
@@ -18,11 +19,17 @@ pub struct CalculationMatrix {
 pub fn create_global_calculation_matrix(
     calc_model: &CalcModel, calc_settings: &CalculationSettings, calculation_loads: &Vec<CalculationLoad>
 ) -> CalculationMatrix {
-    let mut stiff_matrix_and_release_map = create_joined_stiffness_matrix(calc_model, calc_settings);
+    let stiff_matrix_and_release_map = create_joined_stiffness_matrix(calc_model, calc_settings);
     let mut global_stiff_matrix = stiff_matrix_and_release_map.0;
     // The global equivalent loads matrix
     let mut global_eq_l_matrix = equivalent_loads::create(calc_model, calculation_loads, calc_settings);
-    apply_support_rotation_values(calc_model.structure_nodes, &mut global_stiff_matrix, &mut global_eq_l_matrix);
+    apply_support_rotation_values(calc_model.structure_nodes, &mut global_stiff_matrix,
+                                  &mut global_eq_l_matrix
+    );
+    apply_release_rotation_values(calc_model.structure_nodes, calc_model.structure_elements,
+                                  &stiff_matrix_and_release_map.1, &mut global_stiff_matrix,
+                                  &mut global_eq_l_matrix
+    );
     CalculationMatrix {
         stiffness: global_stiff_matrix,
         equivalent_loads: global_eq_l_matrix,
@@ -93,6 +100,102 @@ fn apply_support_rotation_values(
     }
 }
 
+fn apply_release_rotation_values(
+    nodes: &BTreeMap<i32, Node>,
+    elements: &Vec<Element>,
+    release_index_map: &BTreeMap<i32, ReleaseIndexMap>,
+    global_stiff_matrix: &mut DMatrix<f64>,
+    global_equivalent_loads_matrix: &mut DMatrix<f64>,
+) {
+    let dof = 3;
+    let matrix_size = global_stiff_matrix.shape().0;
+
+    println!("GLOBAL STIFFNESS MATRIX FIRST");
+    for i in 0..matrix_size as usize {
+        for j in 0..matrix_size as usize {
+            print!("{:<15.2?}", global_stiff_matrix[(i, j)]);
+        }
+        println!();
+    }
+    for elem in elements {
+        let rotation = elem.get_rotation(nodes).to_radians();
+        if rotation == 0.0 { continue; } // If the rotation is 0, there is no need to rotate the stiffness matrix
+        // Gather the indices of the rows and columns that are linked to the element
+        let mut s_tx_index = ((elem.node_start-1) * dof + 0) as usize;
+        let mut s_tz_index = ((elem.node_start-1) * dof + 1) as usize;
+        let mut s_ry_index = ((elem.node_start-1) * dof + 2) as usize;
+        let mut e_tx_index = ((elem.node_end-1) * dof + 0) as usize;
+        let mut e_tz_index = ((elem.node_end-1) * dof + 1) as usize;
+        let mut e_ry_index = ((elem.node_end-1) * dof + 2) as usize;
+        let release_index_map = release_index_map.get(&elem.number).unwrap();
+        for i in 0..dof*2 {
+            match i {
+                0 => { if elem.releases.s_tx {s_tx_index = release_index_map.s_tx; }}
+                1 => { if elem.releases.s_tz {s_tz_index = release_index_map.s_tz; }}
+                2 => { if elem.releases.s_ry {s_ry_index = release_index_map.s_ry; }}
+                3 => { if elem.releases.e_tx {e_tx_index = release_index_map.e_tx; }}
+                4 => { if elem.releases.e_tz {e_tz_index = release_index_map.e_tz; }}
+                5 => { if elem.releases.e_ry {e_ry_index = release_index_map.e_ry; }}
+                _ => {}
+            }
+        }
+        let index_array = [s_tx_index, s_tz_index, s_ry_index, e_tx_index, e_tz_index, e_ry_index];
+        // First rotate the s_tx and s_tz columns with rotation factors
+        // TODO Refactor this function to make it more readable after testing
+        if elem.releases.s_tx {
+            let x_fac = rotation.cos();
+            let y_fac = rotation.sin();
+            for i in 0..index_array.len() {
+                global_stiff_matrix[(index_array[i], s_tx_index)] = global_stiff_matrix[(index_array[i], s_tx_index)] * x_fac + global_stiff_matrix[(index_array[i], s_tz_index)] * y_fac;
+            }
+
+            for i in 0..index_array.len() {
+                global_stiff_matrix[(s_tx_index, index_array[i])] = global_stiff_matrix[(s_tx_index, index_array[i])] * x_fac + global_stiff_matrix[(s_tz_index, index_array[i])] * y_fac;
+            }
+        }
+        if elem.releases.s_tz {
+            let x_fac = -rotation.sin();
+            let y_fac = rotation.cos();
+            for i in 0..index_array.len() {
+                global_stiff_matrix[(index_array[i], s_tz_index)] = global_stiff_matrix[(index_array[i], s_tz_index)] * x_fac + global_stiff_matrix[(index_array[i], s_tx_index)] * y_fac;
+            }
+
+            for i in 0..index_array.len() {
+                global_stiff_matrix[(s_tz_index, index_array[i])] = global_stiff_matrix[(s_tz_index, index_array[i])] * x_fac + global_stiff_matrix[(s_tx_index, index_array[i])] * y_fac;
+            }
+        }
+        if elem.releases.e_tx {
+            let x_fac = rotation.cos();
+            let y_fac = rotation.sin();
+            for i in 0..index_array.len() {
+                global_stiff_matrix[(index_array[i], e_tx_index)] = global_stiff_matrix[(index_array[i], e_tx_index)] * x_fac + global_stiff_matrix[(index_array[i], e_tz_index)] * y_fac;
+            }
+
+            for i in 0..index_array.len() {
+                global_stiff_matrix[(e_tx_index, index_array[i])] = global_stiff_matrix[(e_tx_index, index_array[i])] * x_fac + global_stiff_matrix[(e_tz_index, index_array[i])] * y_fac;
+            }
+        }
+        if elem.releases.e_tz {
+            let x_fac = -rotation.sin();
+            let y_fac = rotation.cos();
+            for i in 0..index_array.len() {
+                global_stiff_matrix[(index_array[i], e_tz_index)] = global_stiff_matrix[(index_array[i], e_tz_index)] * x_fac + global_stiff_matrix[(index_array[i], e_tx_index)] * y_fac;
+            }
+
+            for i in 0..index_array.len() {
+                global_stiff_matrix[(e_tz_index, index_array[i])] = global_stiff_matrix[(e_tz_index, index_array[i])] * x_fac + global_stiff_matrix[(e_tx_index, index_array[i])] * y_fac;
+            }
+        }
+    }
+    println!("GLOBAL STIFFNESS MATRIX MODIFIED");
+    for i in 0..matrix_size as usize {
+        for j in 0..matrix_size as usize {
+            print!("{:<15.2?}", global_stiff_matrix[(i, j)]);
+        }
+        println!();
+    }
+}
+
 /// Gets the rotation matrix for the element. This matrix is in elements local coordinate system
 pub fn get_rotation_matrix(rotation: f64) -> DMatrix<f64> {
     let angle_radians = rotation.to_radians();
@@ -102,15 +205,13 @@ pub fn get_rotation_matrix(rotation: f64) -> DMatrix<f64> {
         6,
         6,
         &[
-            c, s, 0.0, 0.0, 0.0, 0.0, -s, c, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0,
-            0.0, 0.0, c, s, 0.0, 0.0, 0.0, 0.0, -s, c, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0,
+            c,   s,   0.0,  0.0, 0.0, 0.0,
+            -s,  c,   0.0,  0.0, 0.0, 0.0,
+            0.0, 0.0, 1.0,  0.0, 0.0, 0.0,
+            0.0, 0.0, 0.0,  c,   s,   0.0,
+            0.0, 0.0, 0.0, -s,   c,   0.0,
+            0.0, 0.0, 0.0, 0.0,  0.0, 1.0,
         ],
-        //     c,   s,   0.0, 0.0, 0.0, 0.0,
-        //     -s,  c,   0.0, 0.0, 0.0, 0.0,
-        //     0.0, 0.0, 1.0, 0.0, 0.0, 0.0,
-        //     0.0, 0.0, 0.0, c,   s,   0.0,
-        //     0.0, 0.0, 0.0, -s,  c,   0.0,
-        //     0.0, 0.0, 0.0, 0.0, 0.0, 1.0,
     )
 }
 
@@ -128,6 +229,21 @@ pub fn get_small_rotation_matrix(rotation: f64) -> DMatrix<f64> {
         //     c,   s,   0.0,
         //     -s,  c,   0.0,
         //     0.0, 0.0, 1.0,
+    )
+}
+
+pub fn get_diagonal_matrix() -> DMatrix<f64> {
+    DMatrix::from_row_slice(
+        6,
+        6,
+        &[
+            1.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+            0.0, 1.0, 0.0, 0.0, 0.0, 0.0,
+            0.0, 0.0, 1.0, 0.0, 0.0, 0.0,
+            0.0, 0.0, 0.0, 1.0, 0.0, 0.0,
+            0.0, 0.0, 0.0, 0.0, 1.0, 0.0,
+            0.0, 0.0, 0.0, 0.0, 0.0, 1.0,
+        ],
     )
 }
 

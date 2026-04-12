@@ -99,7 +99,6 @@ pub(super) fn create_joined_stiffness_matrix(
 
     // The starting row and column locations for locating the cells for releases
     let mut rel_row = supp_count * dof;
-    let mut rel_increment_count = 0;
     let mut supp_index1: usize;
     let mut supp_index2: usize;
     let mut i_normalized: usize;
@@ -108,6 +107,8 @@ pub(super) fn create_joined_stiffness_matrix(
     // A map to store the index of the release column for each row. The key is the element number
     // and the ReleaseIndexMap contains the indexes for different releases
     let mut release_index_map: BTreeMap<i32, ReleaseIndexMap > = BTreeMap::new();
+    // The number of releases in the global stiffness matrix
+    let mut g_rel_increment_count = 0;
 
     for elem in calc_model.get_all_calc_elements() {
         release_index_map.insert(elem.model_el_num, ReleaseIndexMap::default());
@@ -116,9 +117,11 @@ pub(super) fn create_joined_stiffness_matrix(
         let s = (elem.node_start - 1) as usize;
         // The index of the end node
         let e = (elem.node_end - 1) as usize;
+        // The local release counter for the element
+        let mut l_rel_increment_count = 0;
         for i in 0..dof * 2 {
             // Reset the column counter at every row change
-            let mut rel_col = supp_count * dof + rel_increment_count;
+            let mut rel_col = supp_count * dof + g_rel_increment_count;
             let mut increment_rel_row_count = false;
             for j in 0..dof * 2 {
                 if i < dof {
@@ -156,7 +159,7 @@ pub(super) fn create_joined_stiffness_matrix(
                         matrix_vector[rel_row * row_width + rel_col] += e_glob_stiff_matrix[(i, j)];
                         release_index_map.get_mut(&elem.model_el_num).unwrap().set(i, rel_col);
                         rel_col += 1;
-                        rel_increment_count += 1;
+                        l_rel_increment_count += 1;
                     } else if elem.releases.get_release_value(i).unwrap() {
                         // If the current row has a release, move the whole row to the rel_row
                         matrix_vector[supp_index2 * dof + j_normalized + rel_row * row_width] +=
@@ -185,6 +188,7 @@ pub(super) fn create_joined_stiffness_matrix(
                 rel_row += 1;
             }
         }
+        g_rel_increment_count += l_rel_increment_count;
     }
 
     (DMatrix::from_vec(row_width, row_width, matrix_vector), release_index_map)
