@@ -1,7 +1,6 @@
 use std::collections::BTreeMap;
 use std::fmt::{Debug, Formatter};
 use serde::{Deserialize, Serialize};
-use crate::structure::element::ReleaseIndexMap;
 use super::{InternalForceResults, NodeResults};
 
 #[derive(Serialize, Deserialize)]

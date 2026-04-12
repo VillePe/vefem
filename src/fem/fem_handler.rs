@@ -23,8 +23,6 @@ use crate::{
     results::{CalculationResults, NodeResults},
     structure::{Node, StructureModel},
 };
-use crate::fem::matrices::CalculationMatrix;
-use crate::loads::load::CalculationLoad;
 use crate::structure::NodeCollection;
 
 /// Calculates the displacements, support reactions and element internal forces.

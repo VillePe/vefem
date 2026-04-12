@@ -1,14 +1,13 @@
-﻿use std::collections::{BTreeMap, HashMap};
-use crate::loads::LoadCombination;
+﻿use std::collections::{BTreeMap};
 use crate::results::{CalculationResults, ForceType};
 use crate::structure::{Element, Node, NodeCollection, StructureModel};
 
 pub fn print_structure(structure_model: &StructureModel) {
-    println!("ELEMENTS");
+    println!("{: <10}{: <10}{: <10}", "ELEMENTS", "NODE S", "NODE E");
     for element in structure_model.elements.iter() {
         println!("{: <10}{: <10}{: <10}", element.number, element.node_start, element.node_end);
     }
-    println!("NODES");
+    println!("{: <10}{: <20}{: <10}", "NODES", "POINT", "SUPPORT");
     for (_i, node) in structure_model.nodes.iter() {
         print!("{: <10}", node.number);
         print!("{: <20}", node.point.to_string());
