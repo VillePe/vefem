@@ -22,10 +22,10 @@ pub fn calculate_at(
     let mut d_integral = 0.0;
     let local_reactions = results.get_elem_local_nodal_force_vectors(
         element, loads, 
-        &results.release_index_map[&element.model_el_num], settings
+        settings
     );
     let local_displacements = results.get_elem_local_displacements(
-        element, &results.release_index_map[&element.model_el_num]
+        element
     );
 
     let e_m = element.elastic_modulus;
