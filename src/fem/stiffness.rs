@@ -98,7 +98,7 @@ pub(super) fn create_joined_stiffness_matrix(
     let mut matrix_vector = vec![0.0; row_width * row_width];
 
     // The starting row and column locations for locating the cells for releases
-    let mut rel_row = supp_count * dof;
+    let mut rel_row = 0;
     let mut supp_index1: usize;
     let mut supp_index2: usize;
     let mut i_normalized: usize;
@@ -121,7 +121,7 @@ pub(super) fn create_joined_stiffness_matrix(
         let mut l_rel_increment_count = 0;
         for i in 0..dof * 2 {
             // Reset the column counter at every row change
-            let mut rel_col = supp_count * dof + g_rel_increment_count;
+            let mut rel_col = 0 + g_rel_increment_count;
             let mut increment_rel_row_count = false;
             for j in 0..dof * 2 {
                 if i < dof {
@@ -156,20 +156,33 @@ pub(super) fn create_joined_stiffness_matrix(
                     if i == j {
                         // If current row and column have release, place the value in the intersection of the current
                         // release row and column
-                        matrix_vector[rel_row * row_width + rel_col] += e_glob_stiff_matrix[(i, j)];
-                        release_index_map.get_mut(&elem.model_el_num).unwrap().set(i, rel_col);
+                        matrix_vector[
+                            row_width * supp_count * dof +    // Go to the start of the release columns
+                                supp_count * dof + rel_col    // Move by the release column count
+                            + row_width*rel_row               // Move by the release row count
+                            ] += e_glob_stiff_matrix[(i, j)];
+                        release_index_map.get_mut(&elem.model_el_num).unwrap().set(i, supp_count * dof + rel_col);
                         rel_col += 1;
                         l_rel_increment_count += 1;
                     } else if elem.releases.get_release_value(i).unwrap() {
                         // If the current row has a release, move the whole row to the rel_row
-                        matrix_vector[supp_index2 * dof + j_normalized + rel_row * row_width] +=
+                        matrix_vector[
+                            supp_count * dof +                // Go to the start of the release row
+                            (supp_index2 * dof) * row_width + // Move by the node number
+                            j_normalized * row_width +        // Move by the column number
+                            rel_row]
+                            +=
                             e_glob_stiff_matrix[(i, j)];
                         increment_rel_row_count = true;
                     } else if elem.releases.get_release_value(j).unwrap() {
                         // If the current column has a release, move the whole column to the rel_col
-                        matrix_vector[(supp_index1 * dof) * row_width
-                            + i_normalized * row_width
-                            + rel_col] += e_glob_stiff_matrix[(i, j)];
+                        matrix_vector[
+                            row_width * supp_count * dof +         // Move to start of release columns
+                            (supp_index1 * dof) +                  // Move by the node number
+                            rel_col * row_width                    // Move if there are multiple releases
+                            + i_normalized]                        // Move by current row
+                            += e_glob_stiff_matrix[(i, j)];
+
                         rel_col += 1;
                     }
                 } else {

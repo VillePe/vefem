@@ -1,14 +1,13 @@
 ﻿#![allow(dead_code)]
 
-use crate::structure::{Element, Node};
-use nalgebra::DMatrix;
-use std::collections::BTreeMap;
-use std::ffi::c_uint;
-use crate::fem::{equivalent_loads, matrices, CalcModel};
 use crate::fem::stiffness::create_joined_stiffness_matrix;
+use crate::fem::{equivalent_loads, matrices, CalcModel};
 use crate::loads::load::CalculationLoad;
 use crate::settings::CalculationSettings;
 use crate::structure::element::ReleaseIndexMap;
+use crate::structure::{Element, Node};
+use nalgebra::DMatrix;
+use std::collections::BTreeMap;
 
 pub struct CalculationMatrix {
     pub stiffness: DMatrix<f64>,
@@ -140,50 +139,71 @@ fn apply_release_rotation_values(
             }
         }
         let index_array = [s_tx_index, s_tz_index, s_ry_index, e_tx_index, e_tz_index, e_ry_index];
-        // First rotate the s_tx and s_tz columns with rotation factors
+
+        let mut x_fac = 0.0;
+        let mut y_fac = 0.0;
+
         // TODO Refactor this function to make it more readable after testing
         if elem.releases.s_tx {
-            let x_fac = rotation.cos();
-            let y_fac = rotation.sin();
+            x_fac = rotation.cos();
+            y_fac = rotation.sin();
+            // First rotate the s_tx and s_tz columns with rotation factors
             for i in 0..index_array.len() {
-                global_stiff_matrix[(index_array[i], s_tx_index)] = global_stiff_matrix[(index_array[i], s_tx_index)] * x_fac + global_stiff_matrix[(index_array[i], s_tz_index)] * y_fac;
+                global_stiff_matrix[(index_array[i], s_tx_index)] =
+                    global_stiff_matrix[(index_array[i], s_tx_index)] * x_fac +
+                    global_stiff_matrix[(index_array[i], s_tz_index)] * y_fac;
             }
 
+            // Then rotate the s_tx and s_tz rows with rotation factors
             for i in 0..index_array.len() {
-                global_stiff_matrix[(s_tx_index, index_array[i])] = global_stiff_matrix[(s_tx_index, index_array[i])] * x_fac + global_stiff_matrix[(s_tz_index, index_array[i])] * y_fac;
+                global_stiff_matrix[(s_tx_index, index_array[i])] =
+                    global_stiff_matrix[(s_tx_index, index_array[i])] * x_fac +
+                    global_stiff_matrix[(s_tz_index, index_array[i])] * y_fac;
             }
         }
         if elem.releases.s_tz {
-            let x_fac = -rotation.sin();
-            let y_fac = rotation.cos();
+            x_fac = rotation.cos();
+            y_fac = -rotation.sin();
             for i in 0..index_array.len() {
-                global_stiff_matrix[(index_array[i], s_tz_index)] = global_stiff_matrix[(index_array[i], s_tz_index)] * x_fac + global_stiff_matrix[(index_array[i], s_tx_index)] * y_fac;
+                global_stiff_matrix[(index_array[i], s_tz_index)] =
+                    global_stiff_matrix[(index_array[i], s_tz_index)] * x_fac +
+                    global_stiff_matrix[(index_array[i], s_tx_index)] * y_fac;
             }
 
             for i in 0..index_array.len() {
-                global_stiff_matrix[(s_tz_index, index_array[i])] = global_stiff_matrix[(s_tz_index, index_array[i])] * x_fac + global_stiff_matrix[(s_tx_index, index_array[i])] * y_fac;
+                global_stiff_matrix[(s_tz_index, index_array[i])] =
+                    global_stiff_matrix[(s_tz_index, index_array[i])] * x_fac +
+                    global_stiff_matrix[(s_tx_index, index_array[i])] * y_fac;
             }
         }
         if elem.releases.e_tx {
-            let x_fac = rotation.cos();
-            let y_fac = rotation.sin();
+            x_fac = rotation.cos();
+            y_fac = rotation.sin();
             for i in 0..index_array.len() {
-                global_stiff_matrix[(index_array[i], e_tx_index)] = global_stiff_matrix[(index_array[i], e_tx_index)] * x_fac + global_stiff_matrix[(index_array[i], e_tz_index)] * y_fac;
+                global_stiff_matrix[(index_array[i], e_tx_index)] =
+                    global_stiff_matrix[(index_array[i], e_tx_index)] * x_fac +
+                    global_stiff_matrix[(index_array[i], e_tz_index)] * y_fac;
             }
 
             for i in 0..index_array.len() {
-                global_stiff_matrix[(e_tx_index, index_array[i])] = global_stiff_matrix[(e_tx_index, index_array[i])] * x_fac + global_stiff_matrix[(e_tz_index, index_array[i])] * y_fac;
+                global_stiff_matrix[(e_tx_index, index_array[i])] =
+                    global_stiff_matrix[(e_tx_index, index_array[i])] * x_fac +
+                    global_stiff_matrix[(e_tz_index, index_array[i])] * y_fac;
             }
         }
         if elem.releases.e_tz {
-            let x_fac = -rotation.sin();
-            let y_fac = rotation.cos();
+            x_fac = rotation.cos();
+            y_fac = -rotation.sin();
             for i in 0..index_array.len() {
-                global_stiff_matrix[(index_array[i], e_tz_index)] = global_stiff_matrix[(index_array[i], e_tz_index)] * x_fac + global_stiff_matrix[(index_array[i], e_tx_index)] * y_fac;
+                global_stiff_matrix[(index_array[i], e_tz_index)] =
+                    global_stiff_matrix[(index_array[i], e_tz_index)] * x_fac +
+                    global_stiff_matrix[(index_array[i], e_tx_index)] * y_fac;
             }
 
             for i in 0..index_array.len() {
-                global_stiff_matrix[(e_tz_index, index_array[i])] = global_stiff_matrix[(e_tz_index, index_array[i])] * x_fac + global_stiff_matrix[(e_tx_index, index_array[i])] * y_fac;
+                global_stiff_matrix[(e_tz_index, index_array[i])] =
+                    global_stiff_matrix[(e_tz_index, index_array[i])] * x_fac +
+                    global_stiff_matrix[(e_tx_index, index_array[i])] * y_fac;
             }
         }
     }
