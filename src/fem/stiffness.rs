@@ -108,16 +108,25 @@ fn handle_releases(elem: &CalculationElement, stiff_matrix: &DMatrix<f64>) -> DM
     let dof = 3;
     let release_count = elem.releases.start_release_count() + elem.releases.end_release_count();
     // Kpp
-    let mut preserved: DMatrix<f64> = DMatrix::zeros(dof*2, dof*2);
+    let mut preserved: DMatrix<f64> = DMatrix::zeros(dof*2-release_count, dof*2-release_count);
     // Kff (only the released cells, the intersections of the released rows and columns)
     let mut released: DMatrix<f64> = DMatrix::zeros(release_count, release_count);
     // Kpf and Kfp (released rows and columns but intersects with preserved rows and columns)
-    let mut modifiers_cols: DMatrix<f64> = DMatrix::zeros(dof*2-release_count, release_count);
-    let mut modifiers_rows: DMatrix<f64> = DMatrix::zeros(release_count, dof*2-release_count);
+    let mut modifiers_cols: DMatrix<f64> = DMatrix::zeros(dof*2-release_count, release_count); // Kpf
+    let mut modifiers_rows: DMatrix<f64> = DMatrix::zeros(release_count, dof*2-release_count); // Kfp
 
     let mut kff_row_cur = 0;
     let mut kff_col_cur = 0;
     let mut increm_kff_row_count = false;
+    let mut kpf_row_cur = 0;
+    let mut kpf_col_cur = 0;
+    let mut increm_kpf_row_count = false;
+    let mut kfp_row_cur = 0;
+    let mut kfp_col_cur = 0;
+    let mut increm_kfp_row_count = false;
+    let mut kpp_row_cur = 0;
+    let mut kpp_col_cur = 0;
+    let mut increm_kpp_row_count = false;
     for i in 0..dof*2 {
         for j in 0..dof*2 {
             let rel_row = elem.releases.get_release_value(i).unwrap();
@@ -127,8 +136,18 @@ fn handle_releases(elem: &CalculationElement, stiff_matrix: &DMatrix<f64>) -> DM
                 released[(kff_row_cur, kff_col_cur)] = stiff_matrix[(i, j)];
                 kff_col_cur += 1;
                 increm_kff_row_count = true;
+            } else if rel_col {
+                modifiers_cols[(kfp_row_cur, kfp_col_cur)] = stiff_matrix[(i, j)];
+                kfp_col_cur += 1;
+                increm_kfp_row_count = true;
             } else if rel_row {
-
+                modifiers_rows[(kpf_row_cur, kpf_col_cur)] = stiff_matrix[(i, j)];
+                kpf_col_cur += 1;
+                increm_kpf_row_count = true;
+            } else {
+                preserved[(kpp_row_cur, kpp_col_cur)] = stiff_matrix[(i, j)];
+                kpp_col_cur += 1;
+                increm_kpp_row_count = true;
             }
         }
         if increm_kff_row_count {
@@ -136,12 +155,72 @@ fn handle_releases(elem: &CalculationElement, stiff_matrix: &DMatrix<f64>) -> DM
             kff_col_cur = 0;
             increm_kff_row_count = false;
         }
+        if increm_kpf_row_count {
+            kpf_row_cur += 1;
+            kpf_col_cur = 0;
+            increm_kpf_row_count = false;
+        }
+        if increm_kfp_row_count {
+            kfp_row_cur += 1;
+            kfp_col_cur = 0;
+            increm_kfp_row_count = false;
+        }
+        if increm_kpp_row_count {
+            kpp_row_cur += 1;
+            kpp_col_cur = 0;
+            increm_kpp_row_count = false;
+        }
     }
 
-    println!("Kff: {:?}", released);
+    println!("Stiffness matrix: {}", stiff_matrix);
+    println!("Kff: {}", released);
 
-    // TODO Fix the return
-    return stiff_matrix.clone();
+    let kff_inversed = match released.try_inverse() {
+        Some(m) => m,
+        None => {
+            panic!("Could not invert the matrix!");
+        }
+    };
+    println!("Kpf: {}", modifiers_cols);
+    println!("Kff_inv: {}", kff_inversed);
+    println!("Kfp: {}", modifiers_rows);
+    println!("Kpp: {}", preserved);
+
+    let kpf_m_kff_inv = modifiers_cols * kff_inversed;
+
+    let subtraction = kpf_m_kff_inv * modifiers_rows;
+    let subtracted = preserved - subtraction;
+
+    println!("Subtracted: {}", subtracted);
+
+    let mut result: DMatrix<f64> = DMatrix::zeros(dof*2, dof*2);
+
+    let mut result_row_cur = 0;
+    let mut result_col_cur = 0;
+    let mut increm_result_row_cur = false;
+    for i in 0..dof*2 {
+        for j in 0..dof*2 {
+            let rel_row = elem.releases.get_release_value(i).unwrap();
+            let rel_col = elem.releases.get_release_value(j).unwrap();
+            if rel_row || rel_col {
+                // Move the intersected release values into Kff
+                result[(i, j)] = 0.0;
+            } else {
+                result[(i, j)] = subtracted[(result_row_cur, result_col_cur)];
+                result_col_cur += 1;
+                increm_result_row_cur = true;
+            }
+        }
+        if increm_result_row_cur {
+            result_row_cur += 1;
+            result_col_cur = 0;
+            increm_result_row_cur = false;
+        }
+    }
+
+    println!("Result: {}", result);
+
+    result
 }
 
 pub(super) fn create_joined_stiffness_matrix(
@@ -287,17 +366,18 @@ mod tests {
             model_el_length: 4000.0,
             node_start: 1,
             node_end: 2,
-            material: &Default::default(),
+            material: &MaterialData::Steel(crate::material::Steel::new_s355()),
             profile: &Profile::new_rectangle("ASAD".to_string(), 100.0, 100.0),
             releases: Default::default(),
-            length: 0.0,
+            length: 4000.0,
             rotation: 0.0,
-            profile_area: 0.0,
-            elastic_modulus: 0.0,
-            major_smoa: 0.0,
+            profile_area: 10000.0,
+            elastic_modulus: 210000.0,
+            major_smoa: 8333333.0,
             offset_from_model_el: 0.0,
         };
+        calc_elem.releases.e_tx = true;
         calc_elem.releases.e_ry = true;
-        handle_releases(&calc_elem, &get_element_stiffness_matrix(&calc_elem, &CalculationSettings::default()));
+        &get_element_stiffness_matrix(&calc_elem, &CalculationSettings::default());
     }
 }

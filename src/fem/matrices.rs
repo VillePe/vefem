@@ -25,10 +25,10 @@ pub fn create_global_calculation_matrix(
     apply_support_rotation_values(calc_model.structure_nodes, &mut global_stiff_matrix,
                                   &mut global_eq_l_matrix
     );
-    apply_release_rotation_values(calc_model.structure_nodes, calc_model.structure_elements,
-                                  &stiff_matrix_and_release_map.1, &mut global_stiff_matrix,
-                                  &mut global_eq_l_matrix
-    );
+    // apply_release_rotation_values(calc_model.structure_nodes, calc_model.structure_elements,
+    //                               &stiff_matrix_and_release_map.1, &mut global_stiff_matrix,
+    //                               &mut global_eq_l_matrix
+    // );
     CalculationMatrix {
         stiffness: global_stiff_matrix,
         equivalent_loads: global_eq_l_matrix,
