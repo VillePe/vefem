@@ -39,7 +39,7 @@ pub fn get_element_stiffness_matrix(element: &CalculationElement,
     let I = element.profile.get_major_second_mom_of_area(&element.material, settings);
     let EA = E * A;
     let EI = E * I;
-    DMatrix::from_row_slice(
+    let mut stiff_matrix = DMatrix::from_row_slice(
         6,
         6,
         &[
@@ -80,7 +80,68 @@ pub fn get_element_stiffness_matrix(element: &CalculationElement,
             -6.0 * EI / L.powi(2),
             4.0 * EI / L,
         ],
-    )
+    );
+    stiff_matrix = handle_releases(element, &stiff_matrix);
+    return stiff_matrix;
+}
+
+
+/// Handles the releases in the stiffness matrix.
+///
+/// K = K<sub>pp</sub> - K<sub>pf</sub>\*K<sub>ff</sub><sup>-1</sup>*K<sub>fp</sub>
+///
+/// Where:
+/// - K<sub>pp</sub> is the preserved stiffness matrix (the rows and columns that do not intersect with any of the
+/// released rows and columns.
+/// - K<sub>pf</sub> is the columns of the released directions but do not include the intersections of released
+/// rows and columns.
+/// - K<sub>fp</sub> is likewise but the rows
+/// - K<sub>ff</sub> contains only the released cells, the intersections of the released rows and columns
+///
+/// For example, with end rotation released
+/// - K<sub>ff</sub> would be K\[5,5] (zero start index)
+/// - K<sub>pf</sub> would be K\[0..4, 5] (column 6 and rows 1 to 5)
+/// - K<sub>pf</sub> would be K\[5, 0..4] (row 6 and columns 1 to 5)
+/// - K<sub>pp</sub> would be K\[0..4, 0..4] (all cells but rows and columns 6)
+/// - K<sub>ff</sub> would be the cells of K\[5,5] (row 6, column 6)
+fn handle_releases(elem: &CalculationElement, stiff_matrix: &DMatrix<f64>) -> DMatrix<f64> {
+    let dof = 3;
+    let release_count = elem.releases.start_release_count() + elem.releases.end_release_count();
+    // Kpp
+    let mut preserved: DMatrix<f64> = DMatrix::zeros(dof*2, dof*2);
+    // Kff (only the released cells, the intersections of the released rows and columns)
+    let mut released: DMatrix<f64> = DMatrix::zeros(release_count, release_count);
+    // Kpf and Kfp (released rows and columns but intersects with preserved rows and columns)
+    let mut modifiers_cols: DMatrix<f64> = DMatrix::zeros(dof*2-release_count, release_count);
+    let mut modifiers_rows: DMatrix<f64> = DMatrix::zeros(release_count, dof*2-release_count);
+
+    let mut kff_row_cur = 0;
+    let mut kff_col_cur = 0;
+    let mut increm_kff_row_count = false;
+    for i in 0..dof*2 {
+        for j in 0..dof*2 {
+            let rel_row = elem.releases.get_release_value(i).unwrap();
+            let rel_col = elem.releases.get_release_value(j).unwrap();
+            if rel_row && rel_col {
+                // Move the intersected release values into Kff
+                released[(kff_row_cur, kff_col_cur)] = stiff_matrix[(i, j)];
+                kff_col_cur += 1;
+                increm_kff_row_count = true;
+            } else if rel_row {
+
+            }
+        }
+        if increm_kff_row_count {
+            kff_row_cur += 1;
+            kff_col_cur = 0;
+            increm_kff_row_count = false;
+        }
+    }
+
+    println!("Kff: {:?}", released);
+
+    // TODO Fix the return
+    return stiff_matrix.clone();
 }
 
 pub(super) fn create_joined_stiffness_matrix(
@@ -206,4 +267,37 @@ pub(super) fn create_joined_stiffness_matrix(
 
     (DMatrix::from_vec(row_width, row_width, matrix_vector), release_index_map)
     // DMatrix::from_row_slice(row_width, row_width, &matrix_vector)
+}
+
+#[cfg(test)]
+mod tests {
+    use std::collections::BTreeMap;
+    use crate::fem::stiffness::{get_element_stiffness_matrix, handle_releases};
+    use crate::material::{MaterialData, Steel};
+    use crate::profile::Profile;
+    use crate::settings::CalculationSettings;
+    use crate::structure::{CalculationElement, Element};
+
+    #[test]
+    fn test_release_handling() {
+        let elem = Element::new(1, 1, 2, Profile::new_rectangle("ASD".to_string(), 100.0, 100.0), MaterialData::Steel(Steel::new_s355()));
+        let mut calc_elem = CalculationElement {
+            calc_el_num: 1,
+            model_el_num: 1,
+            model_el_length: 4000.0,
+            node_start: 1,
+            node_end: 2,
+            material: &Default::default(),
+            profile: &Profile::new_rectangle("ASAD".to_string(), 100.0, 100.0),
+            releases: Default::default(),
+            length: 0.0,
+            rotation: 0.0,
+            profile_area: 0.0,
+            elastic_modulus: 0.0,
+            major_smoa: 0.0,
+            offset_from_model_el: 0.0,
+        };
+        calc_elem.releases.e_ry = true;
+        handle_releases(&calc_elem, &get_element_stiffness_matrix(&calc_elem, &CalculationSettings::default()));
+    }
 }
