@@ -24,6 +24,7 @@ pub fn calculate_at(
         element, loads,
         &results.release_index_map[&element.model_el_num], calc_settings
     );
+    // TODO The displacement at the end of the element is not taken into account.
     let local_displacements = results.get_elem_local_displacements(
         element, &results.release_index_map[&element.model_el_num]
     );

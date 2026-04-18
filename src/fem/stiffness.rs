@@ -221,7 +221,7 @@ fn handle_releases(elem: &CalculationElement, stiff_matrix: &DMatrix<f64>) -> DM
     println!("Result: {}", result);
 
     result
-}
+}   
 
 pub(super) fn create_joined_stiffness_matrix(
     calc_model: &CalcModel,
