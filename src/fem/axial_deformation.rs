@@ -21,12 +21,11 @@ pub fn calculate_at(
     // The sum of integrals from loads and support reactions
     let mut s_integral = 0.0;
     let local_reactions = results.get_elem_local_nodal_force_vectors(
-        element, loads,
-        &results.release_index_map[&element.model_el_num], calc_settings
+        element, loads, calc_settings
     );
     // TODO The displacement at the end of the element is not taken into account.
     let local_displacements = results.get_elem_local_displacements(
-        element, &results.release_index_map[&element.model_el_num]
+        element
     );
 
     let e_m = element.elastic_modulus;
@@ -67,12 +66,6 @@ pub fn calculate_at(
             load::CalculationLoadType::Strain => {
                 let point_load_strength = e_m * area / element.length * load.strength;
                 s_integral += point_load_strength * 1.0 * (x);
-                println!("X: {}", x);
-                println!("Element length: {}", element.length);
-                println!("Point load: {}", point_load_strength * 1.0 * (x));
-                println!("Local displacement: {}", local_displacements[(0, 0)]);
-                println!("Local reaction: {}", local_reactions[(0, 0)]);
-                println!();
             }
         };
     }

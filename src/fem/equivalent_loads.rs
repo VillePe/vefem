@@ -1,4 +1,4 @@
-﻿use crate::fem::matrices;
+﻿use crate::fem::{matrices, stiffness};
 use crate::loads::load::{CalculationLoad, CalculationLoadType};
 use crate::settings::CalculationSettings;
 use crate::structure::CalculationElement;
@@ -12,17 +12,12 @@ pub(super) fn create(
     settings: &CalculationSettings,
 ) -> DMatrix<f64> {
     let supp_count = calc_model.get_node_count();
-    // Increase the joined stiffness matrix size by release count. Releases are set into their
-    // own rows and columns at the end of the joined matrix
-    let release_count = crate::structure::utils::get_element_release_count(&calc_model.structure_elements);
     // The degrees of freedom count of single node (tx, tz, ry)
     let dof = 3;
-    let col_height = supp_count * dof + release_count;
+    let col_height = supp_count * dof;
 
     let mut matrix_vector = vec![0.0; col_height];
 
-    // The starting column locations for locating the cells for releases
-    let mut rel_col = supp_count * dof;
     let mut supp_index: usize;
     let mut i_normalized: usize;
 
@@ -41,15 +36,15 @@ pub(super) fn create(
                 i_normalized = i - dof;
             }
             // If there is a release at i, it needs to be handled
-            if elem.releases.get_release_value(i).unwrap() {
-                // If the current row has a release set the current value in the release rows (at the end of the matrix)
-                matrix_vector[rel_col] += el_global_eq_loads[(i, 0)];
-                rel_col += 1;
-            } else {
+            // if elem.releases.get_release_value(i).unwrap() {
+            //     // If the current row has a release set the current value in the release rows (at the end of the matrix)
+            //     matrix_vector[rel_col] += el_global_eq_loads[(i, 0)];
+            //     rel_col += 1;
+            // } else {
                 // supp_index2 * dof     offset the columns by the support number
                 // i_normalized          offset the columns by i
                 matrix_vector[supp_index * dof + i_normalized] += el_global_eq_loads[(i, 0)];
-            }
+            // }
         }
     }
 
@@ -79,35 +74,82 @@ pub fn get_element_g_eq_loads(
     for load in linked_loads {
         match load.load_type {
             CalculationLoadType::Point => {
-                let element_eql_matrix_lc = handle_point_load(el_length, el_rotation, load);
+                let mut element_eql_matrix_lc = handle_point_load(el_length, el_rotation, load);
+                element_eql_matrix_lc = handle_releases(&element_eql_matrix_lc, element, settings);
                 let element_eql_matrix_gl = &rot_matrix * element_eql_matrix_lc;
                 result_vector += element_eql_matrix_gl;
             }
             CalculationLoadType::Line => {
-                let element_eql_matrix_lc = handle_line_load(el_length, el_rotation, load);
+                let mut element_eql_matrix_lc = handle_line_load(el_length, el_rotation, load);
+                element_eql_matrix_lc = handle_releases(&element_eql_matrix_lc, element, settings);
                 let element_eql_matrix_gl = &rot_matrix * element_eql_matrix_lc;
                 result_vector += element_eql_matrix_gl;
             }
             CalculationLoadType::Triangular => {
-                let element_eql_matrix_lc = handle_triangular_load(el_length, el_rotation, load);
+                let mut element_eql_matrix_lc = handle_triangular_load(el_length, el_rotation, load);
+                element_eql_matrix_lc = handle_releases(&element_eql_matrix_lc, element, settings);
                 let element_eql_matrix_gl = &rot_matrix * element_eql_matrix_lc;
                 result_vector += element_eql_matrix_gl;
             }
             CalculationLoadType::Rotational => {
-                let element_eql_matrix_lc = handle_rotational_load(el_length, load);
+                let mut element_eql_matrix_lc = handle_rotational_load(el_length, load);
+                element_eql_matrix_lc = handle_releases(&element_eql_matrix_lc, element, settings);
                 let element_eql_matrix_gl = &rot_matrix * element_eql_matrix_lc;
                 result_vector += element_eql_matrix_gl;
             }
             CalculationLoadType::Strain => {
                 let val = element.elastic_modulus * element.profile.get_area(&element.material, settings) / el_length
                     * load.strength;
-                result_vector +=
-                    &rot_matrix * DMatrix::from_row_slice(6, 1, &[-val, 0.0, 0.0, val, 0.0, 0.0]);
+                let mut element_eql_matrix_lc =DMatrix::from_row_slice(6, 1, &[-val, 0.0, 0.0, val, 0.0, 0.0]);
+                element_eql_matrix_lc = handle_releases(&element_eql_matrix_lc, element, settings);
+                let element_eql_matrix_gl = &rot_matrix * element_eql_matrix_lc;
+                result_vector += element_eql_matrix_gl;
             }
         }
     }
 
     result_vector
+}
+
+fn handle_releases(eq_load_matrix: &DMatrix<f64>, element: &CalculationElement, settings: &CalculationSettings) -> DMatrix<f64> {
+    let dof = 3;
+    let release_count = element.releases.start_release_count() + element.releases.end_release_count();
+    if release_count == 0 {
+        return eq_load_matrix.clone();
+    }
+    let el_stiff_matrix = stiffness::get_element_stiffness_matrix(element, settings, true);
+    let parts = stiffness::get_stiffness_matrix_release_parts(element, release_count, &el_stiff_matrix);
+    let mut fp : DMatrix<f64> = DMatrix::zeros(dof*2-release_count, 1);
+    let mut ff : DMatrix<f64> = DMatrix::zeros(release_count, 1);
+    let mut result : DMatrix<f64> = DMatrix::zeros(dof*2, 1);
+    let kff_inv = parts.kff.try_inverse().unwrap();
+    let mut fp_counter = 0;
+    let mut ff_counter = 0;
+
+    for i in 0..dof*2 {
+        if element.releases.get_release_value(i).unwrap() {
+            ff[ff_counter] = eq_load_matrix[i];
+            ff_counter += 1;
+        } else {
+            fp[fp_counter] = eq_load_matrix[i];
+            fp_counter += 1;
+        }
+    }
+
+    let reduced = fp - parts.kpf * kff_inv * ff;
+    let mut reduced_counter = 0;
+
+    for i in 0..dof*2 {
+        if element.releases.get_release_value(i).unwrap() {
+            result[i] = 0.0;
+        } else {
+            result[i] = reduced[reduced_counter];
+            reduced_counter += 1;
+        }
+    }
+
+
+    result
 }
 
 /// Handles the conversion of the load to the equivalent loads by elements coordinate system.

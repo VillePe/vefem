@@ -124,7 +124,6 @@ pub fn get_calc_elements<'a>(
                 }
                 prev_split_pos = Some((*split_pos.0, split_pos.1.number));
                 count += 1;
-                println!("Calc elem: nro: {}, L={}, S:{}, E:{})", calc_element.calc_el_num, calc_element.length, calc_element.node_start, calc_element.node_end);
                 calc_elements.get_mut(&e.number).unwrap().push(calc_element);
             }
             // Create the last element
@@ -137,7 +136,6 @@ pub fn get_calc_elements<'a>(
             calc_element.releases.s_tx = false;
             calc_element.releases.s_tz = false;
             calc_element.releases.s_ry = false;
-            println!("Calc elem: nro: {}, L={}, S:{}, E:{})", calc_element.calc_el_num, calc_element.length, calc_element.node_start, calc_element.node_end);
             calc_elements.get_mut(&e.number).unwrap().push(calc_element);
         }        
     }

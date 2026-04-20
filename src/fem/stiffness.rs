@@ -1,12 +1,10 @@
 ﻿#![allow(non_snake_case)]
 
-use std::collections::BTreeMap;
 use crate::fem::matrices::get_rotation_matrix;
 use crate::material::MaterialData;
 use crate::settings::CalculationSettings;
 use crate::structure::CalculationElement;
 use nalgebra::DMatrix;
-use crate::structure::element::ReleaseIndexMap;
 use super::CalcModel;
 
 /// Gets the elements stiffness matrix in the global coordinate system.
@@ -14,7 +12,7 @@ pub fn get_element_global_stiffness_matrix(
     e: &CalculationElement,
     settings: &CalculationSettings
 ) -> DMatrix<f64> {    
-    let e_stiff_matrix = get_element_stiffness_matrix(&e, settings);
+    let e_stiff_matrix = get_element_stiffness_matrix(&e, settings, false);
     let e_rotation_matrix = get_rotation_matrix(e.rotation);
     let e_rot_matrix_t = e_rotation_matrix.transpose();
     let e_glob_stiff_matrix = e_rot_matrix_t * e_stiff_matrix * e_rotation_matrix;
@@ -24,7 +22,7 @@ pub fn get_element_global_stiffness_matrix(
 /// Gets the stiffness matrix of the element in elements local coordinate system.
 /// Do not use this directly in the calculations. Use get_element_global_stiffness_matrix
 pub fn get_element_stiffness_matrix(element: &CalculationElement, 
-    settings: &CalculationSettings
+    settings: &CalculationSettings, ignore_releases: bool
 ) -> DMatrix<f64> {
     let E = match &element.material {
         MaterialData::Concrete(c) => c.elastic_modulus,
@@ -81,8 +79,10 @@ pub fn get_element_stiffness_matrix(element: &CalculationElement,
             4.0 * EI / L,
         ],
     );
-    stiff_matrix = handle_releases(element, &stiff_matrix);
-    return stiff_matrix;
+    if !ignore_releases {
+        stiff_matrix = handle_releases(element, &stiff_matrix);
+    }
+    stiff_matrix
 }
 
 
@@ -107,13 +107,76 @@ pub fn get_element_stiffness_matrix(element: &CalculationElement,
 fn handle_releases(elem: &CalculationElement, stiff_matrix: &DMatrix<f64>) -> DMatrix<f64> {
     let dof = 3;
     let release_count = elem.releases.start_release_count() + elem.releases.end_release_count();
+    if release_count == 0 {
+        return stiff_matrix.clone();
+    }
+
+    let parts = get_stiffness_matrix_release_parts(elem, release_count, stiff_matrix);
+
+    // println!("Kff: {}", released);
+
+    let kff_inversed = match parts.kff.try_inverse() {
+        Some(m) => m,
+        None => {
+            panic!("Could not invert the matrix!");
+        }
+    };
+
+    let kpf_m_kff_inv = parts.kpf * kff_inversed;
+
+    let subtraction = kpf_m_kff_inv * parts.kfp;
+    let subtracted = parts.kpp - subtraction;
+
+    // println!("Subtracted: {}", subtracted);
+
+    let mut result: DMatrix<f64> = DMatrix::zeros(dof*2, dof*2);
+
+    let mut result_row_cur = 0;
+    let mut result_col_cur = 0;
+    let mut increm_result_row_cur = false;
+    for i in 0..dof*2 {
+        for j in 0..dof*2 {
+            let rel_row = elem.releases.get_release_value(i).unwrap();
+            let rel_col = elem.releases.get_release_value(j).unwrap();
+            if rel_row || rel_col {
+                // Move the intersected release values into Kff
+                result[(i, j)] = 0.0;
+            } else {
+                result[(i, j)] = subtracted[(result_row_cur, result_col_cur)];
+                result_col_cur += 1;
+                increm_result_row_cur = true;
+            }
+        }
+        if increm_result_row_cur {
+            result_row_cur += 1;
+            result_col_cur = 0;
+            increm_result_row_cur = false;
+        }
+    }
+
+    result
+}
+
+pub struct StiffnessMatrixParts {
+    pub kpp: DMatrix<f64>,
+    pub kpf: DMatrix<f64>,
+    pub kfp: DMatrix<f64>,
+    pub kff: DMatrix<f64>,
+}
+
+/// Gets the Kpf, Kfp, Kff and Kpp matrices from the element stiffness matrix
+pub fn get_stiffness_matrix_release_parts(
+    elem: &CalculationElement,
+    rel_count: usize,
+    stiff_matrix: &DMatrix<f64>) -> StiffnessMatrixParts {
+    let dof = 3;
     // Kpp
-    let mut preserved: DMatrix<f64> = DMatrix::zeros(dof*2-release_count, dof*2-release_count);
+    let mut preserved: DMatrix<f64> = DMatrix::zeros(dof*2-rel_count, dof*2-rel_count);
     // Kff (only the released cells, the intersections of the released rows and columns)
-    let mut released: DMatrix<f64> = DMatrix::zeros(release_count, release_count);
+    let mut released: DMatrix<f64> = DMatrix::zeros(rel_count, rel_count);
     // Kpf and Kfp (released rows and columns but intersects with preserved rows and columns)
-    let mut modifiers_cols: DMatrix<f64> = DMatrix::zeros(dof*2-release_count, release_count); // Kpf
-    let mut modifiers_rows: DMatrix<f64> = DMatrix::zeros(release_count, dof*2-release_count); // Kfp
+    let mut modifiers_cols: DMatrix<f64> = DMatrix::zeros(dof*2-rel_count, rel_count); // Kpf
+    let mut modifiers_rows: DMatrix<f64> = DMatrix::zeros(rel_count, dof*2-rel_count); // Kfp
 
     let mut kff_row_cur = 0;
     let mut kff_col_cur = 0;
@@ -172,97 +235,40 @@ fn handle_releases(elem: &CalculationElement, stiff_matrix: &DMatrix<f64>) -> DM
         }
     }
 
-    println!("Stiffness matrix: {}", stiff_matrix);
-    println!("Kff: {}", released);
-
-    let kff_inversed = match released.try_inverse() {
-        Some(m) => m,
-        None => {
-            panic!("Could not invert the matrix!");
-        }
-    };
-    println!("Kpf: {}", modifiers_cols);
-    println!("Kff_inv: {}", kff_inversed);
-    println!("Kfp: {}", modifiers_rows);
-    println!("Kpp: {}", preserved);
-
-    let kpf_m_kff_inv = modifiers_cols * kff_inversed;
-
-    let subtraction = kpf_m_kff_inv * modifiers_rows;
-    let subtracted = preserved - subtraction;
-
-    println!("Subtracted: {}", subtracted);
-
-    let mut result: DMatrix<f64> = DMatrix::zeros(dof*2, dof*2);
-
-    let mut result_row_cur = 0;
-    let mut result_col_cur = 0;
-    let mut increm_result_row_cur = false;
-    for i in 0..dof*2 {
-        for j in 0..dof*2 {
-            let rel_row = elem.releases.get_release_value(i).unwrap();
-            let rel_col = elem.releases.get_release_value(j).unwrap();
-            if rel_row || rel_col {
-                // Move the intersected release values into Kff
-                result[(i, j)] = 0.0;
-            } else {
-                result[(i, j)] = subtracted[(result_row_cur, result_col_cur)];
-                result_col_cur += 1;
-                increm_result_row_cur = true;
-            }
-        }
-        if increm_result_row_cur {
-            result_row_cur += 1;
-            result_col_cur = 0;
-            increm_result_row_cur = false;
-        }
+    StiffnessMatrixParts {
+        kpp: preserved,
+        kpf: modifiers_cols,
+        kfp: modifiers_rows,
+        kff: released,
     }
-
-    println!("Result: {}", result);
-
-    result
-}   
+}
 
 pub(super) fn create_joined_stiffness_matrix(
     calc_model: &CalcModel,
     settings: &CalculationSettings
-) -> (DMatrix<f64>, BTreeMap<i32, ReleaseIndexMap>) {
+) -> DMatrix<f64> {
     let supp_count = calc_model.structure_nodes.len() + calc_model.extra_nodes.len();    
     // Increase the joined stiffness matrix size by release count. Releases are set into their
     // own rows and columns at the end of the joined matrix
-    let release_count = crate::structure::utils::get_element_release_count(&calc_model.structure_elements);
+    // let release_count = crate::structure::utils::get_element_release_count(&calc_model.structure_elements);
     // The degrees of freedom count of single node (tx, tz, ry)
     let dof = 3;
-    let row_width = supp_count * dof + release_count;
+    let row_width = supp_count * dof;
 
     let mut matrix_vector = vec![0.0; row_width * row_width];
 
-    // The starting row and column locations for locating the cells for releases
-    let mut rel_row = 0;
     let mut supp_index1: usize;
     let mut supp_index2: usize;
     let mut i_normalized: usize;
     let mut j_normalized: usize;
 
-    // A map to store the index of the release column for each row. The key is the element number
-    // and the ReleaseIndexMap contains the indexes for different releases
-    let mut release_index_map: BTreeMap<i32, ReleaseIndexMap > = BTreeMap::new();
-    // The number of releases in the global stiffness matrix
-    let mut g_rel_increment_count = 0;
-
     for elem in calc_model.get_all_calc_elements() {
-        release_index_map.insert(elem.model_el_num, ReleaseIndexMap::default());
         let e_glob_stiff_matrix = get_element_global_stiffness_matrix(&elem, settings);
         // The index of the start node
         let s = (elem.node_start - 1) as usize;
         // The index of the end node
         let e = (elem.node_end - 1) as usize;
-        // The local release counter for the element
-        let mut l_rel_increment_count = 0;
         for i in 0..dof * 2 {
-            // Reset the column counter at every row change
-            let mut rel_col = 0 + g_rel_increment_count;
-            let mut increment_rel_row_count = false;
             for j in 0..dof * 2 {
                 if i < dof {
                     supp_index1 = s;
@@ -289,69 +295,24 @@ pub(super) fn create_joined_stiffness_matrix(
                         j_normalized = j - dof;
                     }
                 }
-                // If there is a release at either i or j, it needs to be handled
-                if elem.releases.get_release_value(i).unwrap()
-                    || elem.releases.get_release_value(j).unwrap()
-                {
-                    if i == j {
-                        // If current row and column have release, place the value in the intersection of the current
-                        // release row and column
-                        matrix_vector[
-                            row_width * supp_count * dof +    // Go to the start of the release columns
-                                supp_count * dof + rel_col    // Move by the release column count
-                            + row_width*rel_row               // Move by the release row count
-                            ] += e_glob_stiff_matrix[(i, j)];
-                        release_index_map.get_mut(&elem.model_el_num).unwrap().set(i, supp_count * dof + rel_col);
-                        rel_col += 1;
-                        l_rel_increment_count += 1;
-                    } else if elem.releases.get_release_value(i).unwrap() {
-                        // If the current row has a release, move the whole row to the rel_row
-                        matrix_vector[
-                            supp_count * dof +                // Go to the start of the release row
-                            (supp_index2 * dof) * row_width + // Move by the node number
-                            j_normalized * row_width +        // Move by the column number
-                            rel_row]
-                            +=
-                            e_glob_stiff_matrix[(i, j)];
-                        increment_rel_row_count = true;
-                    } else if elem.releases.get_release_value(j).unwrap() {
-                        // If the current column has a release, move the whole column to the rel_col
-                        matrix_vector[
-                            row_width * supp_count * dof +         // Move to start of release columns
-                            (supp_index1 * dof) +                  // Move by the node number
-                            rel_col * row_width                    // Move if there are multiple releases
-                            + i_normalized]                        // Move by current row
-                            += e_glob_stiff_matrix[(i, j)];
-
-                        rel_col += 1;
-                    }
-                } else {
-                    // (supp_index1 * dof) * row_width       offset the rows by the support node number
-                    // supp_index2 * dof                     offset the columns by the support number
-                    // j_normalized                          offset the columns by j
-                    // i_normalized * row_width              offset the rows by i
-                    matrix_vector[(supp_index1 * dof) * row_width
-                        + i_normalized * row_width
-                        + supp_index2 * dof
-                        + j_normalized] += e_glob_stiff_matrix[(i, j)];
-                }
-            }
-            // Before moving to new row, increase the current row count by the number of releases
-            if increment_rel_row_count {
-                rel_row += 1;
+                // (supp_index1 * dof) * row_width       offset the rows by the support node number
+                // supp_index2 * dof                     offset the columns by the support number
+                // j_normalized                          offset the columns by j
+                // i_normalized * row_width              offset the rows by i
+                matrix_vector[(supp_index1 * dof) * row_width
+                    + i_normalized * row_width
+                    + supp_index2 * dof
+                    + j_normalized] += e_glob_stiff_matrix[(i, j)];
             }
         }
-        g_rel_increment_count += l_rel_increment_count;
     }
 
-    (DMatrix::from_vec(row_width, row_width, matrix_vector), release_index_map)
-    // DMatrix::from_row_slice(row_width, row_width, &matrix_vector)
+    DMatrix::from_vec(row_width, row_width, matrix_vector)
 }
 
 #[cfg(test)]
 mod tests {
-    use std::collections::BTreeMap;
-    use crate::fem::stiffness::{get_element_stiffness_matrix, handle_releases};
+    use crate::fem::stiffness::{get_element_stiffness_matrix};
     use crate::material::{MaterialData, Steel};
     use crate::profile::Profile;
     use crate::settings::CalculationSettings;
@@ -378,6 +339,6 @@ mod tests {
         };
         calc_elem.releases.e_tx = true;
         calc_elem.releases.e_ry = true;
-        &get_element_stiffness_matrix(&calc_elem, &CalculationSettings::default());
+        &get_element_stiffness_matrix(&calc_elem, &CalculationSettings::default(), false);
     }
 }

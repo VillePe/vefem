@@ -11,7 +11,6 @@ mod internal_forces_tests {
     use crate::common::internal_force_test;
     use vefem::loads::load_combination;
     use vefem::loads::load_combination::CalcLoadCombination;
-    use vefem::structure::element::ReleaseIndexMap;
     use vefem::structure::Support;
     use vefem::{loads::{Load, LoadGroup}, material::{MaterialData, Steel}, profile::Profile, results::ForceType, settings::CalculationSettings, structure::{Element, Node, StructureModel}};
 
@@ -1761,7 +1760,6 @@ mod internal_forces_tests {
         let local_reactions = results[0].node_results.get_elem_local_nodal_force_vectors(
             &calc_model.get_all_calc_elements()[0],
             &calc_loads,
-            &ReleaseIndexMap::default(),
             &struct_model.calc_settings,
         );
         println!("Displacements:: {:.4?}", results[0].node_results.displacements);

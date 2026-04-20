@@ -274,9 +274,6 @@ pub fn extract_calculation_loads(
                         .calculate_formula(&ll.strength)
                         .unwrap_or(0.0);
 
-                    println!("LineLoad: {:?}", ll);
-                    println!("TriangularLoad: {:?}", tl);
-
                     let calc_ll_load = handle_line_load_extracting(
                         element,
                         name.clone(),

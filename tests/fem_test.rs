@@ -89,7 +89,7 @@ mod fem_tests {
         let mut calc_matrices = vefem::fem::matrices::create_global_calculation_matrix(&calc_model, &calc_settings, &calc_loads);
         let displacement = vefem::fem::fem_handler::calculate_displacements(
             &nodes,
-            vefem::fem::utils::col_height(&nodes, &elements),
+            vefem::fem::utils::col_height(&nodes),
             &mut calc_matrices.stiffness,
             &mut calc_matrices.equivalent_loads,
         );
@@ -171,11 +171,11 @@ mod fem_tests {
         let mut calc_matrices = vefem::fem::matrices::create_global_calculation_matrix(&calc_model, &calc_settings, &calc_loads);
         let displacement = vefem::fem::fem_handler::calculate_displacements(
             &nodes,
-            vefem::fem::utils::col_height(&nodes, &elements),
+            vefem::fem::utils::col_height(&nodes),
             &mut calc_matrices.stiffness,
             &mut calc_matrices.equivalent_loads,
         );
-        println!("{}", displacement);
+        println!("Displacement_2: {}", displacement);
         assert!(relative_eq!(
             displacement[(0, 0)],
             0.0000,
@@ -236,16 +236,16 @@ mod fem_tests {
             0.00643,
             max_relative = 0.01
         ));
-        assert!(relative_eq!(
-            displacement[(12, 0)],
-            -0.00953,
-            max_relative = 0.01
-        ));
-        assert!(relative_eq!(
-            displacement[(13, 0)],
-            -0.02095,
-            max_relative = 0.01
-        ));
+        // assert!(relative_eq!(
+        //     displacement[(12, 0)],
+        //     -0.00953,
+        //     max_relative = 0.01
+        // ));
+        // assert!(relative_eq!(
+        //     displacement[(13, 0)],
+        //     -0.02095,
+        //     max_relative = 0.01
+        // ));
     }
 
     #[test]
@@ -267,7 +267,7 @@ mod fem_tests {
         let mut calc_matrices = vefem::fem::matrices::create_global_calculation_matrix(&calc_model, &calc_settings, &calc_loads);
         let displacement = vefem::fem::fem_handler::calculate_displacements(
             &nodes,
-            vefem::fem::utils::col_height(&nodes, &elements),
+            vefem::fem::utils::col_height(&nodes),
             &mut calc_matrices.stiffness,
             &mut calc_matrices.equivalent_loads,
         );
@@ -332,25 +332,11 @@ mod fem_tests {
             0.00643,
             max_relative = 0.01
         ));
-        assert!(relative_eq!(
-            displacement[(12, 0)],
-            -0.02628,
-            max_relative = 0.01
-        ));
-        assert!(relative_eq!(
-            displacement[(13, 0)],
-            -0.04419,
-            max_relative = 0.01
-        ));
     }
 
     #[test]
-    fn test_release_rotated_x_axis_1() {
-        let (mut elements, mut nodes) = common::get_structure_for_rotated_support_1();
-        nodes.get_mut(&2).unwrap().support.rotation = 0.0;
-        nodes.get_mut(&2).unwrap().support.tx = true;
-        nodes.get_mut(&2).unwrap().support.tz = true;
-        elements[0].releases.s_tx = true;
+    fn test_release_rotated_ry() {
+        let (elements, nodes) = common::get_structure_fem_matriisit_releases();
         let calc_model = common::get_calc_model(&elements, &nodes);
         let loads = common::get_loads_for_rotated_support_1();
         let calc_settings = CalculationSettings::default();
@@ -360,76 +346,15 @@ mod fem_tests {
             &CalcLoadCombination::default(),
             &EquationHandler::new(),
         );
-        let mut calc_matrices = vefem::fem::matrices::create_global_calculation_matrix(&calc_model, &calc_settings, &calc_loads);
-
-        assert!((calc_matrices.stiffness[(6,1)] - (371231.06)).abs() < 0.1);
-        assert!((calc_matrices.stiffness[(6,6)] - 525000.00).abs() < 0.1);
-    }
-
-    #[test]
-    fn test_release_rotated_x_axis_2() {
-        let (mut elements, mut nodes) = common::get_structure_for_rotated_support_1();
-        nodes.get_mut(&2).unwrap().support.rotation = 0.0;
-        nodes.get_mut(&2).unwrap().support.tx = true;
-        nodes.get_mut(&2).unwrap().support.tz = true;
-        elements[0].releases.e_tx = true;
-        let calc_model = common::get_calc_model(&elements, &nodes);
-        let loads = common::get_loads_for_rotated_support_1();
-        let calc_settings = CalculationSettings::default();
-        let calc_loads = loads::utils::extract_calculation_loads(
-            &calc_model,
-            &loads,
-            &CalcLoadCombination::default(),
-            &EquationHandler::new(),
+        let mut calc_matrices = vefem::fem::matrices::create_global_calculation_matrix(
+            &calc_model, &calc_settings, &calc_loads
         );
-        let mut calc_matrices = vefem::fem::matrices::create_global_calculation_matrix(&calc_model, &calc_settings, &calc_loads);
-
-        assert!((calc_matrices.stiffness[(6,0)] - (-371231.06)).abs() < 0.1);
-        assert!((calc_matrices.stiffness[(6,6)] - 525000.00).abs() < 0.1);
-    }
-
-    #[test]
-    fn test_release_rotated_z_axis_1() {
-        let (mut elements, mut nodes) = common::get_structure_for_rotated_support_1();
-        nodes.get_mut(&2).unwrap().support.rotation = 0.0;
-        nodes.get_mut(&2).unwrap().support.tx = true;
-        nodes.get_mut(&2).unwrap().support.tz = true;
-        elements[0].releases.s_tz = true;
-        let calc_model = common::get_calc_model(&elements, &nodes);
-        let loads = common::get_loads_for_rotated_support_1();
-        let calc_settings = CalculationSettings::default();
-        let calc_loads = loads::utils::extract_calculation_loads(
-            &calc_model,
-            &loads,
-            &CalcLoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let mut calc_matrices = vefem::fem::matrices::create_global_calculation_matrix(&calc_model, &calc_settings, &calc_loads);
-
-        assert!((calc_matrices.stiffness[(6,0)] - (-232.02)).abs() < 0.1);
-        assert!((calc_matrices.stiffness[(6,6)] - 328.12).abs() < 0.1);
-    }
-
-    #[test]
-    fn test_release_rotated_z_axis_2() {
-        let (mut elements, mut nodes) = common::get_structure_for_rotated_support_1();
-        nodes.get_mut(&2).unwrap().support.rotation = 0.0;
-        nodes.get_mut(&2).unwrap().support.tx = true;
-        nodes.get_mut(&2).unwrap().support.tz = true;
-        elements[0].releases.e_tz = true;
-        let calc_model = common::get_calc_model(&elements, &nodes);
-        let loads = common::get_loads_for_rotated_support_1();
-        let calc_settings = CalculationSettings::default();
-        let calc_loads = loads::utils::extract_calculation_loads(
-            &calc_model,
-            &loads,
-            &CalcLoadCombination::default(),
-            &EquationHandler::new(),
-        );
-        let mut calc_matrices = vefem::fem::matrices::create_global_calculation_matrix(&calc_model, &calc_settings, &calc_loads);
-
-        assert!((calc_matrices.stiffness[(6,0)] - (232.02)).abs() < 0.1);
-        assert!((calc_matrices.stiffness[(6,6)] - 328.12).abs() < 0.1);
+        assert!((calc_matrices.stiffness[(0,0)] - (82.0)).abs() < 0.1);
+        assert!((calc_matrices.stiffness[(3,11)] - (0.0)).abs() < 0.1);
+        assert!((calc_matrices.stiffness[(4,11)] - (2.3333e6)).abs() < 1e3);
+        assert!((calc_matrices.stiffness[(5,5)] - 9.333333333e9).abs() < 1e2);
+        assert!((calc_matrices.stiffness[(6,6)] - 82.0).abs() < 1e2);
+        assert!((calc_matrices.stiffness[(11,11)] - 9.333333333e9).abs() < 1e2);
     }
 
     #[test]
@@ -449,10 +374,13 @@ mod fem_tests {
             &CalcLoadCombination::default(),
             &EquationHandler::new(),
         );
-        let mut calc_matrices = vefem::fem::matrices::create_global_calculation_matrix(&calc_model, &calc_settings, &calc_loads);
+        let mut calc_matrices = vefem::fem::matrices::create_global_calculation_matrix(
+            &calc_model, &calc_settings, &calc_loads
+        );
 
-        // assert!((calc_matrices.stiffness[(6,6)] - 525000.00).abs() < 0.1);
-        // assert!((calc_matrices.stiffness[(7,7)] - 328.12).abs() < 0.1);
+        assert!((calc_matrices.stiffness[(0,0)] - 0e1).abs() < 0.1);
+        assert!((calc_matrices.stiffness[(2,2)] - 4375e5).abs() < 0.1);
+        assert!((calc_matrices.stiffness[(5,5)] - 4375e5).abs() < 0.1);
     }
 
     #[test]
@@ -470,7 +398,7 @@ mod fem_tests {
         let mut calc_matrices = vefem::fem::matrices::create_global_calculation_matrix(&calc_model, &calc_settings, &calc_loads);
         let displacement = vefem::fem::fem_handler::calculate_displacements(
             &nodes,
-            vefem::fem::utils::col_height(&nodes, &elements),
+            vefem::fem::utils::col_height(&nodes),
             &mut calc_matrices.stiffness,
             &mut calc_matrices.equivalent_loads,
         );
@@ -523,7 +451,7 @@ mod fem_tests {
         let mut calc_matrices = vefem::fem::matrices::create_global_calculation_matrix(&calc_model, &calc_settings, &calc_loads);
         let displacement = vefem::fem::fem_handler::calculate_displacements(
             &nodes,
-            vefem::fem::utils::col_height(&nodes, &elements),
+            vefem::fem::utils::col_height(&nodes),
             &mut calc_matrices.stiffness,
             &mut calc_matrices.equivalent_loads,
         );
@@ -580,7 +508,7 @@ mod fem_tests {
         let mut calc_matrices = vefem::fem::matrices::create_global_calculation_matrix(&calc_model, &calc_settings, &calc_loads);
         let displacement = vefem::fem::fem_handler::calculate_displacements(
             &nodes,
-            vefem::fem::utils::col_height(&nodes, &elements),
+            vefem::fem::utils::col_height(&nodes),
             &mut calc_matrices.stiffness,
             &mut calc_matrices.equivalent_loads,
         );
@@ -778,7 +706,7 @@ mod fem_tests {
         let mut calc_matrices = vefem::fem::matrices::create_global_calculation_matrix(&calc_model, &calc_settings, &calc_loads);
         let displacement = vefem::fem::fem_handler::calculate_displacements(
             &nodes,
-            vefem::fem::utils::col_height(&nodes, &elements),
+            vefem::fem::utils::col_height(&nodes),
             &mut calc_matrices.stiffness,
             &mut calc_matrices.equivalent_loads,
         );
@@ -825,7 +753,7 @@ mod fem_tests {
         let mut calc_matrices = vefem::fem::matrices::create_global_calculation_matrix(&calc_model, &calc_settings, &calc_loads);
         let displacement = vefem::fem::fem_handler::calculate_displacements(
             &nodes,
-            vefem::fem::utils::col_height(&nodes, &elements),
+            vefem::fem::utils::col_height(&nodes),
             &mut calc_matrices.stiffness,
             &mut calc_matrices.equivalent_loads,
         );
@@ -855,8 +783,6 @@ mod fem_tests {
         assert_eq!(reactions[(9, 0)].round(), 0.0);
         assert_eq!(reactions[(10, 0)].round(), 0.0);
         assert_eq!(reactions[(11, 0)].round(), 0.0);
-        assert_eq!(reactions[(12, 0)].round(), 0.0);
-        assert_eq!(reactions[(13, 0)].round(), 0.0);
     }
 
     #[test]
@@ -878,7 +804,7 @@ mod fem_tests {
         let mut calc_matrices = vefem::fem::matrices::create_global_calculation_matrix(&calc_model, &calc_settings, &calc_loads);
         let displacement = vefem::fem::fem_handler::calculate_displacements(
             &nodes,
-            vefem::fem::utils::col_height(&nodes, &elements),
+            vefem::fem::utils::col_height(&nodes),
             &mut calc_matrices.stiffness,
             &mut calc_matrices.equivalent_loads,
         );
@@ -920,8 +846,6 @@ mod fem_tests {
         assert_eq!(reactions[(9, 0)].round(), 0.0);
         assert_eq!(reactions[(10, 0)].round(), 0.0);
         assert_eq!(reactions[(11, 0)].round(), 0.0);
-        assert_eq!(reactions[(12, 0)].round(), 0.0);
-        assert_eq!(reactions[(13, 0)].round(), 0.0);
     }
 
     #[test]
@@ -943,7 +867,7 @@ mod fem_tests {
         let mut calc_matrices = vefem::fem::matrices::create_global_calculation_matrix(&calc_model, &calc_settings, &calc_loads);
         let displacement = vefem::fem::fem_handler::calculate_displacements(
             &nodes,
-            vefem::fem::utils::col_height(&nodes, &elements),
+            vefem::fem::utils::col_height(&nodes),
             &mut calc_matrices.stiffness,
             &mut calc_matrices.equivalent_loads,
         );
@@ -1000,7 +924,7 @@ mod fem_tests {
         let mut calc_matrices = vefem::fem::matrices::create_global_calculation_matrix(&calc_model, &calc_settings, &calc_loads);
         let displacement = vefem::fem::fem_handler::calculate_displacements(
             &nodes,
-            vefem::fem::utils::col_height(&nodes, &elements),
+            vefem::fem::utils::col_height(&nodes),
             &mut calc_matrices.stiffness,
             &mut calc_matrices.equivalent_loads,
         );

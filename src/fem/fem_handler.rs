@@ -41,7 +41,7 @@ pub fn calculate(
         crate::structure::utils::get_calc_elements(elements, nodes, &HashMap::new(), calc_settings);
     let calc_model = CalcModel::new(&nodes, extra_nodes, &elements, calc_elements);
 
-    let col_height = super::utils::col_height(nodes, elements);
+    let col_height = super::utils::col_height(nodes);
 
     let load_combinations = if struct_model.load_combinations.is_empty() {
         &vec![LoadCombination::default()]
@@ -128,7 +128,7 @@ fn calc_lc(
     let reactions = reactions.column(0).as_slice().to_vec();
 
     let node_results = NodeResults::new(displacements, reactions, nodes.len(), &equation_handler, 
-                                        &nodes, calc_matrices.release_index_map);
+                                        &nodes);
     let internal_force_results =
         calc_internal_forces(calc_model, calculation_loads, &node_results, calc_settings);
 
